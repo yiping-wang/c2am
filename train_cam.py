@@ -18,7 +18,7 @@ def validate(model, data_loader):
         for pack in data_loader:
             img = pack['img']
 
-            label = pack['label']#.cuda(non_blocking=True)
+            label = pack['label']  # .cuda(non_blocking=True)
 
             x = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
@@ -32,7 +32,8 @@ def validate(model, data_loader):
     return
 
 
-def train(config):
+def train(config, device):
+    seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
     voc12_root = config['voc12_root']
@@ -41,30 +42,32 @@ def train(config):
     cam_learning_rate = config['cam_learning_rate']
     cam_weight_decay = config['cam_weight_decay']
     num_workers = 1
+    pyutils.seed_all(seed)
 
-    model = Net()
-    train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list, 
+    model = Net().cuda(device=device)
+    train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
-                                                                resize_long=(320, 640), 
+                                                                resize_long=(
+                                                                    320, 640),
                                                                 hor_flip=True,
                                                                 crop_size=512, crop_method="random")
-    train_data_loader = DataLoader(train_dataset, 
+    train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
-                                   shuffle=True, 
-                                   num_workers=num_workers, 
-                                   pin_memory=True, 
+                                   shuffle=True,
+                                   num_workers=num_workers,
+                                   pin_memory=True,
                                    drop_last=True)
 
     max_step = (len(train_dataset) // cam_batch_size) * cam_num_epoches
 
-    val_dataset = voc12.dataloader.VOC12ClassificationDataset(val_list, 
+    val_dataset = voc12.dataloader.VOC12ClassificationDataset(val_list,
                                                               voc12_root=voc12_root,
                                                               crop_size=512)
-    val_data_loader = DataLoader(val_dataset, 
+    val_data_loader = DataLoader(val_dataset,
                                  batch_size=cam_batch_size,
-                                 shuffle=False, 
-                                 num_workers=num_workers, 
-                                 pin_memory=True, 
+                                 shuffle=False,
+                                 num_workers=num_workers,
+                                 pin_memory=True,
                                  drop_last=True)
 
     param_groups = model.trainable_parameters()
@@ -75,7 +78,7 @@ def train(config):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    model = torch.nn.DataParallel(model)#.cuda()
+    model = torch.nn.DataParallel(model).cuda(device=device)
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -88,7 +91,7 @@ def train(config):
         for step, pack in enumerate(train_data_loader):
 
             img = pack['img']
-            label = pack['label']#.cuda(non_blocking=True)
+            label = pack['label'].cuda(device=device, non_blocking=True)
 
             x = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
@@ -114,17 +117,18 @@ def train(config):
             timer.reset_stage()
 
     # torch.save(model.module.state_dict(), args.cam_weights_name + '.pth')
-    # torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
-    parser.add_argument('--config', type=str, help='YAML config file path', default='./cfg/base.yml')
+    parser.add_argument('--config', type=str,
+                        help='YAML config file path', default='./cfg/base.yml')
     args = parser.parse_args()
-    # if torch.cuda.is_available():
-    #     device = utils.set_gpus(n_gpus=1)
-    # else:
-    #     device = 'cpu'
+    if torch.cuda.is_available():
+        device = pyutils.set_gpus(n_gpus=1)
+    else:
+        device = 'cpu'
     config = pyutils.parse_config(args.config)
-    train(config)
+    train(config, device)

@@ -4,6 +4,32 @@ import sys
 import random
 import yaml
 import torch
+import os
+from pynvml import *
+
+
+def set_gpus(n_gpus, verbose=False):
+    selected_gpu = []
+    gpu_free_mem = {}
+
+    nvmlInit()
+    deviceCount = nvmlDeviceGetCount()
+    for i in range(deviceCount):
+        handle = nvmlDeviceGetHandleByIndex(i)
+        mem_usage = nvmlDeviceGetMemoryInfo(handle)
+        gpu_free_mem[i] = mem_usage.free
+        if verbose:
+            print("GPU: {} \t Free Memory: {}".format(i, mem_usage.free))
+
+    res = sorted(gpu_free_mem.items(), key=lambda x: x[1], reverse=True)
+    res = res[:n_gpus]
+    selected_gpu = [r[0] for r in res]
+
+    print("Using GPU {}".format(','.join([str(s) for s in selected_gpu])))
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(
+        [str(s) for s in selected_gpu])
+    return torch.device('cuda:{}'.format(str(selected_gpu[0])))
+
 
 def seed_all(seed=0):
     torch.manual_seed(0)
@@ -18,6 +44,7 @@ def parse_config(file_path):
         except yaml.YAMLError as exc:
             print(exc)
     return config
+
 
 class Logger(object):
     def __init__(self, outfile):
@@ -62,8 +89,9 @@ class AverageMeter:
             self.__data[key] = [0.0, 0]
             return v
 
+
 class Timer:
-    def __init__(self, starting_msg = None):
+    def __init__(self, starting_msg=None):
         self.start = time.time()
         self.stage_start = self.start
 
@@ -81,7 +109,6 @@ class Timer:
         self.est_total = self.elapsed / progress
         self.est_remaining = self.est_total - self.elapsed
         self.est_finish = int(self.start + self.est_total)
-
 
     def str_estimated_complete(self):
         return str(time.ctime(self.est_finish))
