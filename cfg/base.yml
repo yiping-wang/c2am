@@ -1,6 +1,6 @@
 # Environment
 seed: 0
-voc12_root: "/data/home/yipingwang/data/VOCdevkit"
+voc12_root: "/data/home/yipingwang/data/VOCdevkit/VOC2012/"
 
 # Dataset
 train_list: "voc12/train_aug.txt"
