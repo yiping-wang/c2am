@@ -18,7 +18,7 @@ def validate(model, data_loader):
         for pack in data_loader:
             img = pack['img']
 
-            label = pack['label']  # .cuda(non_blocking=True)
+            label = pack['label'].cuda(non_blocking=True)
 
             x = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
@@ -44,7 +44,7 @@ def train(config, device):
     num_workers = 1
     pyutils.seed_all(seed)
 
-    model = Net().cuda(device=device)
+    model = Net().cuda(device)
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
                                                                 resize_long=(
@@ -78,7 +78,7 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    model = torch.nn.DataParallel(model).cuda(device=device)
+    model = torch.nn.DataParallel(model).cuda(device)
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -91,7 +91,7 @@ def train(config, device):
         for step, pack in enumerate(train_data_loader):
 
             img = pack['img']
-            label = pack['label'].cuda(device=device, non_blocking=True)
+            label = pack['label'].cuda(device, non_blocking=True)
 
             x = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
