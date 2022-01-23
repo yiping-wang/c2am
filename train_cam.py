@@ -130,5 +130,6 @@ if __name__ == '__main__':
         device = pyutils.set_gpus(n_gpus=1)
     else:
         device = 'cpu'
+    print(device)
     config = pyutils.parse_config(args.config)
     train(config, device)
