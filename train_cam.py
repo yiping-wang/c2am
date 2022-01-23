@@ -102,7 +102,7 @@ def train(config, device):
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
-            else:
+                # validation
                 vloss = validate(model, val_data_loader)
                 if vloss < min_loss:
                     torch.save(model.module.state_dict(),
