@@ -1,0 +1,14 @@
+# Environment
+seed: 0
+voc12_root: "/Users/Andy/Projects/data/VOCdevkit"
+
+# Dataset
+train_list: "voc12/train_aug.txt"
+val_list: "voc12/val.txt"
+
+# Class Activation Map
+cam_crop_size: 512
+cam_batch_size: 16
+cam_num_epoches: 5
+cam_learning_rate: 0.1
+cam_weight_decay: 0.0001
