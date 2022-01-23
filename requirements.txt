@@ -2,8 +2,6 @@ matplotlib
 numpy
 pandas
 scikit_learn
-torch
-torchvision
 tqdm
 opencv-python
 tensorboard
@@ -11,3 +9,5 @@ pyyaml
 pynvml
 imageio
 pydensecrf
+torch==1.2.0
+torchvision==0.4.0

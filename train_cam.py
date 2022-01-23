@@ -1,7 +1,8 @@
-import torch
 import torch.nn.functional as F
 import voc12.dataloader
 import argparse
+import torch
+import os
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
 from net.resnet50_cam import Net
@@ -9,27 +10,19 @@ from net.resnet50_cam import Net
 
 def validate(model, data_loader):
     print('validating ... ', flush=True, end='')
-
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
-
     model.eval()
-
     with torch.no_grad():
         for pack in data_loader:
             img = pack['img']
-
             label = pack['label'].cuda(non_blocking=True)
-
             x = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
-
             val_loss_meter.add({'loss1': loss1.item()})
-
     model.train()
-
-    print('loss: %.4f' % (val_loss_meter.pop('loss1')))
-
-    return
+    vloss = val_loss_meter.pop('loss1')
+    print('loss: %.4f' % vloss)
+    return vloss
 
 
 def train(config, device):
@@ -41,7 +34,10 @@ def train(config, device):
     cam_num_epoches = config['cam_num_epoches']
     cam_learning_rate = config['cam_learning_rate']
     cam_weight_decay = config['cam_weight_decay']
+    model_root = config['model_root']
+    cam_weights_name = config['cam_weights_name']
     num_workers = 1
+    cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
 
     model = Net().cuda(device)
@@ -84,40 +80,37 @@ def train(config, device):
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
+    min_loss = float('inf')
     for ep in range(cam_num_epoches):
-
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
-
         for step, pack in enumerate(train_data_loader):
-
             img = pack['img']
             label = pack['label'].cuda(device, non_blocking=True)
-
             x = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
-
             avg_meter.add({'loss1': loss.item()})
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            if (optimizer.global_step-1) % 100 == 0:
+            if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
-
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'loss:%.4f' % (avg_meter.pop('loss1')),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
-
-        else:
-            validate(model, val_data_loader)
-            timer.reset_stage()
-
-    # torch.save(model.module.state_dict(), args.cam_weights_name + '.pth')
-    torch.cuda.empty_cache()
+            else:
+                vloss = validate(model, val_data_loader)
+                if vloss < min_loss:
+                    torch.save(model.module.state_dict(),
+                               cam_weight_path + '.pth')
+                    min_loss = vloss
+                timer.reset_stage()
+        # empty cache
+        torch.cuda.empty_cache()
 
 
 if __name__ == '__main__':
