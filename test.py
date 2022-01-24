@@ -20,7 +20,7 @@ val_dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(val_list,
                                                           scales=(1.0, 0.5, 1.5, 2.0))
 data_loader = DataLoader(val_dataset, shuffle=False)
 
-model = CAM()
+model = CAM().cuda()
 model.eval()
 model.load_state_dict(torch.load(cam_weight_path, map_location='cpu'))
 
@@ -45,7 +45,7 @@ with torch.no_grad():
     strided_size = imutils.get_strided_size(size, 4)
     strided_up_size = imutils.get_strided_up_size(size, 16)
 
-    outputs = [model(img[0]) for img in pack['img']]
+    outputs = [model(img[0].cuda(non_blocking=True)) for img in pack['img']]
 
     strided_cam = torch.sum(torch.stack(
         [F.interpolate(torch.unsqueeze(o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o
