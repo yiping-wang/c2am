@@ -53,3 +53,7 @@ class CAM(Net):
         x = F.relu(x)
         x = x[0] + x[1].flip(-1)
         return x
+
+    def eval(self):
+        self.backbone = self.backbone.eval()
+        self.newly_added = self.newly_added.eval()
