@@ -117,6 +117,8 @@ def train(config, device):
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
+    nlll = torch.nn.BCELoss()
+
     min_loss = float('inf')
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -149,7 +151,8 @@ def train(config, device):
                 wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
             x = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
-            loss = F.multilabel_soft_margin_loss(x, labels)
+            #loss = F.multilabel_soft_margin_loss(x, labels)
+            loss = nlll(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
             optimizer.zero_grad()
