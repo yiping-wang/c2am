@@ -128,6 +128,7 @@ def train(config, device):
                 strided_cam = []
                 for o in outputs:
                     strided_cam += [F.interpolate(torch.unsqueeze(o, 0), strided_size, mode='bilinear', align_corners=False)[0]]
+                print(strided_cam[0].shape)
                 strided_cam = torch.sum(torch.stack(strided_cam), 0)
                 # strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                 #     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
