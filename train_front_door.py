@@ -133,12 +133,13 @@ def train(config, device):
                 #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
                 # strided_cam = strided_cam / \
                 #     (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
+                strided_cam.unsqueeze(0)
                 B, C, H, W = strided_cam.shape
                 strided_cam = strided_cam.view(B, -1)
                 strided_cam = strided_cam - strided_cam.min(dim=1, keepdim=True)[0]
                 strided_cam = (strided_cam.max(dim=1, keepdim=True)[0] + 1e-6)
                 strided_cam = strided_cam.view(B, C, H, W)
-                cams += [strided_cam.unsqueeze(0)]
+                cams += [strided_cam]
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
