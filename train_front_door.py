@@ -125,12 +125,12 @@ def train(config, device):
             acams = torch.zeros(
                 (cam_batch_size, 20, strided_size[0]//4, strided_size[1]//4)).cuda(device)
             for b in range(cam_batch_size):
-                img = imgs[b].cuda(device, non_blocking=True)
-                strided_cam = model(img).unsqueeze(0)
+                # img = imgs[b].cuda(device, non_blocking=True)
+                acams[b] = model(imgs[b].cuda(device, non_blocking=True)).unsqueeze(0)
                 # strided_cam = F.interpolate(torch.unsqueeze(
                 #     outputs, 0), strided_size, mode='bilinear', align_corners=False)
-                strided_cam /= F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5
-                acams[b] = strided_cam
+                acams[b] /= F.adaptive_max_pool2d(acams[b], (1, 1)) + 1e-5
+
             # P(z|x)
             p = F.softmax(torchutils.lse_agg(acams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
