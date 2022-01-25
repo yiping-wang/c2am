@@ -122,21 +122,22 @@ def train(config, device):
             # P(y|x, z)
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
-            # acams = torch.zeros(
-            #     (cam_batch_size, 20, strided_size[0]//4, strided_size[1]//4)).cuda(device)
-            # for b in range(cam_batch_size):
-            #     # img = imgs[b].cuda(device, non_blocking=True)
-            #     acams[b] = model(imgs[b].cuda(device, non_blocking=True)).unsqueeze(0)
-            #     # strided_cam = F.interpolate(torch.unsqueeze(
-            #     #     outputs, 0), strided_size, mode='bilinear', align_corners=False)
-            #     acams[b] /= F.adaptive_max_pool2d(acams[b], (1, 1)) + 1e-5
-            
-            #acams = acams / F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5
-            
-            acams = model(imgs)
-            acams = acams / F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5
+            cams = []
+            for b in range(cam_batch_size):
+                outputs = model(imgs[b])
+                strided_cam = F.interpolate(torch.unsqueeze(
+                    outputs, 0), strided_size, mode='bilinear', align_corners=False)[0]
+                strided_cam = strided_cam / \
+                    (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
+                cams += [strided_cam.unsqueeze(0)]
+            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
+
+            # acams = model(imgs)
+            # acams = acams / (F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5)
+
             # P(z|x)
-            p = F.softmax(torchutils.lse_agg(acams.detach(), r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(
+                acams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
