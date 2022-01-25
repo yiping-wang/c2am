@@ -108,8 +108,8 @@ def train(config, device):
                 # validation
                 vloss = validate(model, val_data_loader)
                 if vloss < min_loss:
-                    torch.save(model.module.state_dict(),
-                               cam_weight_path + '.pth')
+                    #torch.save(model.module.state_dict(),
+                    #           cam_weight_path + '.pth')
                     min_loss = vloss
                 timer.reset_stage()
         # empty cache
