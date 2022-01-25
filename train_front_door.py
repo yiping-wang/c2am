@@ -125,11 +125,13 @@ def train(config, device):
             for b in range(cam_batch_size):
                 img = imgs[b].unsqueeze(0)
                 outputs = [model(i.cuda(device, non_blocking=True)) for i in img]
+                print(outputs[0].shape)
                 strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
                 strided_cam /= F.adaptive_max_pool2d(
                     strided_cam, (1, 1)) + 1e-5
                 cams += [strided_cam.unsqueeze(0)]
+
                
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
