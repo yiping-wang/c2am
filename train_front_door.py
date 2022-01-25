@@ -139,6 +139,7 @@ def train(config, device):
             #         (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
             #     cams += [strided_cam.unsqueeze(0)]
             cams = model(imgs)
+            print(cams.shape)
             # strided_cam = F.interpolate(torch.unsqueeze(
             #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
             acams = cams / (F.adaptive_max_pool2d(cams.detach(), (1, 1)) + 1e-5)
