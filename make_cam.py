@@ -63,10 +63,11 @@ def _work(process_id, model, dataset, config):
 def run(config):
     train_list = config['train_list']
     voc12_root = config['voc12_root']
+    model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
     model = CAM()
-    model.load_state_dict(torch.load(cam_weights_name + '.pth'), strict=True)
+    model.load_state_dict(torch.load(os.path.join(model_root, cam_weights_name) + '.pth'), strict=True)
     model.eval()
 
     n_gpus = torch.cuda.device_count()
