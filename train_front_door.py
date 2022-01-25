@@ -137,16 +137,16 @@ def train(config, device):
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
-            # p = F.softmax(torchutils.lse_agg(
-            #     acams.detach(), r=logexpsum_r), dim=1)
-            # # P(y|do(x))
-            # scams = torch.mean(acams, dim=0)
-            # C = acams.shape[1]
-            # wcams = torch.zeros_like(acams)
-            # for c in range(C):
-            #     scam = torch.zeros_like(scams)
-            #     scam[c] = scams[c]
-            #     wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
+            p = F.softmax(torchutils.lse_agg(
+                acams.detach(), r=logexpsum_r), dim=1)
+            # P(y|do(x))
+            scams = torch.mean(acams, dim=0)
+            C = acams.shape[1]
+            wcams = torch.zeros_like(acams)
+            for c in range(C):
+                scam = torch.zeros_like(scams)
+                scam[c] = scams[c]
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
             x = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
             loss = F.multilabel_soft_margin_loss(x, labels)
