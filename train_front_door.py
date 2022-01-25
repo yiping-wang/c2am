@@ -120,7 +120,7 @@ def train(config, device):
             # P(y|x, z)
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
-            cams = []
+            cams = torch.zero((cam_batch_size, 20, image_size_height, image_size_width))
             for b in range(cam_batch_size):
                 img = imgs[b].cuda(device, non_blocking=True)
                 outputs = model(img)
@@ -131,7 +131,7 @@ def train(config, device):
                 #     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
                 strided_cam /= F.adaptive_max_pool2d(
                     strided_cam, (1, 1)) + 1e-5
-                cams += [strided_cam.unsqueeze(0).detach()]
+                cams[b] = strided_cam.unsqueeze(0)
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
