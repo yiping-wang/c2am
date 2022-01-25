@@ -3,11 +3,13 @@ import torch.nn.functional as F
 from misc import torchutils
 from net import resnet50
 
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.resnet50 = resnet50.resnet50(pretrained=True, strides=(2, 2, 2, 1))
+        self.resnet50 = resnet50.resnet50(
+            pretrained=True, strides=(2, 2, 2, 1))
 
         self.stage1 = nn.Sequential(self.resnet50.conv1, self.resnet50.bn1, self.resnet50.relu, self.resnet50.maxpool,
                                     self.resnet50.layer1)
@@ -17,7 +19,8 @@ class Net(nn.Module):
 
         self.classifier = nn.Conv2d(2048, 20, 1, bias=False)
 
-        self.backbone = nn.ModuleList([self.stage1, self.stage2, self.stage3, self.stage4])
+        self.backbone = nn.ModuleList(
+            [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
 
     def forward(self, x):
@@ -47,15 +50,14 @@ class CAM(Net):
             for p in i.parameters():
                 p.requires_grad = False
 
-
     def forward(self, x):
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
         x = self.stage4(x)
-        print('1', x.grad_fn)
+        #print('1', x.grad_fn)
         x = self.classifier(x)
-        print('2', x.grad_fn)
+        #print('2', x.grad_fn)
         # x = F.conv2d(x, self.classifier.weight)
         x = F.relu(x)
         x = x[0] + x[1].flip(-1)
@@ -64,9 +66,6 @@ class CAM(Net):
     def eval(self):
         self.backbone = self.backbone.eval()
         self.newly_added = self.newly_added.eval()
-
-    def train(self, mode=True):
-        self.backbone.requires_grad = False
 
     def trainable_parameters(self):
         return (list(self.newly_added.parameters()),)
