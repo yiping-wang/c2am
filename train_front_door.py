@@ -123,7 +123,7 @@ def train(config, device):
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
             acams = torch.zeros(
-                (cam_batch_size, 20, strided_size[0], strided_size[1])).cuda(device)
+                (cam_batch_size, 20, strided_size[0]//4, strided_size[1]//4)).cuda(device)
             for b in range(cam_batch_size):
                 img = imgs[b].cuda(device, non_blocking=True)
                 strided_cam = model(img).unsqueeze(0)
