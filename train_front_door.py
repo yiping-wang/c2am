@@ -130,6 +130,7 @@ def train(config, device):
                 strided_cam /= F.adaptive_max_pool2d(
                     strided_cam, (1, 1)) + 1e-5
                 cams += [strided_cam.unsqueeze(0)]
+                break
             cams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
             p = F.softmax(torchutils.lse_agg(cams, r=logexpsum_r), dim=1)
