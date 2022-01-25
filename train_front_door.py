@@ -6,7 +6,6 @@ import os
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils, imutils
 from net.resnet50_cam import CAM
-torch.autograd.set_detect_anomaly(True)
 
 def validate(model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
     print('validating ... ', flush=True, end='')
@@ -28,7 +27,7 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
                 strided_cam /= F.adaptive_max_pool2d(
                     strided_cam, (1, 1)) + 1e-5
                 cams += [strided_cam.unsqueeze(0)]
-            cams = torch.cat(cams, dim=0)  # B * 20 * H * W
+            cams = torch.cat(cams, dim=0).detach()  # B * 20 * H * W
             # P(z|x)
             p = F.softmax(torchutils.lse_agg(cams, r=logexpsum_r), dim=1)
             # P(y|do(x))
