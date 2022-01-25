@@ -131,13 +131,8 @@ def train(config, device):
                     (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
                 cams += [strided_cam.unsqueeze(0)]
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
-
-            # acams = model(imgs)
-            # acams = acams / (F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5)
-
             # P(z|x)
-            p = F.softmax(torchutils.lse_agg(
-                acams.detach(), r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
