@@ -124,7 +124,7 @@ def train(config, device):
             cams = []
             for b in range(cam_batch_size):
                 img = imgs[b].unsqueeze(0)
-                outputs = [model(i) for i in img]
+                outputs = [model(i.cuda(device, non_blocking=True)) for i in img]
                 strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
                 strided_cam /= F.adaptive_max_pool2d(
