@@ -104,9 +104,8 @@ def train(config, device):
 
     param_groups = model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
-        {'params': param_groups[0], 'lr': cam_learning_rate,
-            'weight_decay': cam_weight_decay}
-    ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
+        {'params': param_groups[0], 'lr': 10 * cam_learning_rate}
+    ], lr=cam_learning_rate, max_step=max_step)
     # optimizer = torchutils.PolyOptimizer([
     #     {'params': param_groups[0], 'lr': cam_learning_rate,
     #         'weight_decay': cam_weight_decay},
@@ -131,19 +130,15 @@ def train(config, device):
             # strided_size = imutils.get_strided_size(
             #     (image_size_height, image_size_width), 4)
             cams = []
-            # for b in range(cam_batch_size):
-            #     strided_cam = model(imgs[b])
-            #     # strided_cam = F.interpolate(torch.unsqueeze(
-            #     #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-            #     strided_cam = strided_cam / \
-            #         (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
-            #     cams += [strided_cam.unsqueeze(0)]
-            cams = model(imgs)
-            # strided_cam = F.interpolate(torch.unsqueeze(
-            #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-            acams = cams / (F.adaptive_max_pool2d(cams.detach(), (1, 1)) + 1e-5)
+            for b in range(cam_batch_size):
+                strided_cam = model(imgs[b])
+                # strided_cam = F.interpolate(torch.unsqueeze(
+                #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
+                strided_cam = strided_cam / \
+                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
+                cams += [strided_cam.unsqueeze(0)]
 
-            # acams = torch.cat(cams, dim=0)  # B * 20 * H * W
+            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
             p = F.softmax(torchutils.lse_agg(
                 acams.detach(), r=logexpsum_r), dim=1)
@@ -156,7 +151,7 @@ def train(config, device):
                 scam[c] = scams[c]
                 wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
-            x = torchutils.lse_agg(wcams, r=logexpsum_r)
+            x = F.softmax(torchutils.lse_agg(wcams, r=logexpsum_r), dim=1)
             loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
@@ -173,13 +168,13 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                # vloss = validate(model, val_data_loader, image_size_height,
-                #                  image_size_width, cam_batch_size, logexpsum_r)
-                # if vloss < min_loss:
-                #     torch.save(model.state_dict(), os.path.join(
-                #         model_root, cam_weights_name + '_fd.pth'))
-                #     min_loss = vloss
-                # timer.reset_stage()
+                vloss = validate(model, val_data_loader, image_size_height,
+                                 image_size_width, cam_batch_size, logexpsum_r)
+                if vloss < min_loss:
+                    torch.save(model.state_dict(), os.path.join(
+                        model_root, cam_weights_name + '_fd.pth'))
+                    min_loss = vloss
+                timer.reset_stage()
         # empty cache
         torch.cuda.empty_cache()
 
