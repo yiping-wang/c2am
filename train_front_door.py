@@ -33,9 +33,9 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
             # P(y|do(x))
             scams = torch.mean(cams, dim=0)
             C = cams.shape[1]
-            # wcams = torch.zeros_like(cams)
-            # for c in range(C):
-            #     wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
+            wcams = torch.zeros_like(cams)
+            for c in range(C):
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
             # loss
             x = torchutils.lse_agg(scams, r=logexpsum_r)
             loss1 = F.multilabel_soft_margin_loss(x, label)
@@ -140,11 +140,11 @@ def train(config, device):
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
-            wcams = torch.zeros_like(acams)
-            for c in range(C):
-                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
+            # wcams = torch.zeros_like(acams)
+            # for c in range(C):
+            #     wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
             # loss
-            x = torchutils.lse_agg(wcams, r=logexpsum_r)
+            x = torchutils.lse_agg(scams, r=logexpsum_r)
             loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
