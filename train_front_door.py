@@ -141,9 +141,9 @@ def train(config, device):
             cams = model(imgs)
             # strided_cam = F.interpolate(torch.unsqueeze(
             #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-            cams = cams / (F.adaptive_max_pool2d(cams.detach(), (1, 1)) + 1e-5)
+            acams = cams / (F.adaptive_max_pool2d(cams.detach(), (1, 1)) + 1e-5)
 
-            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
+            # acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
             p = F.softmax(torchutils.lse_agg(
                 acams.detach(), r=logexpsum_r), dim=1)
