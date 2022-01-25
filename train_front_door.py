@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from misc import pyutils, torchutils, imutils
 from net.resnet50_cam import CAM
 
+
 def validate(model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
@@ -29,7 +30,8 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
                 cams += [strided_cam.unsqueeze(0)]
             cams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
-            p = F.softmax(torchutils.lse_agg(cams.detach(), r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(
+                cams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(cams, dim=0)
             C = cams.shape[1]
@@ -120,7 +122,8 @@ def train(config, device):
             # P(y|x, z)
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
-            acams = torch.zeros((cam_batch_size, 20, strided_size[0], strided_size[1])).cuda(device)
+            acams = torch.zeros(
+                (cam_batch_size, 20, strided_size[0], strided_size[1])).cuda(device)
             for b in range(cam_batch_size):
                 img = imgs[b].cuda(device, non_blocking=True)
                 outputs = model(img)
@@ -133,9 +136,8 @@ def train(config, device):
                     strided_cam, (1, 1)) + 1e-5
                 acams[b] = strided_cam.unsqueeze(0)
 
-            # acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
-            p = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(acams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
