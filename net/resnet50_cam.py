@@ -55,9 +55,7 @@ class CAM(Net):
         x = self.stage2(x)
         x = self.stage3(x)
         x = self.stage4(x)
-        #print('1', x.grad_fn)
         x = self.classifier(x)
-        #print('2', x.grad_fn)
         # x = F.conv2d(x, self.classifier.weight)
         x = F.relu(x)
         x = x[0] + x[1].flip(-1)
@@ -68,4 +66,4 @@ class CAM(Net):
         self.newly_added = self.newly_added.eval()
 
     def trainable_parameters(self):
-        return (list(self.newly_added.parameters()),)
+        return (list(self.backbone.parameters()), list(self.newly_added.parameters()))
