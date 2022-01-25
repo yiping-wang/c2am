@@ -43,7 +43,7 @@ class Net(nn.Module):
 class CAM(Net):
     def __init__(self):
         super(CAM, self).__init__()
-
+        self.adaptive_max_pool2d = nn.AdaptiveMaxPool2d((1, 1))
     def forward(self, x):
         x = self.stage1(x)
         x = self.stage2(x)
@@ -51,6 +51,7 @@ class CAM(Net):
         x = self.stage4(x)
         x = F.conv2d(x, self.classifier.weight)
         x = F.relu(x)
+        x = self.adaptive_max_pool2d(x) + 1e-5
         #x = x[0] + x[1].flip(-1)
         return x
 
