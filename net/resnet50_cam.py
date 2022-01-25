@@ -81,28 +81,3 @@ class CAM(nn.Module):
 
     def trainable_parameters(self):
         return (list(self.backbone.parameters()), list(self.newly_added.parameters()))
-
-# class CAM(Net):
-#     def __init__(self):
-#         super(CAM, self).__init__()
-#         # for i in self.backbone:
-#         #     for p in i.parameters():
-#         #         p.requires_grad = False
-
-#     def forward(self, x):
-#         x = self.stage1(x)
-#         x = self.stage2(x)
-#         x = self.stage3(x)
-#         x = self.stage4(x)
-#         x = self.classifier(x)
-#         # x = F.conv2d(x, self.classifier.weight)
-#         x = F.relu(x)
-#         x = x[0] + x[1].flip(-1)
-#         return x
-
-#     def eval(self):
-#         self.backbone = self.backbone.eval()
-#         self.newly_added = self.newly_added.eval()
-
-#     def trainable_parameters(self):
-#         return (list(self.backbone.parameters()), list(self.newly_added.parameters()))
