@@ -138,9 +138,8 @@ def train(config, device):
                 strided_cam = strided_cam / \
                     (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
                 cams += [strided_cam.unsqueeze(0)]
-            print(cams.grad_fn)
-            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
 
+            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
             p = F.softmax(torchutils.lse_agg(
                 acams.detach(), r=logexpsum_r), dim=1)
