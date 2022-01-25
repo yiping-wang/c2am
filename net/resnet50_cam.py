@@ -67,15 +67,10 @@ class CAM(nn.Module):
         x = self.stage2(x)
         x = self.stage3(x)
         x = self.stage4(x)
-
-        cls_logit = torchutils.gap2d(x, keepdims=True)
-        cls_logit = self.classifier(cls_logit)
-        cls_logit = cls_logit.view(-1, 20)
-
-        cam = F.conv2d(x, self.classifier.weight)
-        cam = F.relu(cam)
-        cam = cam[0] + cam[1].flip(-1)
-        return cam, cls_logit
+        x = F.conv2d(x, self.classifier.weight)
+        x = F.relu(x)
+        x = x[0] + x[1].flip(-1)
+        return x
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():
