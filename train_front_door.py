@@ -5,7 +5,7 @@ import torch
 import os
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils, imutils
-from net.resnet50_cam import Net
+from net.resnet50_cam import CAM
 
 
 def validate(model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
@@ -67,7 +67,7 @@ def train(config, device):
     cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
-    model = Net().cuda(device)
+    model = CAM().cuda(device)
     # load pre-trained classification network
     model.load_state_dict(torch.load(cam_weight_path))
 
@@ -105,7 +105,7 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    model = torch.nn.DataParallel(model).cuda(device)
+    # model = torch.nn.DataParallel(model).cuda(device)
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -123,9 +123,7 @@ def train(config, device):
             cams = []
             for b in range(cam_batch_size):
                 img = imgs[b].unsqueeze(0)
-                print(img.shape)
                 outputs = [model(i) for i in img]
-                print(outputs[0].shape)
                 strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
                 strided_cam /= F.adaptive_max_pool2d(
