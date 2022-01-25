@@ -88,9 +88,9 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/cam.yml')
     args = parser.parse_args()
-    if torch.cuda.is_available():
-        device = pyutils.set_gpus(n_gpus=1)
-    else:
-        device = 'cpu'
+    # if torch.cuda.is_available():
+    #     device = pyutils.set_gpus(n_gpus=1)
+    # else:
+    #     device = 'cpu'
     config = pyutils.parse_config(args.config)
     run(config)
