@@ -138,9 +138,7 @@ def train(config, device):
             #     strided_cam = strided_cam / \
             #         (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
             #     cams += [strided_cam.unsqueeze(0)]
-            print(imgs.shape)
             cams = model(imgs)
-            print(cams.shape)
             # strided_cam = F.interpolate(torch.unsqueeze(
             #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
             acams = cams / (F.adaptive_max_pool2d(cams.detach(), (1, 1)) + 1e-5)
@@ -175,13 +173,13 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss = validate(model, val_data_loader, image_size_height,
-                                 image_size_width, cam_batch_size, logexpsum_r)
-                if vloss < min_loss:
-                    torch.save(model.state_dict(), os.path.join(
-                        model_root, cam_weights_name + '_fd.pth'))
-                    min_loss = vloss
-                timer.reset_stage()
+                # vloss = validate(model, val_data_loader, image_size_height,
+                #                  image_size_width, cam_batch_size, logexpsum_r)
+                # if vloss < min_loss:
+                #     torch.save(model.state_dict(), os.path.join(
+                #         model_root, cam_weights_name + '_fd.pth'))
+                #     min_loss = vloss
+                # timer.reset_stage()
         # empty cache
         torch.cuda.empty_cache()
 
