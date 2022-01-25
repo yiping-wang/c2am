@@ -11,7 +11,7 @@ from net.resnet50_cam import CAM
 def validate(model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
-    nlll = torch.nn.BCELoss()
+    nlll = torch.nn.BCEWithLogitsLoss()()
 
     model.eval()
     with torch.no_grad():
@@ -120,7 +120,7 @@ def train(config, device):
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
-    nlll = torch.nn.BCELoss()
+    nlll = torch.nn.BCEWithLogitsLoss()
 
     min_loss = float('inf')
     for ep in range(cam_num_epoches):
@@ -153,7 +153,7 @@ def train(config, device):
                 scam[c] = scams[c]
                 wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
-            x = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
+            x = torchutils.lse_agg(acams, r=logexpsum_r)
             # loss = F.multilabel_soft_margin_loss(x, labels)
             loss = nlll(x, labels)
             avg_meter.add({'loss1': loss.item()})
