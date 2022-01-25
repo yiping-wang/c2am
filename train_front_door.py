@@ -16,6 +16,7 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
         for pack in data_loader:
             imgs = pack['img']
             label = pack['label'].cuda(non_blocking=True)
+            # P(y|x, z)
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
             cams = []
@@ -28,8 +29,16 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
                     strided_cam, (1, 1)) + 1e-5
                 cams += [strided_cam.unsqueeze(0)]
             cams = torch.cat(cams, dim=0)  # B * 20 * H * W
-            # aggregation
-            x = torchutils.lse_agg(cams, r=logexpsum_r)
+            # P(z|x)
+            p = F.softmax(torchutils.lse_agg(cams, r=logexpsum_r), dim=1)
+            # P(y|do(x))
+            scams = torch.mean(cams, dim=0)
+            C = cams.shape[1]
+            wcams = torch.zeros_like(cams)
+            for c in range(C):
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
+            # loss
+            x = torchutils.lse_agg(wcams, r=logexpsum_r)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
     model.train()
@@ -122,7 +131,15 @@ def train(config, device):
                 cams += [strided_cam.unsqueeze(0)]
             cams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
-            x = torchutils.lse_agg(cams, r=logexpsum_r)
+            p = F.softmax(torchutils.lse_agg(cams, r=logexpsum_r), dim=1)
+            # P(y|do(x))
+            scams = torch.mean(cams, dim=0)
+            C = cams.shape[1]
+            wcams = torch.zeros_like(cams)
+            for c in range(C):
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
+            # loss
+            x = torchutils.lse_agg(wcams, r=logexpsum_r)
             loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
