@@ -106,6 +106,7 @@ def train(config, device):
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     # model = torch.nn.DataParallel(model).cuda(device)
+    model = model.cuda(device)
     model.train()
 
     avg_meter = pyutils.AverageMeter()
