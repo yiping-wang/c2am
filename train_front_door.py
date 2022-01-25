@@ -131,13 +131,17 @@ def train(config, device):
             # strided_size = imutils.get_strided_size(
             #     (image_size_height, image_size_width), 4)
             cams = []
-            for b in range(cam_batch_size):
-                strided_cam = model(imgs[b])
-                # strided_cam = F.interpolate(torch.unsqueeze(
-                #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-                strided_cam = strided_cam / \
-                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
-                cams += [strided_cam.unsqueeze(0)]
+            # for b in range(cam_batch_size):
+            #     strided_cam = model(imgs[b])
+            #     # strided_cam = F.interpolate(torch.unsqueeze(
+            #     #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
+            #     strided_cam = strided_cam / \
+            #         (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
+            #     cams += [strided_cam.unsqueeze(0)]
+            cams = model(imgs)
+            # strided_cam = F.interpolate(torch.unsqueeze(
+            #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
+            cams = cams / (F.adaptive_max_pool2d(cams.detach(), (1, 1)) + 1e-5)
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
