@@ -130,9 +130,11 @@ def train(config, device):
             #     # strided_cam = F.interpolate(torch.unsqueeze(
             #     #     outputs, 0), strided_size, mode='bilinear', align_corners=False)
             #     acams[b] /= F.adaptive_max_pool2d(acams[b], (1, 1)) + 1e-5
+            
+            #acams = acams / F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5
+            
             acams = model(imgs)
-            #acams /= F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5
-
+            acams = acams / F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5
             # P(z|x)
             p = F.softmax(torchutils.lse_agg(acams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
@@ -150,22 +152,22 @@ def train(config, device):
             loss.backward()
             optimizer.step()
 
-            # if (optimizer.global_step - 1) % 100 == 0:
-            #     timer.update_progress(optimizer.global_step / max_step)
-            #     print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
-            #           'loss:%.4f' % (avg_meter.pop('loss1')),
-            #           'imps:%.1f' % (
-            #               (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
-            #           'lr: %.4f' % (optimizer.param_groups[0]['lr']),
-            #           'etc:%s' % (timer.str_estimated_complete()), flush=True)
-            #     # validation
-            #     vloss = validate(model, val_data_loader, image_size_height,
-            #                      image_size_width, cam_batch_size, logexpsum_r)
-            #     if vloss < min_loss:
-            #         torch.save(model.module.state_dict(),
-            #                    cam_weight_path + '_fd.pth')
-            #         min_loss = vloss
-            #     timer.reset_stage()
+            if (optimizer.global_step - 1) % 100 == 0:
+                timer.update_progress(optimizer.global_step / max_step)
+                print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
+                      'loss:%.4f' % (avg_meter.pop('loss1')),
+                      'imps:%.1f' % (
+                          (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
+                      'lr: %.4f' % (optimizer.param_groups[0]['lr']),
+                      'etc:%s' % (timer.str_estimated_complete()), flush=True)
+                # validation
+                # vloss = validate(model, val_data_loader, image_size_height,
+                #                  image_size_width, cam_batch_size, logexpsum_r)
+                # if vloss < min_loss:
+                #     torch.save(model.module.state_dict(),
+                #                cam_weight_path + '_fd.pth')
+                #     min_loss = vloss
+                # timer.reset_stage()
         # empty cache
         torch.cuda.empty_cache()
 
