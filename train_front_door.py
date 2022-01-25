@@ -123,23 +123,21 @@ def train(config, device):
                 (image_size_height, image_size_width), 4)
             cams = []
             for b in range(cam_batch_size):
-                img = imgs[b].unsqueeze(0)
-                outputs = [model(i.cuda(device, non_blocking=True)) for i in img]
-                strided_cam = []
-                for o in outputs:
-                    strided_cam += [F.interpolate(torch.unsqueeze(o, 0), strided_size, mode='bilinear', align_corners=False)[0]]
-                print(strided_cam[0].shape)
-                strided_cam = torch.sum(torch.stack(strided_cam), 0)
+                img = imgs[b].cuda(device, non_blocking=True)
+                outputs = model(img)
+                strided_cam = F.interpolate(torch.unsqueeze(
+                    outputs, 0), strided_size, mode='bilinear', align_corners=False)[0]
+                # outputs = [model(i) for i in img]
                 # strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                 #     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
                 strided_cam /= F.adaptive_max_pool2d(
                     strided_cam, (1, 1)) + 1e-5
                 cams += [strided_cam.unsqueeze(0)]
 
-               
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
-            p = F.softmax(torchutils.lse_agg(acams.detach(), r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(
+                acams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
