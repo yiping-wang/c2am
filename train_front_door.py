@@ -104,11 +104,15 @@ def train(config, device):
 
     param_groups = model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
-        {'params': param_groups[0], 'lr': cam_learning_rate,
-            'weight_decay': cam_weight_decay},
-        {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
-            'weight_decay': cam_weight_decay},
+        {'params': param_groups[0], 'lr': 10 * cam_learning_rate,
+            'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
+    # optimizer = torchutils.PolyOptimizer([
+    #     {'params': param_groups[0], 'lr': cam_learning_rate,
+    #         'weight_decay': cam_weight_decay},
+    #     {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
+    #         'weight_decay': cam_weight_decay},
+    # ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     # model = torch.nn.DataParallel(model).cuda(device)
     model = model.cuda(device)

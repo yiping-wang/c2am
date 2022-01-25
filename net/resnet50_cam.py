@@ -57,3 +57,9 @@ class CAM(Net):
     def eval(self):
         self.backbone = self.backbone.eval()
         self.newly_added = self.newly_added.eval()
+
+    def train(self, mode=True):
+        self.backbone.requires_grad = False
+
+    def trainable_parameters(self):
+        return (list(self.newly_added.parameters()),)
