@@ -27,9 +27,9 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
                 strided_cam /= F.adaptive_max_pool2d(
                     strided_cam, (1, 1)) + 1e-5
                 cams += [strided_cam.unsqueeze(0)]
-            cams = torch.cat(cams, dim=0).detach()  # B * 20 * H * W
+            cams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x)
-            p = F.softmax(torchutils.lse_agg(cams, r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(cams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(cams, dim=0)
             C = cams.shape[1]
