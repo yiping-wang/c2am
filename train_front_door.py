@@ -131,7 +131,7 @@ def train(config, device):
             #     #     outputs, 0), strided_size, mode='bilinear', align_corners=False)
             #     acams[b] /= F.adaptive_max_pool2d(acams[b], (1, 1)) + 1e-5
             acams = model(imgs)
-            acams /= F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5
+            #acams /= F.adaptive_max_pool2d(acams, (1, 1)) + 1e-5
 
             # P(z|x)
             p = F.softmax(torchutils.lse_agg(acams.detach(), r=logexpsum_r), dim=1)
