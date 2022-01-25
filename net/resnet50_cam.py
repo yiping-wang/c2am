@@ -51,7 +51,7 @@ class CAM(Net):
         x = self.stage4(x)
         print('1', x.grad_fn)
         x = self.classifier(x)
-        print('2, 'x.grad_fn)
+        print('2', x.grad_fn)
         # x = F.conv2d(x, self.classifier.weight)
         x = F.relu(x)
         x = x[0] + x[1].flip(-1)
