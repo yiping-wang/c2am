@@ -117,7 +117,7 @@ def train(config, device):
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
-            imgs = pack['img']
+            imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(y|x, z)
             strided_size = imutils.get_strided_size(
