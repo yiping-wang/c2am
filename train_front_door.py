@@ -14,8 +14,8 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
     model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            imgs = pack['img']
-            label = pack['label'].cuda(non_blocking=True)
+            imgs = pack['img'].cuda(device, non_blocking=True)
+            label = pack['label'].cuda(device, non_blocking=True)
             # P(y|x, z)
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
