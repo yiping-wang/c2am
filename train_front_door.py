@@ -131,30 +131,24 @@ def train(config, device):
                 strided_cam = model(imgs[b])
                 # strided_cam = F.interpolate(torch.unsqueeze(
                 #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-                # strided_cam = strided_cam / \
-                #     (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
-                strided_cam = strided_cam.unsqueeze(0)
-                B, C, H, W = strided_cam.shape
-                strided_cam = strided_cam.view(B, -1)
-                strided_cam = strided_cam - strided_cam.min(dim=1, keepdim=True)[0]
-                strided_cam = strided_cam / (strided_cam.max(dim=1, keepdim=True)[0] + 1e-5)
-                strided_cam = strided_cam.view(B, C, H, W)
-                cams += [strided_cam]
+                strided_cam = strided_cam / \
+                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
+                cams += [strided_cam.unsqueeze(0)]
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
-            p = F.softmax(torchutils.lse_agg(
-                acams.detach(), r=logexpsum_r), dim=1)
-            # P(y|do(x))
-            scams = torch.mean(acams, dim=0)
-            C = acams.shape[1]
-            wcams = torch.zeros_like(acams)
-            for c in range(C):
-                scam = torch.zeros_like(scams)
-                scam[c] = scams[c]
-                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
+            # p = F.softmax(torchutils.lse_agg(
+            #     acams.detach(), r=logexpsum_r), dim=1)
+            # # P(y|do(x))
+            # scams = torch.mean(acams, dim=0)
+            # C = acams.shape[1]
+            # wcams = torch.zeros_like(acams)
+            # for c in range(C):
+            #     scam = torch.zeros_like(scams)
+            #     scam[c] = scams[c]
+            #     wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
-            x = F.softmax(torchutils.lse_agg(wcams, r=logexpsum_r), dim=1)
+            x = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
             loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
