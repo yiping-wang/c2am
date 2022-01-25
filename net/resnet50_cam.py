@@ -57,7 +57,7 @@ class CAM(Net):
         x = self.stage4(x)
         x = self.classifier(x)
         # x = F.conv2d(x, self.classifier.weight)
-        x = F.relu(x)
+        # x = F.relu(x)
         x = x[0] + x[1].flip(-1)
         return x
 
