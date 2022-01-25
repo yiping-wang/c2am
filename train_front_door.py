@@ -124,6 +124,7 @@ def train(config, device):
             for b in range(cam_batch_size):
                 img = imgs[b].unsqueeze(0)
                 outputs = [model(i) for i in img]
+                print(outputs[0].shape)
                 strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
                 strided_cam /= F.adaptive_max_pool2d(
