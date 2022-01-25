@@ -8,15 +8,28 @@ from misc import pyutils, torchutils, imutils
 from net.resnet50_cam import Net
 
 
-def validate(model, data_loader):
+def validate(model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
     model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            img = pack['img']
+            imgs = pack['img']
             label = pack['label'].cuda(non_blocking=True)
-            x = model(img)
+            strided_size = imutils.get_strided_size(
+                (image_size_height, image_size_width), 4)
+            cams = []
+            for b in range(cam_batch_size):
+                img = imgs[b].unsqueeze(0)
+                outputs = [model(i) for i in img]
+                strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
+                    o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
+                strided_cam /= F.adaptive_max_pool2d(
+                    strided_cam, (1, 1)) + 1e-5
+                cams += [strided_cam.unsqueeze(0)]
+            cams = torch.cat(cams, dim=0)  # B * 20 * H * W
+            # aggregation
+            x = torchutils.lse_agg(cams, r=logexpsum_r)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
     model.train()
@@ -108,7 +121,7 @@ def train(config, device):
                     strided_cam, (1, 1)) + 1e-5
                 cams += [strided_cam.unsqueeze(0)]
             cams = torch.cat(cams, dim=0)  # B * 20 * H * W
-            # aggregation
+            # P(z|x)
             x = torchutils.lse_agg(cams, r=logexpsum_r)
             loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
@@ -126,10 +139,11 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss = validate(model, val_data_loader)
+                vloss = validate(model, val_data_loader, image_size_height,
+                                 image_size_width, cam_batch_size, logexpsum_r)
                 if vloss < min_loss:
                     torch.save(model.module.state_dict(),
-                               cam_weight_path + '.pth')
+                               cam_weight_path + '_fd.pth')
                     min_loss = vloss
                 timer.reset_stage()
         # empty cache
