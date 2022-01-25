@@ -92,4 +92,4 @@ if __name__ == '__main__':
     else:
         device = 'cpu'
     config = pyutils.parse_config(args.config)
-    run(config, device)
+    run(config)
