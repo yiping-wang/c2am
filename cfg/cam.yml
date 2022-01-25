@@ -9,6 +9,7 @@ val_list: "voc12/val.txt"
 cam_out_dir: "/data/home/yipingwang/data/CAM"
 
 # Class Activation Map
+cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_crop_size: 512
 cam_batch_size: 16
 cam_num_epoches: 5
