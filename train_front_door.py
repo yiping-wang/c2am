@@ -11,7 +11,7 @@ from net.resnet50_cam import CAM
 def validate(model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
-    nlll = torch.nn.BCEWithLogitsLoss()()
+    nlll = torch.nn.BCEWithLogitsLoss()
 
     model.eval()
     with torch.no_grad():
