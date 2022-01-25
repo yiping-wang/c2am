@@ -41,6 +41,9 @@ def train(config, device):
     pyutils.seed_all(seed)
 
     model = Net().cuda(device)
+
+    model.load_state_dict(torch.load(cam_weight_path + '.pth'))
+
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
                                                                 resize_long=(
