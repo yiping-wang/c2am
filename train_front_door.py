@@ -64,7 +64,7 @@ def train(config, device):
     logexpsum_r = config['logexpsum_r']
 
     num_workers = 1
-    cam_weight_path = os.path.join(model_root, cam_weights_name)
+    cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
     model = Net().cuda(device)
