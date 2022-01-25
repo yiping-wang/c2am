@@ -104,8 +104,9 @@ def train(config, device):
 
     param_groups = model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
-        {'params': param_groups[0], 'lr': 10 * cam_learning_rate}
-    ], lr=cam_learning_rate, max_step=max_step)
+        {'params': param_groups[0], 'lr': 10 * cam_learning_rate,
+            'weight_decay': 0}
+    ], lr=cam_learning_rate, weight_decay=0, max_step=max_step)
     # optimizer = torchutils.PolyOptimizer([
     #     {'params': param_groups[0], 'lr': cam_learning_rate,
     #         'weight_decay': cam_weight_decay},
