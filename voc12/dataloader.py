@@ -172,7 +172,8 @@ class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
         name = self.img_name_list[idx]
         name_str = decode_int_filename(name)
 
-        img = Image.open(get_img_path(name_str, self.voc12_root)).convert('RGB')
+        img = Image.open(get_img_path(
+            name_str, self.voc12_root)).convert('RGB')
         if self.size_h > 0:
             img = img.resize((self.size_h, self.size_w), Image.BILINEAR)
         img = np.asarray(img).copy()
@@ -189,11 +190,9 @@ class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
         if len(self.scales) == 1:
             ms_img_list = ms_img_list[0]
 
-
         out = {"name": name_str, "img": ms_img_list, "size": (img.shape[0], img.shape[1]),
                "label": torch.from_numpy(self.label_list[idx])}
         return out
-
 
 
 class VOC12ClassificationDatasetMSF(VOC12ClassificationDataset):
@@ -278,3 +277,63 @@ class VOC12SegmentationDataset(Dataset):
         img = imutils.HWC_to_CHW(img)
 
         return {'name': name, 'img': img, 'label': label}
+
+# IRNet
+
+
+class GetAffinityLabelFromIndices():
+
+    def __init__(self, indices_from, indices_to):
+
+        self.indices_from = indices_from
+        self.indices_to = indices_to
+
+    def __call__(self, segm_map):
+
+        segm_map_flat = np.reshape(segm_map, -1)
+
+        segm_label_from = np.expand_dims(
+            segm_map_flat[self.indices_from], axis=0)
+        segm_label_to = segm_map_flat[self.indices_to]
+
+        valid_label = np.logical_and(
+            np.less(segm_label_from, 21), np.less(segm_label_to, 21))
+
+        equal_label = np.equal(segm_label_from, segm_label_to)
+
+        pos_affinity_label = np.logical_and(equal_label, valid_label)
+
+        bg_pos_affinity_label = np.logical_and(
+            pos_affinity_label, np.equal(segm_label_from, 0)).astype(np.float32)
+        fg_pos_affinity_label = np.logical_and(
+            pos_affinity_label, np.greater(segm_label_from, 0)).astype(np.float32)
+
+        neg_affinity_label = np.logical_and(np.logical_not(
+            equal_label), valid_label).astype(np.float32)
+
+        return torch.from_numpy(bg_pos_affinity_label), torch.from_numpy(fg_pos_affinity_label), \
+            torch.from_numpy(neg_affinity_label)
+
+
+class VOC12AffinityDataset(VOC12SegmentationDataset):
+    def __init__(self, img_name_list_path, label_dir, crop_size, voc12_root,
+                 indices_from, indices_to,
+                 rescale=None, img_normal=TorchvisionNormalize(), hor_flip=False, crop_method=None):
+        super().__init__(img_name_list_path, label_dir, crop_size, voc12_root,
+                         rescale, img_normal, hor_flip, crop_method=crop_method)
+
+        self.extract_aff_lab_func = GetAffinityLabelFromIndices(
+            indices_from, indices_to)
+
+    def __len__(self):
+        return len(self.img_name_list)
+
+    def __getitem__(self, idx):
+        out = super().__getitem__(idx)
+
+        reduced_label = imutils.pil_rescale(out['label'], 0.25, 0)
+
+        out['aff_bg_pos_label'], out['aff_fg_pos_label'], out['aff_neg_label'] = self.extract_aff_lab_func(
+            reduced_label)
+
+        return out

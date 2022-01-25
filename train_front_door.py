@@ -72,9 +72,9 @@ def train(config, device):
     cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
-    model = CAM().cuda(device)
+    cam_model = CAM().cuda(device)
     # load pre-trained classification network
-    # model.load_state_dict(torch.load(cam_weight_path))
+    cam_model.load_state_dict(torch.load(cam_weight_path))
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(train_list,
@@ -114,8 +114,8 @@ def train(config, device):
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     # model = torch.nn.DataParallel(model).cuda(device)
-    model = model.cuda(device)
-    model.train()
+    cam_model = cam_model.cuda(device)
+    cam_model.train()
 
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
@@ -129,18 +129,24 @@ def train(config, device):
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(y|x, z)
-            # strided_size = imutils.get_strided_size(
-            #     (image_size_height, image_size_width), 4)
+            strided_size = imutils.get_strided_size(
+                (image_size_height, image_size_width), 4)
             cams = []
-            for b in range(cam_batch_size):
-                strided_cam = model(imgs[b])
-                # strided_cam = F.interpolate(torch.unsqueeze(
-                #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-                strided_cam = strided_cam / \
-                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
-                cams += [strided_cam.unsqueeze(0)]
+            cls_probs = []
+            with torch.no_grad():
+                for b in range(cam_batch_size):
+                    strided_cam, cls_logit = cam_model(imgs[b])
+                    strided_cam = F.interpolate(torch.unsqueeze(
+                        strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
+                    strided_cam = strided_cam / \
+                        (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
+                    cams += [strided_cam.unsqueeze(0)]
+                    cls_prob = F.softmax(cls_logit, dim=1)
+                    cls_probs += [cls_prob]
 
-            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
+            acams = torch.cat(cams, dim=0).detach()  # B * 20 * H * W
+            aprogs = torch.cat(cls_probs, dim=1).detach()
+            
             # P(z|x) - might detach
             p = F.softmax(torchutils.lse_agg(
                 acams.detach(), r=logexpsum_r), dim=1)
