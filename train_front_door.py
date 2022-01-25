@@ -138,7 +138,6 @@ def train(config, device):
                 strided_cam = strided_cam.view(B, -1)
                 strided_cam = strided_cam - strided_cam.min(dim=1, keepdim=True)[0]
                 strided_cam = strided_cam / (strided_cam.max(dim=1, keepdim=True)[0] + 1e-5)
-                print(strided_cam.shape)
                 strided_cam = strided_cam.view(B, C, H, W)
                 cams += [strided_cam]
 
