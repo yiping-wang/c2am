@@ -68,7 +68,7 @@ class CAM(nn.Module):
         x = self.stage3(x)
         x = self.stage4(x)
         x = F.conv2d(x, self.classifier.weight)
-        x = F.relu(x)
+        x = F.leaky_relu(x)
         x = x[0] + x[1].flip(-1)
         return x
 
