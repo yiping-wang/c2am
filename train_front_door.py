@@ -17,25 +17,28 @@ def validate(model, data_loader, image_size_height, image_size_width, cam_batch_
             imgs = pack['img'].cuda(device, non_blocking=True)
             label = pack['label'].cuda(device, non_blocking=True)
             # P(y|x, z)
-            strided_size = imutils.get_strided_size(
-                (image_size_height, image_size_width), 4)
+            # strided_size = imutils.get_strided_size(
+            #     (image_size_height, image_size_width), 4)
             cams = []
             for b in range(cam_batch_size):
-                outputs = model(imgs[b])
-                strided_cam = F.interpolate(torch.unsqueeze(
-                    outputs, 0), strided_size, mode='bilinear', align_corners=False)[0]
+                strided_cam = model(imgs[b])
+                # strided_cam = F.interpolate(torch.unsqueeze(
+                #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
                 strided_cam = strided_cam / \
-                    (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
+                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
                 cams += [strided_cam.unsqueeze(0)]
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
-            p = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(
+                acams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
             wcams = torch.zeros_like(acams)
             for c in range(C):
-                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
+                scam = torch.zeros_like(scams)
+                scam[c] = scams[c]
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
             loss1 = F.multilabel_soft_margin_loss(x, label)
@@ -121,25 +124,28 @@ def train(config, device):
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(y|x, z)
-            strided_size = imutils.get_strided_size(
-                (image_size_height, image_size_width), 4)
+            # strided_size = imutils.get_strided_size(
+            #     (image_size_height, image_size_width), 4)
             cams = []
             for b in range(cam_batch_size):
-                outputs = model(imgs[b])
-                strided_cam = F.interpolate(torch.unsqueeze(
-                    outputs, 0), strided_size, mode='bilinear', align_corners=False)[0]
+                strided_cam = model(imgs[b])
+                # strided_cam = F.interpolate(torch.unsqueeze(
+                #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
                 strided_cam = strided_cam / \
-                    (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
+                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
                 cams += [strided_cam.unsqueeze(0)]
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             # P(z|x) - might detach
-            p = F.softmax(torchutils.lse_agg(acams, r=logexpsum_r), dim=1)
+            p = F.softmax(torchutils.lse_agg(
+                acams.detach(), r=logexpsum_r), dim=1)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
             wcams = torch.zeros_like(acams)
             for c in range(C):
-                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scams
+                scam = torch.zeros_like(scams)
+                scam[c] = scams[c]
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
             loss = F.multilabel_soft_margin_loss(x, labels)
@@ -161,8 +167,8 @@ def train(config, device):
                 vloss = validate(model, val_data_loader, image_size_height,
                                  image_size_width, cam_batch_size, logexpsum_r)
                 if vloss < min_loss:
-                    torch.save(model.state_dict(),
-                               cam_weight_path + '_fd.pth')
+                    torch.save(model.state_dict(), os.path.join(
+                        model_root, cam_weights_name + '_fd.pth'))
                     min_loss = vloss
                 timer.reset_stage()
         # empty cache
