@@ -10,7 +10,7 @@ val_list: "voc12/val.txt"
 # Class Activation Map
 image_size_height: 256
 image_size_width: 256
-logexpsum_r: 10
+logexpsum_r: 1
 cam_crop_size: 512
 cam_batch_size: 32
 cam_num_epoches: 5000
