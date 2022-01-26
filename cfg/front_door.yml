@@ -14,6 +14,6 @@ logexpsum_r: 1
 cam_crop_size: 512
 cam_batch_size: 32
 cam_num_epoches: 5000
-cam_learning_rate: 0.00001
+cam_learning_rate: 0.1
 cam_weight_decay: 0.000001
 cam_weights_name: "resnet50"
