@@ -173,10 +173,10 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss = validate(model, val_data_loader, image_size_height,
+                vloss = validate(cam_model, val_data_loader, image_size_height,
                                  image_size_width, cam_batch_size, logexpsum_r)
                 if vloss < min_loss:
-                    torch.save(model.state_dict(), os.path.join(
+                    torch.save(cam_model.state_dict(), os.path.join(
                         model_root, cam_weights_name + '_fd.pth'))
                     min_loss = vloss
                 timer.reset_stage()
