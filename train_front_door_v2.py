@@ -59,7 +59,7 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             for c in range(C):
                 scam = torch.zeros_like(scams)
                 scam[c] = scams[c]
-                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam.cuda(device, non_blocking=True)
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
             x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
