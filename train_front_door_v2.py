@@ -2,50 +2,60 @@ import torch.nn.functional as F
 import voc12.dataloader
 import argparse
 import torch
+import glob
 import os
+import numpy as np
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils, imutils
 from net.resnet50_cam import CAMDualHeads, Net, CAM
+import itertools
+import operator
+import collections
+
+
+class IterateCAM:
+    def __init__(self, cam_dir):
+        self.cam_list = glob.glob(os.path.join(cam_dir, '*.npy'))
+        self.index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index == len(self.cam_list):
+            raise StopIteration
+        c = np.load(self.cam_list[self.index], allow_pickle=True).item()
+        self.index += 1
+        return c['cam']
+
 
 def sum_cams(cam_dir):
-    pass
+    itcam = IterateCAM(cam_dir)
+    running_sum = itertools.accumulate(itcam)
+    running_mean = map(operator.truediv, running_sum, itertools.count(1))
+    return collections.deque(running_mean, maxlen=1)
 
-def validate(cam_model, cls_model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
+
+def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
-    nlll = torch.nn.BCEWithLogitsLoss()
 
-    cam_model.eval()
+    # P(y|x, z)
+
+    # P(y|x, z)
+    os.system('python3 make_cam.py')  # generate CAMs
+    scams = sum_cams(cam_out_dir)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
-            # P(y|x, z)
-            strided_size = imutils.get_strided_size(
-                (image_size_height, image_size_width), 4)
-            cams = []
-            ps = []
-            for b in range(cam_batch_size):
-                strided_cam, cls_score = cam_model(imgs[b])
-                # strided_cam = F.interpolate(torch.unsqueeze(
-                #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-                strided_cam = strided_cam / \
-                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
-                cams += [strided_cam.unsqueeze(0)]
-                #with torch.no_grad():
-                    #p = cls_model(imgs[b][0].unsqueeze(0))
-                ps += [F.softmax(cls_score, dim=1)]
-
-            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
-            p = torch.cat(ps, dim=0)
-            # P(z|x) - might detach
-            # p = torchutils.lse_agg(acams.detach(), r=logexpsum_r)
-            # p = p / (torch.sum(p, dim=1).unsqueeze(1) + 1e-5)
+            # P(z|x)
+            p = cls_model(imgs[:, 0])
+            p = F.softmax(p, dim=1)
             # P(y|do(x))
-            scams = torch.mean(acams, dim=0)
-            C = acams.shape[1]
-            wcams = torch.zeros_like(acams)
+            C, H, W = scams.shape
+            wcams = torch.zeros((cam_batch_size, C, H, W))
             for c in range(C):
                 scam = torch.zeros_like(scams)
                 scam[c] = scams[c]
@@ -56,11 +66,11 @@ def validate(cam_model, cls_model, data_loader, image_size_height, image_size_wi
             loss1 = F.multilabel_soft_margin_loss(x, labels)
             # loss1 = nlll(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
-    cam_model.train()
+
     cls_model.train()
     vloss = val_loss_meter.pop('loss1')
     print('loss: %.4f' % vloss)
-    return vloss
+    return vloss, scams
 
 
 def train(config, device):
@@ -74,7 +84,7 @@ def train(config, device):
     cam_weight_decay = config['cam_weight_decay']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
-
+    cam_out_dir = config['cam_out_dir']
     image_size_height = config['image_size_height']
     image_size_width = config['image_size_width']
     logexpsum_r = config['logexpsum_r']
@@ -83,10 +93,8 @@ def train(config, device):
     cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
-    cam_model = CAMDualHeads().cuda(device)
     cls_model = Net().cuda(device)
     # load pre-trained classification network
-    cam_model.load_state_dict(torch.load(cam_weight_path))
     cls_model.load_state_dict(torch.load(cam_weight_path))
 
     # CAM generation dataset
@@ -118,7 +126,7 @@ def train(config, device):
                                  pin_memory=True,
                                  drop_last=True)
 
-    param_groups = cam_model.trainable_parameters()
+    param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
@@ -127,44 +135,27 @@ def train(config, device):
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     # model = torch.nn.DataParallel(model).cuda(device)
-    cam_model = cam_model.cuda(device)
-    cam_model.train()
+    cls_model = cls_model.cuda(device)
+    cls_model.train()
 
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
-    nlll = torch.nn.BCEWithLogitsLoss()
-
     min_loss = float('inf')
+    # P(y|x, z)
+    os.system('python3 make_cam.py')  # generate CAMs
+    scams = sum_cams(cam_out_dir)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
-            # P(y|x, z)
-            strided_size = imutils.get_strided_size(
-                (image_size_height, image_size_width), 4)
-            cams = []
-            ps = []
-            for b in range(cam_batch_size):
-                strided_cam, cls_score = cam_model(imgs[b])
-                # strided_cam = F.interpolate(torch.unsqueeze(
-                #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
-                strided_cam = strided_cam / \
-                    (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
-                cams += [strided_cam.unsqueeze(0)]
-                #p = cls_model(imgs[b][0].unsqueeze(0))
-                ps += [F.softmax(cls_score, dim=1)]
-
-            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
-            p = torch.cat(ps, dim=0)
-            # P(z|x) - might detach
-            # p = torchutils.lse_agg(acams.detach(), r=logexpsum_r)
-            # p = p / (torch.sum(p, dim=1).unsqueeze(1) + 1e-5)
+            # P(z|x)
+            p = cls_model(imgs[:, 0])
+            p = F.softmax(p, dim=1)
             # P(y|do(x))
-            scams = torch.mean(acams, dim=0)
-            C = acams.shape[1]
-            wcams = torch.zeros_like(acams)
+            C, H, W = scams.shape
+            wcams = torch.zeros((cam_batch_size, C, H, W))
             for c in range(C):
                 scam = torch.zeros_like(scams)
                 scam[c] = scams[c]
@@ -189,12 +180,13 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss = validate(cam_model, cls_model, val_data_loader, image_size_height,
-                                 image_size_width, cam_batch_size, logexpsum_r)
+                vloss, vscams = validate(cls_model, val_data_loader,
+                                         cam_batch_size, logexpsum_r, cam_out_dir)
                 if vloss < min_loss:
-                    torch.save(cam_model.state_dict(), os.path.join(
-                        model_root, cam_weights_name + '_fd.pth'))
+                    torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
+                    scams = vscams
+
                 timer.reset_stage()
         # empty cache
         torch.cuda.empty_cache()
