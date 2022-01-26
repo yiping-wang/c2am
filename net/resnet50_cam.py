@@ -58,7 +58,7 @@ class CAM(nn.Module):
 
         self.classifier = nn.Conv2d(2048, 20, 1, bias=False)
 
-        for p in self.classifier1.parameters():
+        for p in self.classifier.parameters():
             p.requires_grad = False
 
         self.backbone = nn.ModuleList(
