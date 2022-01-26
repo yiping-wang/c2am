@@ -55,7 +55,7 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             p = F.softmax(p, dim=1)
             # P(y|do(x))
             C, H, W = scams.shape
-            wcams = torch.zeros((cam_batch_size, C, H, W))
+            wcams = torch.zeros((cam_batch_size, C, H, W)).cuda(device, non_blocking=True)
             for c in range(C):
                 scam = torch.zeros_like(scams)
                 scam[c] = scams[c]
@@ -155,7 +155,7 @@ def train(config, device):
             p = F.softmax(p, dim=1)
             # P(y|do(x))
             C, H, W = scams.shape
-            wcams = torch.zeros((cam_batch_size, C, H, W))
+            wcams = torch.zeros((cam_batch_size, C, H, W)).cuda(device, non_blocking=True)
             for c in range(C):
                 scam = torch.zeros_like(scams)
                 scam[c] = scams[c]
