@@ -63,7 +63,7 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
             x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
-            print(x)
+            # print(x)
             loss1 = F.multilabel_soft_margin_loss(x, labels)
             # loss1 = nlll(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
