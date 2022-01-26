@@ -36,10 +36,11 @@ def _work(process_id, model, dataset, config):
             strided_size = imutils.get_strided_size(size, 4)
             # strided_up_size = imutils.get_strided_up_size(size, 16)
 
-            outputs = model(imgs.unsqueeze(0))
+            outputs = model(imgs)
             strided_cam = F.interpolate(torch.unsqueeze(
                 outputs, 0), strided_size, mode='bilinear', align_corners=False)[0]
-            strided_cam = strided_cam / (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
+            strided_cam = strided_cam / \
+                (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
 
             # outputs = [model(img[0].cuda(non_blocking=True))
             #            for img in pack['img']]
