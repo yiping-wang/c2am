@@ -146,7 +146,7 @@ def train(config, device):
 
             # P(z|x) - might detach
             p = torchutils.lse_agg(acams.detach(), r=logexpsum_r)
-            p = p / torch.sum(p, dim=1).unsqueeze(1)
+            p = p / (torch.sum(p, dim=1).unsqueeze(1) + 1e-5)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
@@ -157,7 +157,7 @@ def train(config, device):
                 wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
-            x = x / torch.sum(x, dim=1).unsqueeze(1)
+            x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             loss = F.multilabel_soft_margin_loss(x, labels)
             # loss = nlll(x, labels)
             avg_meter.add({'loss1': loss.item()})
