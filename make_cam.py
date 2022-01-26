@@ -81,7 +81,8 @@ def run(config):
     cam_weights_name = config['cam_weights_name']
     model = CAM()
     model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name) + '.pth'), strict=True)
+        model_root, cam_weights_name) + '.pth'), strict=True, map_location='cpu')
+    model.cuda()
     model.eval()
 
     n_gpus = torch.cuda.device_count()

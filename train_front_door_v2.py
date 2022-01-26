@@ -96,7 +96,7 @@ def train(config, device):
 
     cls_model = Net().cuda(device)
     # load pre-trained classification network
-    cls_model.load_state_dict(torch.load(cam_weight_path))
+    cls_model.load_state_dict(torch.load(cam_weight_path, map_location=device))
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(train_list,
