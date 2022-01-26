@@ -132,21 +132,17 @@ def train(config, device):
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
             cams = []
-            cls_probs = []
             with torch.no_grad():
                 for b in range(cam_batch_size):
-                    strided_cam, cls_logit = cam_model(imgs[b])
-                    strided_cam = F.interpolate(torch.unsqueeze(
-                        strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
+                    strided_cam = cam_model(imgs[b])
+                    # strided_cam = F.interpolate(torch.unsqueeze(
+                    #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
                     strided_cam = strided_cam / \
                         (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
                     cams += [strided_cam.unsqueeze(0)]
-                    cls_prob = F.softmax(cls_logit, dim=1)
-                    cls_probs += [cls_prob]
 
-            acams = torch.cat(cams, dim=0).detach()  # B * 20 * H * W
-            aprogs = torch.cat(cls_probs, dim=1).detach()
-            
+            acams = torch.cat(cams, dim=0)  # B * 20 * H * W
+
             # P(z|x) - might detach
             p = F.softmax(torchutils.lse_agg(
                 acams.detach(), r=logexpsum_r), dim=1)
