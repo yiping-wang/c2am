@@ -155,7 +155,7 @@ def train(config, device):
                 scam[c] = scams[c]
                 wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam
             # loss
-            x = torchutils.lse_agg(acams, r=logexpsum_r)
+            x = torchutils.lse_agg(wcams, r=logexpsum_r)
             # loss = F.multilabel_soft_margin_loss(x, labels)
             loss = nlll(x, labels)
             avg_meter.add({'loss1': loss.item()})
