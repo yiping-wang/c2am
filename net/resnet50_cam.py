@@ -71,7 +71,7 @@ class CAM(nn.Module):
         x = self.stage3(x)
         x = self.stage4(x)
 
-        cls_score = torchutils.gap2d(x, keepdims=True)
+        cls_score = torchutils.gap2d(x[0].unsqueeze(0), keepdims=True)
         cls_score = self.classifier(cls_score)
         cls_score = cls_score.view(-1, 20)
 
