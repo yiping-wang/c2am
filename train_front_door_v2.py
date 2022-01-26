@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader
 from misc import pyutils, torchutils, imutils
 from net.resnet50_cam import CAMDualHeads, Net, CAM
 
+def sum_cams(cam_dir):
+    pass
 
 def validate(cam_model, cls_model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
     print('validating ... ', flush=True, end='')
