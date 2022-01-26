@@ -36,7 +36,7 @@ def _work(process_id, model, dataset, config):
             strided_size = imutils.get_strided_size(size, 4)
             # strided_up_size = imutils.get_strided_up_size(size, 16)
 
-            outputs = model(imgs)
+            outputs = model(imgs.cuda(non_blocking=True))
             strided_cam = F.interpolate(torch.unsqueeze(
                 outputs, 0), strided_size, mode='bilinear', align_corners=False)[0]
             strided_cam = strided_cam / \
