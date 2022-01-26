@@ -70,10 +70,17 @@ class CAM(nn.Module):
         x = self.stage2(x)
         x = self.stage3(x)
         x = self.stage4(x)
+
+        cls_score = torchutils.gap2d(x, keepdims=True)
+        cls_score = self.classifier(cls_score)
+        cls_score = cls_score.view(-1, 20)
+
         x = F.conv2d(x, self.classifier.weight)
         x = F.relu(x)
         x = x[0] + x[1].flip(-1)
-        return x
+        return x, cls_score
+
+    
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():

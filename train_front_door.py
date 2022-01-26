@@ -25,15 +25,15 @@ def validate(cam_model, cls_model, data_loader, image_size_height, image_size_wi
             cams = []
             ps = []
             for b in range(cam_batch_size):
-                strided_cam = cam_model(imgs[b])
+                strided_cam, cls_score = cam_model(imgs[b])
                 # strided_cam = F.interpolate(torch.unsqueeze(
                 #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
                 strided_cam = strided_cam / \
                     (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
                 cams += [strided_cam.unsqueeze(0)]
-                with torch.no_grad():
-                    p = cls_model(imgs[b][0].unsqueeze(0))
-                    ps += [F.softmax(p, dim=1)]
+                #with torch.no_grad():
+                    #p = cls_model(imgs[b][0].unsqueeze(0))
+                ps += [F.softmax(cls_score, dim=1)]
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             p = torch.cat(ps, dim=0)
@@ -145,15 +145,14 @@ def train(config, device):
             cams = []
             ps = []
             for b in range(cam_batch_size):
-                strided_cam = cam_model(imgs[b])
+                strided_cam, cls_score = cam_model(imgs[b])
                 # strided_cam = F.interpolate(torch.unsqueeze(
                 #     strided_cam, 0), strided_size, mode='bilinear', align_corners=False)[0]
                 strided_cam = strided_cam / \
                     (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
                 cams += [strided_cam.unsqueeze(0)]
-                with torch.no_grad():
-                    p = cls_model(imgs[b][0].unsqueeze(0))
-                    ps += [F.softmax(p, dim=1)]
+                #p = cls_model(imgs[b][0].unsqueeze(0))
+                ps += [F.softmax(cls_score, dim=1)]
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
             p = torch.cat(ps, dim=0)
