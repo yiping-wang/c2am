@@ -5,7 +5,7 @@ import torch
 import os
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils, imutils
-from net.resnet50_cam import CAM
+from net.resnet50_cam import CAM, Net
 
 
 def validate(model, data_loader, image_size_height, image_size_width, cam_batch_size, logexpsum_r):
@@ -74,8 +74,10 @@ def train(config, device):
     pyutils.seed_all(seed)
 
     cam_model = CAM().cuda(device)
+    cls_model = Net().cuda(device)
     # load pre-trained classification network
     cam_model.load_state_dict(torch.load(cam_weight_path))
+    cls_model.load_state_dict(torch.load(cam_weight_path))
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(train_list,
@@ -133,7 +135,7 @@ def train(config, device):
             strided_size = imutils.get_strided_size(
                 (image_size_height, image_size_width), 4)
             cams = []
-
+            ps = []
             for b in range(cam_batch_size):
                 strided_cam = cam_model(imgs[b])
                 # strided_cam = F.interpolate(torch.unsqueeze(
@@ -141,12 +143,15 @@ def train(config, device):
                 strided_cam = strided_cam / \
                     (F.adaptive_max_pool2d(strided_cam.detach(), (1, 1)) + 1e-5)
                 cams += [strided_cam.unsqueeze(0)]
+                with torch.no_grad():
+                    p = cls_model(imgs[b][0].unsqueeze(0))
+                    ps += [F.softmax(p, dim=1)]
 
             acams = torch.cat(cams, dim=0)  # B * 20 * H * W
-
+            p = torch.cat(ps, dim=0)
             # P(z|x) - might detach
-            p = torchutils.lse_agg(acams.detach(), r=logexpsum_r)
-            p = p / (torch.sum(p, dim=1).unsqueeze(1) + 1e-5)
+            # p = torchutils.lse_agg(acams.detach(), r=logexpsum_r)
+            # p = p / (torch.sum(p, dim=1).unsqueeze(1) + 1e-5)
             # P(y|do(x))
             scams = torch.mean(acams, dim=0)
             C = acams.shape[1]
