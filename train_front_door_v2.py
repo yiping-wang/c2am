@@ -159,7 +159,7 @@ def train(config, device):
                 2) * scams.cuda(device, non_blocking=True)
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
-            x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
+            # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             # x = x + p
             loss = F.multilabel_soft_margin_loss(x, labels)
             # loss = nlll(x, labels)
