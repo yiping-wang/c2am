@@ -41,7 +41,7 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
 
     # P(y|x, z)
-    # os.system('python3 make_cam.py')  # generate CAMs
+    os.system('python3 make_cam.py')  # generate CAMs
     scams = sum_cams(cam_out_dir)
     cls_model.eval()
     with torch.no_grad():
