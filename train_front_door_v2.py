@@ -42,7 +42,7 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
 
     # P(y|x, z)
     os.system('python3 make_cam.py')  # generate CAMs
-    scams = sum_cams(cam_out_dir)
+    scams = None#  sum_cams(cam_out_dir)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
@@ -58,7 +58,6 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             # x = x + p
             loss1 = F.multilabel_soft_margin_loss(x, labels)
-            # loss1 = nlll(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
 
     cls_model.train()
@@ -138,7 +137,7 @@ def train(config, device):
     min_loss = float('inf')
     # P(y|x, z)
     os.system('python3 make_cam.py')  # generate CAMs
-    scams = sum_cams(cam_out_dir)
+    # scams = sum_cams(cam_out_dir)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
