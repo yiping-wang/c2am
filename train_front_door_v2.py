@@ -52,11 +52,11 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             p = cls_model(imgs[:, 0])
             p = F.softmax(p, dim=1)
             # P(y|do(x))
-            wcams = p.unsqueeze(2).unsqueeze(
-                2) * scams.cuda(device, non_blocking=True)
+            # x = p.unsqueeze(2).unsqueeze(2) * scams.cuda(device, non_blocking=True)
             # loss
-            x = torchutils.lse_agg(wcams, r=logexpsum_r)
+            # x = torchutils.lse_agg(x, r=logexpsum_r)
             # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
+            # x = x + p
             loss1 = F.multilabel_soft_margin_loss(x, labels)
             # loss1 = nlll(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
@@ -148,10 +148,9 @@ def train(config, device):
             p = cls_model(imgs[:, 0])
             p = F.softmax(p, dim=1)
             # P(y|do(x))
-            wcams = p.unsqueeze(2).unsqueeze(
-                2) * scams.cuda(device, non_blocking=True)
+            # x = p.unsqueeze(2).unsqueeze(2) * scams.cuda(device, non_blocking=True)
             # loss
-            x = torchutils.lse_agg(wcams, r=logexpsum_r)
+            # x = torchutils.lse_agg(x, r=logexpsum_r)
             # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             # x = x + p
             loss = F.multilabel_soft_margin_loss(x, labels)
