@@ -41,8 +41,6 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
 
     # P(y|x, z)
-
-    # P(y|x, z)
     os.system('python3 make_cam.py')  # generate CAMs
     scams = sum_cams(cam_out_dir)
     cls_model.eval()
@@ -55,11 +53,13 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             p = F.softmax(p, dim=1)
             # P(y|do(x))
             C, H, W = scams.shape
-            wcams = torch.zeros((cam_batch_size, C, H, W)).cuda(device, non_blocking=True)
+            wcams = torch.zeros((cam_batch_size, C, H, W)).cuda(
+                device, non_blocking=True)
             for c in range(C):
                 scam = torch.zeros_like(scams)
                 scam[c] = scams[c]
-                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam.cuda(device, non_blocking=True)
+                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * \
+                    scam.cuda(device, non_blocking=True)
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
             x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
@@ -155,13 +155,8 @@ def train(config, device):
             p = cls_model(imgs[:, 0])
             p = F.softmax(p, dim=1)
             # P(y|do(x))
-            C, H, W = scams.shape
-            # wcams = torch.zeros((cam_batch_size, C, H, W)).cuda(device, non_blocking=True)
-            # for c in range(C):
-            #     scam = torch.zeros_like(scams)
-            #     scam[c] = scams[c]
-            #     wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * scam.cuda(device, non_blocking=True)
-            wcams = p.unsqueeze(2).unsqueeze(2) * scams.cuda(device, non_blocking=True)
+            wcams = p.unsqueeze(2).unsqueeze(
+                2) * scams.cuda(device, non_blocking=True)
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
             x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
