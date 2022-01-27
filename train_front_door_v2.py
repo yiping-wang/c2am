@@ -42,7 +42,7 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
 
     # P(y|x, z)
     # os.system('python3 make_cam.py')  # generate CAMs
-    scams = None  # sum_cams(cam_out_dir)
+    scams = sum_cams(cam_out_dir)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
