@@ -120,7 +120,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/base.yml')
+                        help='YAML config file path', default='./cfg/cam.yml')
     args = parser.parse_args()
     if torch.cuda.is_available():
         device = pyutils.set_gpus(n_gpus=1)
