@@ -50,7 +50,7 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             p = cls_model(imgs[:, 0])
-            p = F.softmax(p, dim=1)
+            # p = F.softmax(p, dim=1)
             # P(y|do(x))
             wcams = p.unsqueeze(2).unsqueeze(
                 2) * scams.cuda(device, non_blocking=True)
@@ -146,7 +146,7 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             p = cls_model(imgs[:, 0])
-            p = F.softmax(p, dim=1)
+            # p = F.softmax(p, dim=1)
             # P(y|do(x))
             wcams = p.unsqueeze(2).unsqueeze(
                 2) * scams.cuda(device, non_blocking=True)
