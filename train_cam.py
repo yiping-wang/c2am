@@ -14,8 +14,8 @@ def validate(model, data_loader):
     model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            img = pack['img']
-            label = pack['label'].cuda(non_blocking=True)
+            img = pack['img'].cuda(device, non_blocking=True)
+            label = pack['label'].cuda(device, non_blocking=True)
             x = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
@@ -87,7 +87,7 @@ def train(config, device):
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
-            img = pack['img']
+            img = pack['img'].cuda(device, non_blocking=True)
             label = pack['label'].cuda(device, non_blocking=True)
             x = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
