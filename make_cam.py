@@ -31,7 +31,6 @@ def _work(process_id, model, dataset, config):
             img_name = pack['name'][0]
             label = pack['label'][0]
             imgs = pack['img'][0]
-            print(imgs.shape)
             size = pack['size']
 
             strided_size = imutils.get_strided_size(size, 4)
