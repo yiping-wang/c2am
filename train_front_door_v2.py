@@ -52,18 +52,11 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             p = cls_model(imgs[:, 0])
             p = F.softmax(p, dim=1)
             # P(y|do(x))
-            C, H, W = scams.shape
-            wcams = torch.zeros((cam_batch_size, C, H, W)).cuda(
-                device, non_blocking=True)
-            for c in range(C):
-                scam = torch.zeros_like(scams)
-                scam[c] = scams[c]
-                wcams += p[:, c].unsqueeze(1).unsqueeze(1).unsqueeze(1) * \
-                    scam.cuda(device, non_blocking=True)
+            wcams = p.unsqueeze(2).unsqueeze(
+                2) * scams.cuda(device, non_blocking=True)
             # loss
             x = torchutils.lse_agg(wcams, r=logexpsum_r)
-            x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
-            # print(x)
+            # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             loss1 = F.multilabel_soft_margin_loss(x, labels)
             # loss1 = nlll(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
