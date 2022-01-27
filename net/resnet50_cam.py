@@ -105,14 +105,14 @@ class CAMDualHeads(nn.Module):
         x = self.stage3(x)
         x = self.stage4(x)
 
-        cls_score = torchutils.gap2d(x[0].unsqueeze(0), keepdims=True)
-        cls_score = self.classifier(cls_score)
-        cls_score = cls_score.view(-1, 20)
+        logit = torchutils.gap2d(x[0].unsqueeze(0), keepdims=True)
+        logit = self.classifier(logit)
+        logit = logit.view(-1, 20)
 
         cam = F.conv2d(x, self.classifier.weight)
         cam = F.relu(cam)
         cam = cam[0] + cam[1].flip(-1)
-        return cam, cls_score
+        return cam, logit
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():

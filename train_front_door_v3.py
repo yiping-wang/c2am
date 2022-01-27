@@ -36,21 +36,21 @@ def sum_cams(cam_dir):
     return collections.deque(running_mean, maxlen=1)[0]
 
 
-def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
+def validate(dual_model, data_loader, logexpsum_r, cam_out_dir):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
 
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
+    os.system('python3 make_cam.py --config ./cfg/front_door_v3.yml')
     scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
-    cls_model.eval()
+    dual_model.eval()
     with torch.no_grad():
         for pack in data_loader:
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
-            x = cls_model(imgs[:, 0])
+            x = dual_model(imgs)
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
@@ -60,7 +60,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
             loss1 = F.multilabel_soft_margin_loss(x, labels)
             val_loss_meter.add({'loss1': loss1.item()})
 
-    cls_model.train()
+    dual_model.train()
     vloss = val_loss_meter.pop('loss1')
     print('loss: %.4f' % vloss)
     return vloss, scams
@@ -86,9 +86,10 @@ def train(config, device):
     cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
-    cls_model = Net().cuda(device)
+    dual_model = CAMDualHeads().cuda(device)
     # load pre-trained classification network
-    cls_model.load_state_dict(torch.load(cam_weight_path, map_location=device))
+    dual_model.load_state_dict(torch.load(
+        cam_weight_path, map_location=device))
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(train_list,
@@ -121,7 +122,7 @@ def train(config, device):
                                  pin_memory=True,
                                  drop_last=True)
 
-    param_groups = cls_model.trainable_parameters()
+    param_groups = dual_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
@@ -130,15 +131,16 @@ def train(config, device):
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     # model = torch.nn.DataParallel(model).cuda(device)
-    cls_model = cls_model.cuda(device)
-    cls_model.train()
+    dual_model = dual_model.cuda(device)
+    dual_model.train()
 
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
     min_loss = float('inf')
     # P(y|x, z)
-    os.system('python3 make_cam.py --config ./cfg/front_door_v3.yml')  # generate CAMs
+    # generate CAMs
+    os.system('python3 make_cam.py --config ./cfg/front_door_v3.yml')
     scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -146,7 +148,7 @@ def train(config, device):
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
-            x = cls_model(imgs[:, 0])
+            x = dual_model(imgs)
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
@@ -171,9 +173,9 @@ def train(config, device):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vscams = validate(
-                    cls_model, val_data_loader, logexpsum_r, cam_out_dir)
+                    dual_model, val_data_loader, logexpsum_r, cam_out_dir)
                 if vloss < min_loss:
-                    torch.save(cls_model.state_dict(), cam_weight_path)
+                    torch.save(dual_model.state_dict(), cam_weight_path)
                     min_loss = vloss
                     scams = vscams
 
@@ -186,7 +188,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/front_door_v2.yml')
+                        help='YAML config file path', default='./cfg/front_door_v3.yml')
     args = parser.parse_args()
     if torch.cuda.is_available():
         device = pyutils.set_gpus(n_gpus=1)
