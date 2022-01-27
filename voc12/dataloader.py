@@ -161,10 +161,14 @@ class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
                  img_normal=TorchvisionNormalize(),
                  scales=(1.0,),
                  size_h=256,
-                 size_w=256):
+                 size_w=256,
+                 hor_flip=True,
+                 crop_method="random"):
         self.scales = scales
         self.size_h = size_h
         self.size_w = size_w
+        self.hor_flip = hor_flip
+        self.crop_method = crop_method
 
         super().__init__(img_name_list_path, voc12_root, img_normal=img_normal)
 
@@ -185,6 +189,14 @@ class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
             else:
                 s_img = imutils.pil_rescale(img, s, order=3)
             s_img = self.img_normal(s_img)
+
+            if self.hor_flip:
+                s_img = imutils.random_lr_flip(s_img)
+
+            if self.crop_size:
+                if self.crop_method == "random":
+                    s_img = imutils.random_crop(s_img, self.size_h, 0)
+
             s_img = imutils.HWC_to_CHW(s_img)
             ms_img_list.append(np.stack([s_img, np.flip(s_img, -1)], axis=0))
         if len(self.scales) == 1:

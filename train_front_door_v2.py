@@ -41,8 +41,8 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
 
     # P(y|x, z)
-    #os.system('python3 make_cam.py')  # generate CAMs
-    scams = None#  sum_cams(cam_out_dir)
+    # os.system('python3 make_cam.py')  # generate CAMs
+    scams = None  # sum_cams(cam_out_dir)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
@@ -50,13 +50,13 @@ def validate(cls_model, data_loader, cam_batch_size, logexpsum_r, cam_out_dir):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs[:, 0])
-            #x = F.softmax(x, dim=1)
+            # x = F.softmax(x, dim=1)
             # P(y|do(x))
-            # x = x.unsqueeze(2).unsqueeze(2) * scams.cuda(device, non_blocking=True)
+            x = x.unsqueeze(2).unsqueeze(
+                2) * scams.cuda(device, non_blocking=True)
             # loss
-            # x = torchutils.lse_agg(x, r=logexpsum_r)
+            x = torchutils.lse_agg(x, r=logexpsum_r)
             # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
-            # x = x + p
             loss1 = F.multilabel_soft_margin_loss(x, labels)
             val_loss_meter.add({'loss1': loss1.item()})
 
@@ -111,7 +111,9 @@ def train(config, device):
                                                                 scales=(
                                                                     1.0,),
                                                                 size_h=image_size_height,
-                                                                size_w=image_size_width)
+                                                                size_w=image_size_width,
+                                                                hor_flip=False,
+                                                                crop_method="none")
     val_data_loader = DataLoader(val_dataset,
                                  batch_size=cam_batch_size,
                                  shuffle=False,
@@ -136,8 +138,8 @@ def train(config, device):
 
     min_loss = float('inf')
     # P(y|x, z)
-    # os.system('python3 make_cam.py')  # generate CAMs
-    # scams = sum_cams(cam_out_dir)
+    os.system('python3 make_cam.py')  # generate CAMs
+    scams = sum_cams(cam_out_dir)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -145,13 +147,13 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs[:, 0])
-            #x = F.softmax(x, dim=1)
+            # x = F.softmax(x, dim=1)
             # P(y|do(x))
-            # x = x.unsqueeze(2).unsqueeze(2) * scams.cuda(device, non_blocking=True)
+            x = x.unsqueeze(2).unsqueeze(
+                2) * scams.cuda(device, non_blocking=True)
             # loss
-            # x = torchutils.lse_agg(x, r=logexpsum_r)
+            x = torchutils.lse_agg(x, r=logexpsum_r)
             # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
-            # x = x + p
             loss = F.multilabel_soft_margin_loss(x, labels)
             # loss = nlll(x, labels)
             avg_meter.add({'loss1': loss.item()})
