@@ -36,27 +36,32 @@ def sum_cams(cam_dir):
     return collections.deque(running_mean, maxlen=1)[0]
 
 
-def validate(dual_model, data_loader, logexpsum_r, cam_out_dir):
+def validate(dual_model, data_loader, cam_batch_size, logexpsum_r):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
 
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_cam.py --config ./cfg/front_door_v3.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     dual_model.eval()
     with torch.no_grad():
         for pack in data_loader:
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
-            x = dual_model(imgs)
-            # x = F.softmax(x, dim=1)
+            cams, logits = [], []
+            for b in range(cam_batch_size):
+                cam, logit = dual_model(imgs[b])
+                cam = cam / \
+                    (F.adaptive_max_pool2d(cam.detach(), (1, 1)) + 1e-5)
+                cams += [cam.unsqueeze(0)]
+                logits += [logit]
+
+            cams = torch.cat(cams, dim=0)  # B * 20 * H * W
+            logits = torch.cat(logits, dim=0)
+            scams = torch.mean(cams, dim=0)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
-            # loss
+            x = logits.unsqueeze(2).unsqueeze(2) * scams
             x = torchutils.lse_agg(x, r=logexpsum_r)
-            # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             loss1 = F.multilabel_soft_margin_loss(x, labels)
             val_loss_meter.add({'loss1': loss1.item()})
 
@@ -140,23 +145,28 @@ def train(config, device):
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_cam.py --config ./cfg/front_door_v3.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
-            x = dual_model(imgs)
-            # x = F.softmax(x, dim=1)
+            cams, logits = [], []
+            for b in range(cam_batch_size):
+                cam, logit = dual_model(imgs[b])
+                cam = cam / \
+                    (F.adaptive_max_pool2d(cam.detach(), (1, 1)) + 1e-5)
+                cams += [cam.unsqueeze(0)]
+                logits += [logit]
+
+            cams = torch.cat(cams, dim=0)  # B * 20 * H * W
+            logits = torch.cat(logits, dim=0)
+            scams = torch.mean(cams, dim=0)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
+            x = logits.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.lse_agg(x, r=logexpsum_r)
-            # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             loss = F.multilabel_soft_margin_loss(x, labels)
-            # loss = nlll(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
             optimizer.zero_grad()
@@ -173,7 +183,7 @@ def train(config, device):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vscams = validate(
-                    dual_model, val_data_loader, logexpsum_r, cam_out_dir)
+                    dual_model, val_data_loader, cam_batch_size, logexpsum_r)
                 if vloss < min_loss:
                     torch.save(dual_model.state_dict(), cam_weight_path)
                     min_loss = vloss
