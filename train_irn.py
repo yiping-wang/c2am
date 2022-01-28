@@ -105,10 +105,8 @@ def train(config, device):
         else:
             timer.reset_stage()
 
-    infer_dataset = voc12.dataloader.VOC12ImageDataset(infer_list,
-                                                       voc12_root=voc12_root,
-                                                       crop_size=irn_crop_size,
-                                                       crop_method="top_left")
+    infer_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(infer_list,
+                                                       voc12_root=voc12_root)
     infer_data_loader = DataLoader(infer_dataset, batch_size=irn_batch_size,
                                    shuffle=False, num_workers=1, pin_memory=True, drop_last=True)
 
