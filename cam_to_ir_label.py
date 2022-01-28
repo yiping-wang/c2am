@@ -30,6 +30,7 @@ def _work(process_id, infer_dataset, config):
 
         # cams = cam_dict['high_res']
         cams = cam_dict['cam']
+        print(keys)
         keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
 
         # 1. find confident fg & bg
@@ -38,7 +39,6 @@ def _work(process_id, infer_dataset, config):
         fg_conf_cam = np.argmax(fg_conf_cam, axis=0)
         print(fg_conf_cam.shape)
         print(keys)
-        print(keys.shape[0])
         pred = imutils.crf_inference_label(
             img, fg_conf_cam, n_labels=keys.shape[0])
         fg_conf = keys[pred]
