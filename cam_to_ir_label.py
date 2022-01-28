@@ -34,7 +34,6 @@ def _work(process_id, infer_dataset, config):
         keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
 
         # 1. find confident fg & bg
-        print('xx', cams.shape)
         fg_conf_cam = np.pad(cams, ((1, 0), (0, 0), (0, 0)),
                              mode='constant', constant_values=conf_fg_thres)
         fg_conf_cam = np.argmax(fg_conf_cam, axis=0)
@@ -69,7 +68,7 @@ def run(config):
     num_workers = config['num_workers']
     dataset = voc12.dataloader.VOC12ClassificationDatasetFD(
         train_list, voc12_root=voc12_root, img_normal=None, hor_flip=False, crop_method="none", to_torch=False)
-    dataset = torchutils.split_dataset(dataset, 1)
+    dataset = torchutils.split_dataset(dataset, num_workers)
 
     print('[ ', end='')
     multiprocessing.spawn(_work, nprocs=num_workers,
