@@ -28,11 +28,11 @@ def _work(process_id, infer_dataset, config):
         cam_dict = np.load(os.path.join(
             cam_out_dir, img_name + '.npy'), allow_pickle=True).item()
 
-        cams = cam_dict['high_res']
-        cams = cams[cam_dict['keys']]
+        cams = cam_dict['high_res'][cam_dict['keys']]
         keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
 
         # 1. find confident fg & bg
+        print(cams.shape)
         fg_conf_cam = np.pad(cams, ((1, 0), (0, 0), (0, 0)),
                              mode='constant', constant_values=conf_fg_thres)
         fg_conf_cam = np.argmax(fg_conf_cam, axis=0)
