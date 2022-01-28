@@ -30,6 +30,7 @@ def _work(process_id, infer_dataset, config):
 
         # cams = cam_dict['high_res']
         cams = cam_dict['cam']
+        print(cams.shape)
         keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
         cams = cams[keys]
 
