@@ -34,7 +34,7 @@ def _work(process_id, model, dataset, config):
             size = pack['size']
 
             strided_size = imutils.get_strided_size(size, 4)
-            # strided_up_size = imutils.get_strided_up_size(size, 16)
+            strided_up_size = imutils.get_strided_up_size(size, 16)
 
             outputs = model(imgs.cuda(non_blocking=True))
             strided_cam = F.interpolate(torch.unsqueeze(
@@ -42,21 +42,13 @@ def _work(process_id, model, dataset, config):
             strided_cam = strided_cam / \
                 (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
 
-            # outputs = [model(img[0].cuda(non_blocking=True))
-            #            for img in pack['img']]
-
-            # strided_cam = torch.sum(torch.stack(
-            #     [F.interpolate(torch.unsqueeze(o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o
-            #      in outputs]), 0)
-
-            # highres_cam = [F.interpolate(torch.unsqueeze(o, 1), strided_up_size,
-            #                              mode='bilinear', align_corners=False) for o in outputs]
-            # highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[:, 0, :size[0], :size[1]]
+            print(outputs.shape)
+            highres_cam = [F.interpolate(torch.unsqueeze(outputs, 1), strided_up_size,
+                                         mode='bilinear', align_corners=False)]
+            highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[:, 0, :size[0], :size[1]]
 
             valid_cat = torch.nonzero(label)[:, 0]
 
-            # strided_cam = strided_cam[valid_cat]
-            # strided_cam /= F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5
 
             # highres_cam = highres_cam[valid_cat]
             # highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
@@ -85,7 +77,7 @@ def run(config):
     model.eval()
     model.cuda()
 
-    n_gpus = torch.cuda.device_count()
+    n_gpus = 1
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetFD(train_list,
                                                             voc12_root=voc12_root,
