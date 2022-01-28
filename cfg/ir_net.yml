@@ -13,7 +13,7 @@ ir_label_out_dir: "/data/home/yipingwang/data/IRLabelv2"
 infer_list: "voc12/train.txt"
 
 # Class Activation Map
-num_workers: 24
+num_workers: 1
 conf_fg_thres: 0.30
 conf_bg_thres: 0.05
 irn_crop_size: 512
