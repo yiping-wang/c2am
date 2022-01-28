@@ -24,7 +24,7 @@ def _work(process_id, infer_dataset, config):
 
     for iter, pack in enumerate(infer_data_loader):
         img_name = voc12.dataloader.decode_int_filename(pack['name'][0])
-        img = pack['img'][0].numpy()
+        img = pack['img'][0][0].numpy()
         cam_dict = np.load(os.path.join(
             cam_out_dir, img_name + '.npy'), allow_pickle=True).item()
 
