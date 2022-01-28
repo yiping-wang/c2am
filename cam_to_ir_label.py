@@ -36,6 +36,8 @@ def _work(process_id, infer_dataset, config):
         fg_conf_cam = np.pad(cams, ((1, 0), (0, 0), (0, 0)),
                              mode='constant', constant_values=conf_fg_thres)
         fg_conf_cam = np.argmax(fg_conf_cam, axis=0)
+        print(img.shape)
+        print(fg_conf_cam.shape)
         pred = imutils.crf_inference_label(
             img, fg_conf_cam, n_labels=keys.shape[0])
         fg_conf = keys[pred]
