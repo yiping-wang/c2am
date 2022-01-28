@@ -42,23 +42,18 @@ def _work(process_id, model, dataset, config):
             strided_cam = strided_cam / \
                 (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
 
-            print(outputs.shape)
             highres_cam = [F.interpolate(torch.unsqueeze(outputs, 1), strided_up_size,
                                          mode='bilinear', align_corners=False)]
-            highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[:, 0, :size[0], :size[1]]
+            highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[
+                :, 0, :size[0], :size[1]]
+            highres_cam = highres_cam / \
+                (F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5)
 
-            print(highres_cam.shape)
             valid_cat = torch.nonzero(label)[:, 0]
 
-
-            # highres_cam = highres_cam[valid_cat]
-            # highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
-
             # save cams
-            # np.save(os.path.join(cam_out_dir, img_name + '.npy'),
-            #         {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy()})
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
-                    {"keys": valid_cat, "cam": strided_cam.cpu()})
+                    {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
@@ -78,7 +73,7 @@ def run(config):
     model.eval()
     model.cuda()
 
-    n_gpus = 1
+    n_gpus = torch.cuda.device_count()
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetFD(train_list,
                                                             voc12_root=voc12_root,

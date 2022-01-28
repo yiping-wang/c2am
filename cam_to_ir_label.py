@@ -64,7 +64,7 @@ def run(config):
     train_list = config['train_list']
     voc12_root = config['voc12_root']
     num_workers = config['num_workers']
-    dataset = voc12.dataloader.VOC12ImageDataset(
+    dataset = voc12.dataloader.VOC12ClassificationDatasetFD(
         train_list, voc12_root=voc12_root, img_normal=None, to_torch=False)
     dataset = torchutils.split_dataset(dataset, 1)
 
