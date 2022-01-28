@@ -47,6 +47,7 @@ def _work(process_id, model, dataset, config):
                                          mode='bilinear', align_corners=False)]
             highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[:, 0, :size[0], :size[1]]
 
+            print(highres_cam.shape)
             valid_cat = torch.nonzero(label)[:, 0]
 
 
