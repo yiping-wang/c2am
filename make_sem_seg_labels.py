@@ -71,7 +71,7 @@ def _work(process_id, model, dataset, config):
             ks = np.unique(rw_pred)
             for k in ks:
                 if k not in keys:
-                    rw_pred = rw_pred[rw_pred == k] = 0
+                    rw_pred[rw_pred == k] = 0
             #rw_pred = keys[rw_pred]
 
             rw_pred = colorize_mask(rw_pred.astype(np.uint8))
