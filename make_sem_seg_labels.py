@@ -68,7 +68,8 @@ def _work(process_id, model, dataset, config):
             rw_pred = torch.argmax(rw_up_bg, dim=0).cpu().numpy()
 
             print(np.unique(keys, return_counts=True))
-            print(np.unique(rw_pred.numpy(), return_counts=True))
+            print(rw_pred.shape)
+            print(np.unique(rw_pred, return_counts=True))
             rw_pred = keys[rw_pred]
             
             rw_pred = colorize_mask(rw_pred.astype(np.uint8))
