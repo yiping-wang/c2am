@@ -1,3 +1,4 @@
+from statistics import mode
 import torch
 from torch.backends import cudnn
 import argparse
@@ -49,6 +50,7 @@ def train(config, device):
     ], lr=irn_learning_rate, weight_decay=irn_weight_decay, max_step=max_step)
 
     # model = torch.nn.DataParallel(model).cuda()
+    model = model.cuda()
     model.train()
 
     avg_meter = pyutils.AverageMeter()
