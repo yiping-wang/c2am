@@ -26,6 +26,7 @@ def colorize_mask(mask):
     new_mask.putpalette(palette)
     return new_mask.convert('RGB')
 
+
 def _work(process_id, model, dataset, config):
     num_workers = config['num_workers']
     cam_out_dir = config['cam_out_dir']
@@ -71,7 +72,7 @@ def _work(process_id, model, dataset, config):
             print(rw_pred.shape)
             print(np.unique(rw_pred, return_counts=True))
             rw_pred = keys[rw_pred]
-            
+
             rw_pred = colorize_mask(rw_pred.astype(np.uint8))
             imageio.imsave(os.path.join(sem_seg_out_dir,
                            img_name + '.png'), rw_pred)
@@ -92,7 +93,13 @@ def run(config):
     n_gpus = torch.cuda.device_count()
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetFD(infer_list,
-                                                             voc12_root=voc12_root)
+                                                            voc12_root=voc12_root,
+                                                            scales=(
+                                                                1.0,),
+                                                            size_h=256,
+                                                            size_w=256,
+                                                            hor_flip=False,
+                                                            crop_method="none")
     dataset = torchutils.split_dataset(dataset, n_gpus)
 
     print("[", end='')
