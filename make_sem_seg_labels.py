@@ -59,6 +59,7 @@ def _work(process_id, model, dataset, config):
 
             # rw_pred = keys[rw_pred]
 
+            print(np.unique(rw_pred, return_counts=True))
             imageio.imsave(os.path.join(sem_seg_out_dir,
                            img_name + '.png'), rw_pred.astype(np.uint8))
 
