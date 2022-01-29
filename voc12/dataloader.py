@@ -180,6 +180,8 @@ class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
 
         img = Image.open(get_img_path(
             name_str, self.voc12_root)).convert('RGB')
+        org_size = np.asarray(img).shape[:2]
+
         if self.size_h > 0:
             img = img.resize((self.size_h, self.size_w), Image.BILINEAR)
         img = np.asarray(img).copy()
@@ -211,7 +213,7 @@ class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
 
         out = {"name": name_str, "img": ms_img_list, "size": (img.shape[0], img.shape[1]),
                "label": torch.from_numpy(self.label_list[idx]),
-               "org_img": img}
+               "org_img": img, "org_size": org_size}
         return out
 
 

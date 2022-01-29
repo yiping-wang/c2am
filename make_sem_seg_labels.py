@@ -95,8 +95,8 @@ def run(config):
                                                             voc12_root=voc12_root,
                                                             scales=(
                                                                 1.0,),
-                                                            size_h=256,
-                                                            size_w=256,
+                                                            size_h=0,
+                                                            size_w=0,
                                                             hor_flip=False,
                                                             crop_method="none")
     dataset = torchutils.split_dataset(dataset, n_gpus)
