@@ -21,10 +21,12 @@ def run(config):
     preds = []
     i = 0
     for id in dataset.ids:
-        cls_labels = imageio.imread(os.path.join(
-            sem_seg_out_dir, id + '.png')).astype(np.uint8)
+        # cls_labels = imageio.imread(os.path.join(
+        #     sem_seg_out_dir, id + '.png')).astype(np.uint8)
+        # cls_labels[cls_labels == 255] = 0
+        cls_labels = np.asarray(Image.open(os.path.join(
+            sem_seg_out_dir, id + '.png')).resize(labels[i].shape, Image.NEAREST))#.transpose(1,0)
         cls_labels[cls_labels == 255] = 0
-        cls_labels = np.asarray(Image.fromarray(cls_labels).resize(labels[i].shape, Image.NEAREST)).transpose(1,0)
         # print(cls_labels.shape, labels[i].shape)
         i += 1
         preds.append(cls_labels.copy())
