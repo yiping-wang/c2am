@@ -68,10 +68,11 @@ def _work(process_id, model, dataset, config):
             rw_up_bg = F.pad(rw_up, (0, 0, 0, 0, 1, 0), value=sem_seg_bg_thres)
             rw_pred = torch.argmax(rw_up_bg, dim=0).cpu().numpy()
 
-            print(np.unique(keys, return_counts=True))
-            print(rw_pred.shape)
-            print(np.unique(rw_pred, return_counts=True))
-            rw_pred = keys[rw_pred]
+            ks = np.unique(rw_pred)
+            for k in ks:
+                if k not in keys:
+                    rw_pred = rw_pred[rw_pred == k] = 0
+            #rw_pred = keys[rw_pred]
 
             rw_pred = colorize_mask(rw_pred.astype(np.uint8))
             imageio.imsave(os.path.join(sem_seg_out_dir,
