@@ -263,6 +263,8 @@ class VOC12SegmentationDataset(Dataset):
         self.img_normal = img_normal
         self.hor_flip = hor_flip
         self.crop_method = crop_method
+        self.size_h = 256
+        self.size_w = 256
 
     def __len__(self):
         return len(self.img_name_list)
@@ -271,7 +273,11 @@ class VOC12SegmentationDataset(Dataset):
         name = self.img_name_list[idx]
         name_str = decode_int_filename(name)
 
-        img = imageio.imread(get_img_path(name_str, self.voc12_root))
+        img = Image.open(get_img_path(
+            name_str, self.voc12_root)).convert('RGB')
+        if self.size_h > 0:
+            img = img.resize((self.size_h, self.size_w), Image.BILINEAR)
+        img = np.asarray(img).copy()
         label = imageio.imread(os.path.join(self.label_dir, name_str + '.png'))
 
         img = np.asarray(img)
