@@ -106,7 +106,14 @@ def train(config, device):
             timer.reset_stage()
 
     infer_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(infer_list,
-                                                       voc12_root=voc12_root)
+                                                                voc12_root=voc12_root,
+                                                                scales=(
+                                                                    1.0,),
+                                                                size_h=256,
+                                                                size_w=256,
+                                                                hor_flip=False,
+                                                                crop_method="none")
+
     infer_data_loader = DataLoader(infer_dataset, batch_size=irn_batch_size,
                                    shuffle=False, num_workers=1, pin_memory=True, drop_last=True)
 
@@ -119,7 +126,7 @@ def train(config, device):
         for iter, pack in enumerate(infer_data_loader):
             img = pack['img'].cuda(non_blocking=True)
 
-            aff, dp = model(img, False)
+            aff, dp = model(img[:, 0], False)
 
             dp_mean_list.append(torch.mean(dp, dim=(0, 2, 3)).cpu())
 
