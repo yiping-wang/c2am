@@ -71,9 +71,9 @@ def _work(process_id, model, dataset, config):
             # for k in ks:
             #     if k not in keys:
             #         rw_pred[rw_pred == k] = 0
-            # img = pack['img'][0][0].numpy().transpose(1, 2, 0)
-            # rw_pred = imutils.crf_inference_label(
-            #     img, rw_pred, n_labels=keys.shape[0])
+            img = pack['img'][0][0].numpy().transpose(1, 2, 0)
+            rw_pred = imutils.crf_inference_label(
+                img, rw_pred, n_labels=keys.shape[0])
             rw_pred = keys[rw_pred]
 
             rw_pred = colorize_mask(rw_pred.astype(np.uint8))
