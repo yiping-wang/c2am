@@ -68,9 +68,8 @@ def _work(process_id, model, dataset, config):
             rw_up_bg = F.pad(rw_up, (0, 0, 0, 0, 1, 0), value=sem_seg_bg_thres)
             rw_pred = torch.argmax(rw_up_bg, dim=0).cpu().numpy()
 
-            print(pack['org_img'].shape)
             rw_pred = imutils.crf_inference_label(
-                pack['org_img'], rw_pred, n_labels=keys.shape[0])
+                pack['org_img'].squeeze(), rw_pred, n_labels=keys.shape[0])
             rw_pred = keys[rw_pred]
 
             rw_pred = colorize_mask(rw_pred.astype(np.uint8))
