@@ -49,8 +49,8 @@ def train(config, device):
             irn_learning_rate, 'weight_decay': irn_weight_decay}
     ], lr=irn_learning_rate, weight_decay=irn_weight_decay, max_step=max_step)
 
-    # model = torch.nn.DataParallel(model).cuda()
-    model = model.cuda()
+    model = torch.nn.DataParallel(model).cuda()
+    # model = model.cuda()
     model.train()
 
     avg_meter = pyutils.AverageMeter()
