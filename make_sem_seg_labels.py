@@ -53,7 +53,7 @@ def _work(process_id, model, dataset, config):
             cam_dict = np.load(cam_out_dir + '/' + img_name +
                                '.npy', allow_pickle=True).item()
 
-            cams = cam_dict['cam']
+            cams = cam_dict['cam'][cam_dict['keys']]
             keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
 
             cam_downsized_values = cams.cuda()
@@ -67,15 +67,14 @@ def _work(process_id, model, dataset, config):
 
             rw_up_bg = F.pad(rw_up, (0, 0, 0, 0, 1, 0), value=sem_seg_bg_thres)
             rw_pred = torch.argmax(rw_up_bg, dim=0).cpu().numpy()
-
-            ks = np.unique(rw_pred)
-            for k in ks:
-                if k not in keys:
-                    rw_pred[rw_pred == k] = 0
-            img = pack['img'][0][0].numpy().transpose(1, 2, 0)
-            rw_pred = imutils.crf_inference_label(
-                img, rw_pred, n_labels=keys.shape[0])
-            # rw_pred = keys[rw_pred]
+            # ks = np.unique(rw_pred)
+            # for k in ks:
+            #     if k not in keys:
+            #         rw_pred[rw_pred == k] = 0
+            # img = pack['img'][0][0].numpy().transpose(1, 2, 0)
+            # rw_pred = imutils.crf_inference_label(
+            #     img, rw_pred, n_labels=keys.shape[0])
+            rw_pred = keys[rw_pred]
 
             rw_pred = colorize_mask(rw_pred.astype(np.uint8))
             imageio.imsave(os.path.join(sem_seg_out_dir,
