@@ -55,55 +55,55 @@ def train(config, device):
 
     timer = pyutils.Timer()
 
-    # for ep in range(irn_num_epoches):
+    for ep in range(irn_num_epoches):
 
-    #     print('Epoch %d/%d' % (ep+1, irn_num_epoches))
+        print('Epoch %d/%d' % (ep+1, irn_num_epoches))
 
-    #     for iter, pack in enumerate(train_data_loader):
+        for iter, pack in enumerate(train_data_loader):
 
-    #         img = pack['img'].cuda(non_blocking=True)
-    #         bg_pos_label = pack['aff_bg_pos_label'].cuda(non_blocking=True)
-    #         fg_pos_label = pack['aff_fg_pos_label'].cuda(non_blocking=True)
-    #         neg_label = pack['aff_neg_label'].cuda(non_blocking=True)
+            img = pack['img'].cuda(non_blocking=True)
+            bg_pos_label = pack['aff_bg_pos_label'].cuda(non_blocking=True)
+            fg_pos_label = pack['aff_fg_pos_label'].cuda(non_blocking=True)
+            neg_label = pack['aff_neg_label'].cuda(non_blocking=True)
 
-    #         pos_aff_loss, neg_aff_loss, dp_fg_loss, dp_bg_loss = model(
-    #             img, True)
+            pos_aff_loss, neg_aff_loss, dp_fg_loss, dp_bg_loss = model(
+                img, True)
 
-    #         bg_pos_aff_loss = torch.sum(
-    #             bg_pos_label * pos_aff_loss) / (torch.sum(bg_pos_label) + 1e-5)
-    #         fg_pos_aff_loss = torch.sum(
-    #             fg_pos_label * pos_aff_loss) / (torch.sum(fg_pos_label) + 1e-5)
-    #         pos_aff_loss = bg_pos_aff_loss / 2 + fg_pos_aff_loss / 2
-    #         neg_aff_loss = torch.sum(
-    #             neg_label * neg_aff_loss) / (torch.sum(neg_label) + 1e-5)
+            bg_pos_aff_loss = torch.sum(
+                bg_pos_label * pos_aff_loss) / (torch.sum(bg_pos_label) + 1e-5)
+            fg_pos_aff_loss = torch.sum(
+                fg_pos_label * pos_aff_loss) / (torch.sum(fg_pos_label) + 1e-5)
+            pos_aff_loss = bg_pos_aff_loss / 2 + fg_pos_aff_loss / 2
+            neg_aff_loss = torch.sum(
+                neg_label * neg_aff_loss) / (torch.sum(neg_label) + 1e-5)
 
-    #         dp_fg_loss = torch.sum(
-    #             dp_fg_loss * torch.unsqueeze(fg_pos_label, 1)) / (2 * torch.sum(fg_pos_label) + 1e-5)
-    #         dp_bg_loss = torch.sum(
-    #             dp_bg_loss * torch.unsqueeze(bg_pos_label, 1)) / (2 * torch.sum(bg_pos_label) + 1e-5)
+            dp_fg_loss = torch.sum(
+                dp_fg_loss * torch.unsqueeze(fg_pos_label, 1)) / (2 * torch.sum(fg_pos_label) + 1e-5)
+            dp_bg_loss = torch.sum(
+                dp_bg_loss * torch.unsqueeze(bg_pos_label, 1)) / (2 * torch.sum(bg_pos_label) + 1e-5)
 
-    #         avg_meter.add({'loss1': pos_aff_loss.item(), 'loss2': neg_aff_loss.item(),
-    #                        'loss3': dp_fg_loss.item(), 'loss4': dp_bg_loss.item()})
+            avg_meter.add({'loss1': pos_aff_loss.item(), 'loss2': neg_aff_loss.item(),
+                           'loss3': dp_fg_loss.item(), 'loss4': dp_bg_loss.item()})
 
-    #         total_loss = (pos_aff_loss + neg_aff_loss) / \
-    #             2 + (dp_fg_loss + dp_bg_loss) / 2
+            total_loss = (pos_aff_loss + neg_aff_loss) / \
+                2 + (dp_fg_loss + dp_bg_loss) / 2
 
-    #         optimizer.zero_grad()
-    #         total_loss.backward()
-    #         optimizer.step()
+            optimizer.zero_grad()
+            total_loss.backward()
+            optimizer.step()
 
-    #         if (optimizer.global_step - 1) % 50 == 0:
-    #             timer.update_progress(optimizer.global_step / max_step)
+            if (optimizer.global_step - 1) % 50 == 0:
+                timer.update_progress(optimizer.global_step / max_step)
 
-    #             print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
-    #                   'loss:%.4f %.4f %.4f %.4f' % (
-    #                   avg_meter.pop('loss1'), avg_meter.pop('loss2'), avg_meter.pop('loss3'), avg_meter.pop('loss4')),
-    #                   'imps:%.1f' % ((iter + 1) * irn_batch_size /
-    #                                  timer.get_stage_elapsed()),
-    #                   'lr: %.4f' % (optimizer.param_groups[0]['lr']),
-    #                   'etc:%s' % (timer.str_estimated_complete()), flush=True)
-    #     else:
-    #         timer.reset_stage()
+                print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
+                      'loss:%.4f %.4f %.4f %.4f' % (
+                      avg_meter.pop('loss1'), avg_meter.pop('loss2'), avg_meter.pop('loss3'), avg_meter.pop('loss4')),
+                      'imps:%.1f' % ((iter + 1) * irn_batch_size /
+                                     timer.get_stage_elapsed()),
+                      'lr: %.4f' % (optimizer.param_groups[0]['lr']),
+                      'etc:%s' % (timer.str_estimated_complete()), flush=True)
+        else:
+            timer.reset_stage()
 
     infer_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(infer_list,
                                                                 voc12_root=voc12_root,
