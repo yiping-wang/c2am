@@ -15,6 +15,16 @@ from misc import torchutils, indexing, pyutils
 
 cudnn.enabled = True
 
+palette = [0, 0, 0, 128, 0, 0, 0, 128, 0, 128, 128, 0, 0, 0, 128, 128, 0, 128, 0, 128, 128,
+           128, 128, 128, 64, 0, 0, 192, 0, 0, 64, 128, 0, 192, 128, 0, 64, 0, 128, 192, 0, 128,
+           64, 128, 128, 192, 128, 128, 0, 64, 0, 128, 64, 0, 0, 192, 0, 128, 192, 0, 0, 64, 128,
+           255, 255, 255]
+
+
+def colorize_mask(mask):
+    new_mask = Image.fromarray(mask.astype(np.uint8)).convert('P')
+    new_mask.putpalette(palette)
+    return new_mask.convert('RGB')
 
 def _work(process_id, model, dataset, config):
     num_workers = config['num_workers']
@@ -59,9 +69,10 @@ def _work(process_id, model, dataset, config):
 
             # rw_pred = keys[rw_pred]
 
-            print(np.unique(rw_pred, return_counts=True))
+            # print(np.unique(rw_pred, return_counts=True))
+            rw_pred = colorize_mask(rw_pred.astype(np.uint8))
             imageio.imsave(os.path.join(sem_seg_out_dir,
-                           img_name + '.png'), rw_pred.astype(np.uint8))
+                           img_name + '.png'), rw_pred)
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
