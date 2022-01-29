@@ -8,7 +8,7 @@ import numpy as np
 import importlib
 import os
 import imageio
-
+from PIL import Image
 import argparse
 import voc12.dataloader
 from misc import torchutils, indexing, pyutils
