@@ -210,7 +210,8 @@ class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
             ms_img_list = ms_img_list[0]
 
         out = {"name": name_str, "img": ms_img_list, "size": (img.shape[0], img.shape[1]),
-               "label": torch.from_numpy(self.label_list[idx])}
+               "label": torch.from_numpy(self.label_list[idx]),
+               "org_img": img}
         return out
 
 
