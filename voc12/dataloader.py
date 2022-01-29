@@ -349,7 +349,7 @@ class VOC12AffinityDataset(VOC12SegmentationDataset):
 
     def __getitem__(self, idx):
         out = super().__getitem__(idx)
-
+        print(out.keys())
         reduced_label = imutils.pil_rescale(out['label'], 0.25, 0)
 
         out['aff_bg_pos_label'], out['aff_fg_pos_label'], out['aff_neg_label'] = self.extract_aff_lab_func(
