@@ -57,7 +57,7 @@ def _work(process_id, model, dataset, config):
             rw_up_bg = F.pad(rw_up, (0, 0, 0, 0, 1, 0), value=sem_seg_bg_thres)
             rw_pred = torch.argmax(rw_up_bg, dim=0).cpu().numpy()
 
-            print(rw_pred)
+            print(rw_pred.shape)
             print(keys)
             rw_pred = keys[rw_pred]
 
