@@ -77,9 +77,8 @@ def run(config):
 
     n_gpus = torch.cuda.device_count()
 
-    dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(infer_list,
-                                                             voc12_root=voc12_root,
-                                                             scales=(1.0,))
+    dataset = voc12.dataloader.VOC12ClassificationDatasetFD(infer_list,
+                                                             voc12_root=voc12_root)
     dataset = torchutils.split_dataset(dataset, n_gpus)
 
     print("[", end='')
