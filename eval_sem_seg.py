@@ -21,10 +21,10 @@ def run(config):
     for id in dataset.ids:
         cls_labels = imageio.imread(os.path.join(
             sem_seg_out_dir, id + '.png')).astype(np.uint8)
+        print(cls_labels.shape)
         cls_labels[cls_labels == 255] = 0
         preds.append(cls_labels.copy())
 
-    print(labels)
     confusion = calc_semantic_segmentation_confusion(preds, labels)[:21, :21]
 
     gtj = confusion.sum(axis=1)
