@@ -5,6 +5,7 @@ from chainercv.evaluations import calc_semantic_segmentation_confusion
 import imageio
 from misc import pyutils
 import argparse
+from PIL import Image
 
 
 def run(config):
@@ -22,6 +23,10 @@ def run(config):
         cls_labels = imageio.imread(os.path.join(
             sem_seg_out_dir, id + '.png')).astype(np.uint8)
         cls_labels[cls_labels == 255] = 0
+        org_im = imageio.imread(os.path.join(
+            voc12_root, 'JPEGImages', id + '.png')).astype(np.uint8)
+        cls_labels = np.asarray(Image.fromarray(cls_labels).resize(org_im.shape[:2], Image.BICUBIC))
+
         preds.append(cls_labels.copy())
 
     confusion = calc_semantic_segmentation_confusion(preds, labels)[:21, :21]
