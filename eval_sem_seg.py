@@ -19,14 +19,16 @@ def run(config):
         i, (1,))[0] for i in range(len(dataset))]
 
     preds = []
+    i = 0
     for id in dataset.ids:
         cls_labels = imageio.imread(os.path.join(
             sem_seg_out_dir, id + '.png')).astype(np.uint8)
         cls_labels[cls_labels == 255] = 0
         org_im = imageio.imread(os.path.join(
             voc12_root, 'JPEGImages', id + '.jpg')).astype(np.uint8)
-        cls_labels = np.asarray(Image.fromarray(cls_labels).resize(org_im.shape[:2], Image.BICUBIC))
-
+        cls_labels = np.asarray(Image.fromarray(cls_labels).resize(org_im.shape[:2], Image.NEAREST))
+        print(cls_labels.shape, labels[i].shape)
+        i += 1
         preds.append(cls_labels.copy())
 
     confusion = calc_semantic_segmentation_confusion(preds, labels)[:21, :21]

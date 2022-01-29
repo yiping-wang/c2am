@@ -70,7 +70,7 @@ def _work(process_id, model, dataset, config):
 
             rw_pred = imutils.crf_inference_label(
                 pack['org_img'].squeeze(), rw_pred, n_labels=keys.shape[0])
-            rw_pred = keys[rw_pred]
+            rw_pred = keys[rw_pred].astype(np.uint8)
 
             # rw_pred = colorize_mask(rw_pred.astype(np.uint8))
             imageio.imsave(os.path.join(sem_seg_out_dir,
