@@ -17,7 +17,7 @@ cudnn.enabled = True
 
 
 def _work(process_id, model, dataset, config):
-    num_workers = config['config']
+    num_workers = config['num_workers']
     cam_out_dir = config['cam_out_dir']
     beta = config['beta']
     exp_times = config['exp_times']
