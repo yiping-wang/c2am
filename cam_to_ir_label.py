@@ -24,6 +24,7 @@ def _work(process_id, infer_dataset, config):
 
     for iter, pack in enumerate(infer_data_loader):
         img_name = voc12.dataloader.decode_int_filename(pack['name'][0])
+        # CHW to HWC
         img = pack['img'][0][0].numpy().transpose(1, 2, 0)
         cam_dict = np.load(os.path.join(
             cam_out_dir, img_name + '.npy'), allow_pickle=True).item()

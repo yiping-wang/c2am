@@ -278,6 +278,7 @@ class VOC12SegmentationDataset(Dataset):
         if self.size_h > 0:
             img = img.resize((self.size_h, self.size_w), Image.BILINEAR)
         img = np.asarray(img).copy()
+        # IR Net label
         label = imageio.imread(os.path.join(self.label_dir, name_str + '.png'))
 
         img = np.asarray(img)
