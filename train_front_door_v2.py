@@ -124,18 +124,19 @@ def train(config):
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
-    scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
+    # os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
+    # scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(non_blocking=True)
+            print(imgs.shape)
             labels = pack['label'].cuda(non_blocking=True)
             # P(z|x)
             x = cls_model(imgs[:, 0])
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
+            #x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.lse_agg(x, r=logexpsum_r)
             # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
