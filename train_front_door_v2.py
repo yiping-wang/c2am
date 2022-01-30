@@ -84,10 +84,6 @@ def train(config):
     cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
-    cls_model = Net().cuda()
-    # load pre-trained classification network
-    # cls_model.load_state_dict(torch.load(cam_weight_path, map_location='cpu))
-
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDSFD(train_list, voc12_root=voc12_root,
                                                              resize_long=(320, 640), hor_flip=True,
@@ -110,6 +106,7 @@ def train(config):
                                  pin_memory=True,
                                  drop_last=True)
 
+    cls_model = Net().cuda()
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
@@ -119,7 +116,6 @@ def train(config):
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model = torch.nn.DataParallel(cls_model).cuda()
-    # cls_model = cls_model.cuda()
     cls_model.train()
 
     avg_meter = pyutils.AverageMeter()
