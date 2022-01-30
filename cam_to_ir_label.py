@@ -26,7 +26,7 @@ def _work(process_id, infer_dataset, config):
         img_name = voc12.dataloader.decode_int_filename(pack['name'][0])
         img = pack['img'][0].numpy()
         cam_dict = np.load(os.path.join(
-            args.cam_out_dir, img_name + '.npy'), allow_pickle=True).item()
+            cam_out_dir, img_name + '.npy'), allow_pickle=True).item()
 
         cams = cam_dict['high_res']
         keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
