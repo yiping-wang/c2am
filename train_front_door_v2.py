@@ -118,8 +118,8 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    # model = torch.nn.DataParallel(model).cuda(device)
-    cls_model = cls_model.cuda(device)
+    cls_model = torch.nn.DataParallel(cls_model).cuda(device)
+    # cls_model = cls_model.cuda(device)
     cls_model.train()
 
     avg_meter = pyutils.AverageMeter()
