@@ -50,7 +50,6 @@ def train(config, device):
     ], lr=irn_learning_rate, weight_decay=irn_weight_decay, max_step=max_step)
 
     model = torch.nn.DataParallel(model).cuda()
-    # model = model.cuda()
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -107,9 +106,9 @@ def train(config, device):
         else:
             timer.reset_stage()
 
-    infer_dataset = voc12.dataloader.VOC12ImageDataset(args.infer_list,
-                                                       voc12_root=args.voc12_root,
-                                                       crop_size=args.irn_crop_size,
+    infer_dataset = voc12.dataloader.VOC12ImageDataset(infer_list,
+                                                       voc12_root=voc12_root,
+                                                       crop_size=irn_crop_size,
                                                        crop_method="top_left")
 
     infer_data_loader = DataLoader(infer_dataset, batch_size=irn_batch_size,
