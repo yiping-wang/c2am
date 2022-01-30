@@ -17,7 +17,7 @@ infer_list: "voc12/train.txt"
 num_workers: 24
 conf_fg_thres: 0.30
 conf_bg_thres: 0.05
-irn_crop_size: 512
+irn_crop_size: 256
 irn_batch_size: 32
 irn_num_epoches: 50
 irn_learning_rate: 0.1
