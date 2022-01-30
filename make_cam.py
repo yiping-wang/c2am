@@ -17,6 +17,7 @@ cudnn.enabled = True
 
 def _work(process_id, model, dataset, config):
     cam_out_dir = config['cam_out_dir']
+    cam_square_shape = config['cam_square_shape']
     databin = dataset[process_id]
     n_gpus = torch.cuda.device_count()
     data_loader = DataLoader(databin, shuffle=False,
@@ -30,29 +31,34 @@ def _work(process_id, model, dataset, config):
 
             img_name = pack['name'][0]
             label = pack['label'][0]
-            imgs = pack['img'][0]
-            imgs_size = imgs.shape[-2:]
             size = pack['size']
 
-            strided_img_size = imutils.get_strided_size(imgs_size, 4)
+            strided_img_size = imutils.get_strided_size(
+                (cam_square_shape, cam_square_shape), 4)
             strided_size = imutils.get_strided_size(size, 4)
             strided_up_size = imutils.get_strided_up_size(size, 16)
 
-            outputs = model(imgs.cuda(non_blocking=True))
-            strided_cam = F.interpolate(torch.unsqueeze(
-                outputs, 0), strided_size, mode='bilinear', align_corners=False)[0]
+            outputs = [model(img[0].cuda(non_blocking=True))
+                       for img in pack['img']]
+
+            strided_cam = torch.sum(torch.stack(
+                [F.interpolate(torch.unsqueeze(o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o
+                 in outputs]), 0)
             strided_cam = strided_cam / \
                 (F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5)
 
-            highres_cam = F.interpolate(torch.unsqueeze(outputs, 0), strided_up_size,
-                                        mode='bilinear', align_corners=False)[0]
+            highres_cam = [F.interpolate(torch.unsqueeze(o, 1), strided_up_size,
+                                         mode='bilinear', align_corners=False) for o in outputs]
+            highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[
+                :, 0, :size[0], :size[1]]
             highres_cam = highres_cam / \
                 (F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5)
 
-            batchsize_cam = F.interpolate(torch.unsqueeze(outputs, 0), strided_img_size,
-                                          mode='bilinear', align_corners=False)[0]
-            batchsize_cam = batchsize_cam / \
-                (F.adaptive_max_pool2d(batchsize_cam, (1, 1)) + 1e-5)
+            sqauresize_cam = torch.sum(torch.stack(
+                [F.interpolate(torch.unsqueeze(o, 0), strided_img_size, mode='bilinear', align_corners=False)[0] for o
+                 in outputs]), 0)
+            sqauresize_cam = sqauresize_cam / \
+                (F.adaptive_max_pool2d(sqauresize_cam, (1, 1)) + 1e-5)
 
             valid_cat = torch.nonzero(label)[:, 0]
 
