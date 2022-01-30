@@ -20,12 +20,10 @@ def _work(process_id, model, dataset, config):
     databin = dataset[process_id]
     n_gpus = torch.cuda.device_count()
     data_loader = DataLoader(databin, shuffle=False,
-                             num_workers=1, pin_memory=False)
+                             num_workers=3, pin_memory=False)
 
     with torch.no_grad(), cuda.device(process_id):
-
         model.cuda()
-
         for iter, pack in enumerate(data_loader):
             img_name = pack['name'][0]
             label = pack['label'][0]
@@ -74,7 +72,7 @@ def run(config):
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(train_list,
                                                              voc12_root=voc12_root,
-                                                             scales=cam_scales)
+                                                             scales=(1.0, 0.5, 1.5, 2.0))
     dataset = torchutils.split_dataset(dataset, n_gpus)
 
     print('[ ', end='')
