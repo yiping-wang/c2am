@@ -27,7 +27,8 @@ def _work(process_id, model, dataset, config):
         for iter, pack in enumerate(data_loader):
             img_name = pack['name'][0]
             label = pack['label'][0]
-
+            print(len(pack['img']))
+            print(pack['img'][0].shape)
             outputs = model(pack['img'][0][0].cuda(non_blocking=True))
 
             outputs = F.interpolate(outputs.unsqueeze(
