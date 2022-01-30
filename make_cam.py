@@ -65,7 +65,7 @@ def _work(process_id, model, dataset, config):
             # save cams
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy(),
-                    "batchsize_cam": batchsize_cam.cpu().numpy()})
+                    "sqauresize_cam": sqauresize_cam.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
