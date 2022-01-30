@@ -44,7 +44,7 @@ def _work(process_id, model, dataset, config):
             # TODO: might improve "raw_outputs" to higher res
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat,
-                    "raw_outputs": outputs.cpu().numpy()})
+                    "raw_outputs": raw_outputs.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
