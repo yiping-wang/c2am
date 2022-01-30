@@ -29,6 +29,8 @@ def _work(process_id, infer_dataset, config):
             cam_out_dir, img_name + '.npy'), allow_pickle=True).item()
 
         cams = cam_dict['high_res'][cam_dict['keys']]
+        if len(cams.shape) == 2:
+            cams = np.expand_dims(cams, axis=0)
         keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
 
         # 1. find confident fg & bg
