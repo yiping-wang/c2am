@@ -58,9 +58,6 @@ def run(config):
     train_list = config['train_list']
     voc12_root = config['voc12_root']
     model_root = config['model_root']
-    cam_scales = config['cam_scales']
-    image_size_height = config['image_size_height']
-    image_size_width = config['image_size_width']
     cam_weights_name = config['cam_weights_name']
     model = CAM()
     model.load_state_dict(torch.load(os.path.join(
@@ -89,9 +86,5 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/front_door_v2.yml')
     args = parser.parse_args()
-    # if torch.cuda.is_available():
-    #     device = pyutils.set_gpus(n_gpus=1)
-    # else:
-    #     device = 'cpu'
     config = pyutils.parse_config(args.config)
     run(config)
