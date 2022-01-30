@@ -42,8 +42,8 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
 
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
+    # scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
@@ -63,7 +63,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     cls_model.train()
     vloss = val_loss_meter.pop('loss1')
     print('loss: %.4f' % vloss)
-    return vloss, scams
+    return vloss, None
 
 
 def train(config, device):
@@ -78,8 +78,6 @@ def train(config, device):
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
     cam_out_dir = config['cam_out_dir']
-    image_size_height = config['image_size_height']
-    image_size_width = config['image_size_width']
     logexpsum_r = config['logexpsum_r']
 
     num_workers = 1
@@ -91,12 +89,9 @@ def train(config, device):
     # cls_model.load_state_dict(torch.load(cam_weight_path, map_location=device))
 
     # CAM generation dataset
-    train_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(train_list,
-                                                                  voc12_root=voc12_root,
-                                                                  scales=(
-                                                                      1.0,),
-                                                                  size_h=image_size_height,
-                                                                  size_w=image_size_width)
+    train_dataset = voc12.dataloader.VOC12ClassificationDSFD(train_list, voc12_root=voc12_root,
+                                                             resize_long=(320, 640), hor_flip=True,
+                                                             crop_size=512, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
                                    shuffle=True,
@@ -106,14 +101,8 @@ def train(config, device):
 
     max_step = (len(train_dataset) // cam_batch_size) * cam_num_epoches
 
-    val_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(val_list,
-                                                                voc12_root=voc12_root,
-                                                                scales=(
-                                                                    1.0,),
-                                                                size_h=image_size_height,
-                                                                size_w=image_size_width,
-                                                                hor_flip=False,
-                                                                crop_method="none")
+    val_dataset = voc12.dataloader.VOC12ClassificationDSFD(val_list, voc12_root=voc12_root,
+                                                           crop_size=512)
     val_data_loader = DataLoader(val_dataset,
                                  batch_size=cam_batch_size,
                                  shuffle=False,
@@ -138,8 +127,9 @@ def train(config, device):
 
     min_loss = float('inf')
     # P(y|x, z)
-    os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')  # generate CAMs
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # generate CAMs
+    # os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
+    # scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
