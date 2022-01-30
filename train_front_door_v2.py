@@ -33,7 +33,7 @@ def sum_cams(cam_dir):
     itcam = IterateCAM(cam_dir)
     running_sum = itertools.accumulate(itcam)
     running_mean = map(operator.truediv, running_sum, itertools.count(1))
-    return collections.deque(running_mean, maxlen=1)[0]
+    return torch.from_numpy(collections.deque(running_mean, maxlen=1)[0])
 
 
 def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
