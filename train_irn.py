@@ -9,7 +9,7 @@ import importlib
 from net.resnet50_irn import AffinityDisplacementLoss
 
 
-def train(config, device):
+def train(config):
     train_list = config['train_list']
     ir_label_out_dir = config['ir_label_out_dir']
     infer_list = config['infer_list']
@@ -107,14 +107,10 @@ def train(config, device):
         else:
             timer.reset_stage()
 
-    infer_dataset = voc12.dataloader.VOC12ClassificationDatasetFD(infer_list,
-                                                                voc12_root=voc12_root,
-                                                                scales=(
-                                                                    1.0,),
-                                                                size_h=256,
-                                                                size_w=256,
-                                                                hor_flip=False,
-                                                                crop_method="none")
+    infer_dataset = voc12.dataloader.VOC12ImageDataset(infer_list,
+                                                       voc12_root=voc12_root,
+                                                       crop_size=irn_crop_size,
+                                                       crop_method="top_left")
 
     infer_data_loader = DataLoader(infer_dataset, batch_size=irn_batch_size,
                                    shuffle=False, num_workers=1, pin_memory=True, drop_last=True)
@@ -146,9 +142,5 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/ir_net.yml')
     args = parser.parse_args()
-    if torch.cuda.is_available():
-        device = pyutils.set_gpus(n_gpus=1)
-    else:
-        device = 'cpu'
     config = pyutils.parse_config(args.config)
-    train(config, device)
+    train(config)
