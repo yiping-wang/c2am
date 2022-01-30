@@ -51,10 +51,11 @@ def _work(process_id, model, dataset, config):
 
             valid_cat = torch.nonzero(label)[:, 0]
 
+            raw_outputs = torch.sum(torch.stack(raw_outputs), dim=0)
             # save cams
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy(),
-                    "raw_outputs": outputs.cpu().numpy()})
+                    "raw_outputs": raw_outputs.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
