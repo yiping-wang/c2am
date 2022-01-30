@@ -51,7 +51,7 @@ def _work(process_id, model, dataset, config):
 
             valid_cat = torch.nonzero(label)[:, 0]
 
-            raw_outputs = torch.sum(torch.stack(raw_outputs), dim=0)
+            raw_outputs = torch.sum(torch.stack(outputs), dim=0)
             # save cams
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy(),
