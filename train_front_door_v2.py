@@ -43,12 +43,12 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     # P(y|x, z)
     # generate CAMs
     os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            imgs = pack['img'].cuda(device, non_blocking=True)
-            labels = pack['label'].cuda(device, non_blocking=True)
+            imgs = pack['img'].cuda(non_blocking=True)
+            labels = pack['label'].cuda(non_blocking=True)
             # P(z|x)
             x = cls_model(imgs[:, 0])
             # x = F.softmax(x, dim=1)
@@ -66,7 +66,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     return vloss, scams
 
 
-def train(config, device):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -84,9 +84,9 @@ def train(config, device):
     cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
-    cls_model = Net().cuda(device)
+    cls_model = Net().cuda()
     # load pre-trained classification network
-    # cls_model.load_state_dict(torch.load(cam_weight_path, map_location=device))
+    # cls_model.load_state_dict(torch.load(cam_weight_path, map_location='cpu))
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDSFD(train_list, voc12_root=voc12_root,
@@ -118,8 +118,8 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    cls_model = torch.nn.DataParallel(cls_model).cuda(device)
-    # cls_model = cls_model.cuda(device)
+    cls_model = torch.nn.DataParallel(cls_model).cuda()
+    # cls_model = cls_model.cuda()
     cls_model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -129,12 +129,12 @@ def train(config, device):
     # P(y|x, z)
     # generate CAMs
     os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
-            imgs = pack['img'].cuda(device, non_blocking=True)
-            labels = pack['label'].cuda(device, non_blocking=True)
+            imgs = pack['img'].cuda(non_blocking=True)
+            labels = pack['label'].cuda(non_blocking=True)
             # P(z|x)
             x = cls_model(imgs[:, 0])
             # x = F.softmax(x, dim=1)
@@ -178,9 +178,5 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/front_door_v2.yml')
     args = parser.parse_args()
-    if torch.cuda.is_available():
-        device = pyutils.set_gpus(n_gpus=1)
-    else:
-        device = 'cpu'
     config = pyutils.parse_config(args.config)
-    train(config, device)
+    train(config)
