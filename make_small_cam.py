@@ -1,10 +1,9 @@
 import torch
-from torch import multiprocessing, cuda
+from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from torch.backends import cudnn
 from net.resnet50_cam import CAM
-
 import argparse
 import numpy as np
 import os
@@ -55,7 +54,7 @@ def run(config):
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name) + '.pth', map_location='cpu'), strict=True)
     model.eval()
-    model.cuda()
+    model = nn.DataParallel(model).cuda()
 
     n_gpus = torch.cuda.device_count()
 
