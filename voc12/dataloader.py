@@ -276,7 +276,12 @@ class VOC12SegmentationDataset(Dataset):
         name = self.img_name_list[idx]
         name_str = decode_int_filename(name)
 
-        img = imageio.imread(get_img_path(name_str, self.voc12_root))
+        img = Image.open(get_img_path(
+            name_str, self.voc12_root)).convert('RGB')
+        if self.size_h > 0:
+            img = img.resize((self.size_h, self.size_w), Image.BILINEAR)
+        img = np.asarray(img).copy()
+        # IR Net label
         label = imageio.imread(os.path.join(self.label_dir, name_str + '.png'))
 
         img = np.asarray(img)
@@ -354,7 +359,6 @@ class VOC12AffinityDataset(VOC12SegmentationDataset):
 
     def __getitem__(self, idx):
         out = super().__getitem__(idx)
-
         reduced_label = imutils.pil_rescale(out['label'], 0.25, 0)
 
         out['aff_bg_pos_label'], out['aff_fg_pos_label'], out['aff_neg_label'] = self.extract_aff_lab_func(

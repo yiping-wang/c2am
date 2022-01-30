@@ -24,7 +24,8 @@ def _work(process_id, infer_dataset, config):
 
     for iter, pack in enumerate(infer_data_loader):
         img_name = voc12.dataloader.decode_int_filename(pack['name'][0])
-        img = pack['img'][0].numpy()
+        # CHW to HWC
+        img = pack['img'][0][0].numpy().transpose(1, 2, 0)
         cam_dict = np.load(os.path.join(
             cam_out_dir, img_name + '.npy'), allow_pickle=True).item()
 
@@ -37,6 +38,7 @@ def _work(process_id, infer_dataset, config):
         fg_conf_cam = np.pad(cams, ((1, 0), (0, 0), (0, 0)),
                              mode='constant', constant_values=conf_fg_thres)
         fg_conf_cam = np.argmax(fg_conf_cam, axis=0)
+
         pred = imutils.crf_inference_label(
             img, fg_conf_cam, n_labels=keys.shape[0])
         fg_conf = keys[pred]
@@ -64,8 +66,8 @@ def run(config):
     train_list = config['train_list']
     voc12_root = config['voc12_root']
     num_workers = config['num_workers']
-    dataset = voc12.dataloader.VOC12ImageDataset(
-        train_list, voc12_root=voc12_root, img_normal=None, to_torch=False)
+    dataset = voc12.dataloader.VOC12ClassificationDatasetFD(
+        train_list, voc12_root=voc12_root, img_normal=None, hor_flip=False, crop_method="none", to_torch=False)
     dataset = torchutils.split_dataset(dataset, num_workers)
 
     print('[ ', end='')
