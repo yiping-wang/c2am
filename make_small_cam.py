@@ -29,11 +29,17 @@ def _work(process_id, model, dataset, config):
             label = pack['label'][0]
             print(len(pack['img']))
             print(pack['img'][0].shape)
-            outputs = model(pack['img'][0][0].cuda(non_blocking=True))
 
-            outputs = F.interpolate(outputs.unsqueeze(
-                0), (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
-            outputs = outputs / (F.adaptive_max_pool2d(outputs, (1, 1)) + 1e-5)
+            outputs = [model(img[0].cuda(non_blocking=True))
+                       for img in pack['img']]
+
+            raw_outputs = torch.sum(torch.stack(
+                [F.interpolate(torch.unsqueeze(o, 0),
+                               (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
+                    for o in outputs]), 0)
+
+            raw_outputs = outputs / \
+                (F.adaptive_max_pool2d(raw_outputs, (1, 1)) + 1e-5)
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
