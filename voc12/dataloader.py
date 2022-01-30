@@ -227,67 +227,6 @@ class VOC12ClassificationDataset(VOC12ImageDataset):
         return out
 
 
-class VOC12ClassificationDatasetFD(VOC12ClassificationDataset):
-    def __init__(self, img_name_list_path, voc12_root,
-                 img_normal=TorchvisionNormalize(),
-                 scales=(1.0,),
-                 size_h=256,
-                 size_w=256,
-                 hor_flip=True,
-                 crop_method="random",
-                 to_torch=True):
-        self.scales = scales
-        self.size_h = size_h
-        self.size_w = size_w
-        self.hor_flip = hor_flip
-        self.crop_method = crop_method
-        self.to_torch = to_torch
-
-        super().__init__(img_name_list_path, voc12_root, img_normal=img_normal)
-
-    def __getitem__(self, idx):
-        name = self.img_name_list[idx]
-        name_str = decode_int_filename(name)
-
-        img = Image.open(get_img_path(
-            name_str, self.voc12_root)).convert('RGB')
-        org_size = np.asarray(img).shape[:2]
-
-        if self.size_h > 0:
-            img = img.resize((self.size_h, self.size_w), Image.BILINEAR)
-        img = np.asarray(img).copy()
-
-        ms_img_list = []
-        for s in self.scales:
-            if s == 1:
-                s_img = img
-            else:
-                s_img = imutils.pil_rescale(img, s, order=3)
-
-            if self.img_normal:
-                s_img = self.img_normal(s_img)
-            else:
-                s_img = img
-
-            if self.hor_flip:
-                s_img = imutils.random_lr_flip(s_img)
-
-            if self.crop_size:
-                if self.crop_method == "random":
-                    s_img = imutils.random_crop(s_img, self.size_h, 0)
-
-            if self.to_torch:
-                s_img = imutils.HWC_to_CHW(s_img)
-            ms_img_list.append(np.stack([s_img, np.flip(s_img, -1)], axis=0))
-        if len(self.scales) == 1:
-            ms_img_list = ms_img_list[0]
-
-        out = {"name": name_str, "img": ms_img_list, "size": (img.shape[0], img.shape[1]),
-               "label": torch.from_numpy(self.label_list[idx]),
-               "org_img": img, "org_size": org_size}
-        return out
-
-
 class VOC12ClassificationDatasetMSF(VOC12ClassificationDataset):
 
     def __init__(self, img_name_list_path, voc12_root,

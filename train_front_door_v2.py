@@ -42,8 +42,8 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
 
     # P(y|x, z)
     # generate CAMs
-    # os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
-    # scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
+    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
@@ -63,7 +63,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     cls_model.train()
     vloss = val_loss_meter.pop('loss1')
     print('loss: %.4f' % vloss)
-    return vloss, None
+    return vloss, scams
 
 
 def train(config, device):
@@ -128,8 +128,8 @@ def train(config, device):
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
-    # os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
-    # scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
+    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
