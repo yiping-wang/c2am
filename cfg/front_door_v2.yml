@@ -9,7 +9,7 @@ train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
 
 # Class Activation Map
-logexpsum_r: 1
+logexpsum_r: 5
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_square_shape: 64
 cam_crop_size: 512

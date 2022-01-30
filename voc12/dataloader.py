@@ -186,8 +186,7 @@ class VOC12ImageDatasetFD(Dataset):
 
         if self.to_torch:
             img = imutils.HWC_to_CHW(img)
-
-        img = np.stack([img, np.flip(img, -1)], axis=0)
+            
         return {'name': name_str, 'img': img}
 
 
