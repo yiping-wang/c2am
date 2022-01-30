@@ -138,7 +138,7 @@ def train(config, device):
 
     min_loss = float('inf')
     # P(y|x, z)
-    os.system('python3 make_cam.py --config ./cfg/front_door_v3.yml')  # generate CAMs
+    os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')  # generate CAMs
     scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
