@@ -44,7 +44,7 @@ def _work(process_id, model, dataset, config):
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
 
 
-def run(config, device):
+def run(config):
     train_list = config['train_list']
     voc12_root = config['voc12_root']
     model_root = config['model_root']
