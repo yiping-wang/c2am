@@ -36,7 +36,7 @@ def _work(process_id, model, dataset, config):
                                (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
                     for o in outputs]), 0)
 
-            raw_outputs = outputs / \
+            raw_outputs = raw_outputs / \
                 (F.adaptive_max_pool2d(raw_outputs, (1, 1)) + 1e-5)
             valid_cat = torch.nonzero(label)[:, 0]
 

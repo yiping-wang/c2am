@@ -62,6 +62,7 @@ class CAM(nn.Module):
         self.newly_added = nn.ModuleList([self.classifier])
 
     def forward(self, x):
+        print(x.shape)
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
