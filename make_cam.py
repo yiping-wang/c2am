@@ -68,7 +68,7 @@ def run(config):
     cam_weights_name = config['cam_weights_name']
     model = CAM()
     model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name) + '.pth', map_location='cpu'), strict=True)
+        model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
     model = nn.DataParallel(model).cuda()
 

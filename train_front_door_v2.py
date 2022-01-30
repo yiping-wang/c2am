@@ -80,7 +80,7 @@ def train(config):
     cam_out_dir = config['cam_out_dir']
     logexpsum_r = config['logexpsum_r']
     num_workers = config['num_workers']
-    cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
+    cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
 
     # CAM generation dataset

@@ -9,7 +9,7 @@ import numpy as np
 import os
 
 import voc12.dataloader
-from misc import torchutils, imutils, pyutils
+from misc import torchutils, pyutils
 
 cudnn.enabled = True
 
@@ -58,7 +58,7 @@ def run(config):
     cam_weights_name = config['cam_weights_name']
     model = CAM()
     model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name) + '.pth', map_location='cpu'), strict=True)
+        model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
     model.cuda()
 
