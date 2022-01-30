@@ -79,15 +79,14 @@ def train(config):
     cam_weights_name = config['cam_weights_name']
     cam_out_dir = config['cam_out_dir']
     logexpsum_r = config['logexpsum_r']
-
-    num_workers = 1
+    num_workers = config['num_workers']
     cam_weight_path = os.path.join(model_root, cam_weights_name + '.pth')
     pyutils.seed_all(seed)
 
     # CAM generation dataset
-    train_dataset = voc12.dataloader.VOC12ClassificationDSFD(train_list, voc12_root=voc12_root,
-                                                             resize_long=(320, 640), hor_flip=True,
-                                                             crop_size=512, crop_method="random")
+    train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list, voc12_root=voc12_root,
+                                                                resize_long=(320, 640), hor_flip=True,
+                                                                crop_size=512, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
                                    shuffle=True,
@@ -97,8 +96,8 @@ def train(config):
 
     max_step = (len(train_dataset) // cam_batch_size) * cam_num_epoches
 
-    val_dataset = voc12.dataloader.VOC12ClassificationDSFD(val_list, voc12_root=voc12_root,
-                                                           crop_size=512)
+    val_dataset = voc12.dataloader.VOC12ClassificationDataset(val_list, voc12_root=voc12_root,
+                                                              crop_size=512)
     val_data_loader = DataLoader(val_dataset,
                                  batch_size=cam_batch_size,
                                  shuffle=False,
