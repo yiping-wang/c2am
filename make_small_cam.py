@@ -32,6 +32,7 @@ def _work(process_id, model, dataset, config):
 
             outputs = F.interpolate(outputs.unsqueeze(
                 0), (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
+            outputs = outputs / (F.adaptive_max_pool2d(outputs, (1, 1)) + 1e-5)
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
