@@ -44,7 +44,7 @@ def _work(process_id, model, dataset, config):
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
 
 
-def run(config):
+def run(config, device):
     train_list = config['train_list']
     voc12_root = config['voc12_root']
     model_root = config['model_root']
@@ -54,7 +54,7 @@ def run(config):
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name) + '.pth', map_location='cpu'), strict=True)
     model.eval()
-    model.cuda()
+    model.cuda(device)
 
     n_gpus = torch.cuda.device_count()
 
@@ -78,5 +78,9 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/front_door_v2.yml')
     args = parser.parse_args()
+    if torch.cuda.is_available():
+        device = pyutils.set_gpus(n_gpus=1)
+    else:
+        device = 'cpu'
     config = pyutils.parse_config(args.config)
-    run(config)
+    run(config, device)
