@@ -5,7 +5,6 @@ import argparse
 from torch.utils.data import DataLoader
 import voc12.dataloader
 from misc import pyutils, torchutils, indexing
-import importlib
 from net.resnet50_irn import AffinityDisplacementLoss
 
 
