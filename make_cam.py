@@ -24,17 +24,12 @@ def _work(process_id, model, dataset, config):
                              num_workers=1, pin_memory=False)
 
     with torch.no_grad(), cuda.device(process_id):
-
         model.cuda()
-
         for iter, pack in enumerate(data_loader):
-
             img_name = pack['name'][0]
             label = pack['label'][0]
             size = pack['size']
 
-            strided_img_size = imutils.get_strided_size(
-                (cam_square_shape, cam_square_shape), 4)
             strided_size = imutils.get_strided_size(size, 4)
             strided_up_size = imutils.get_strided_up_size(size, 16)
 
@@ -54,18 +49,12 @@ def _work(process_id, model, dataset, config):
             highres_cam = highres_cam / \
                 (F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5)
 
-            sqauresize_cam = torch.sum(torch.stack(
-                [F.interpolate(torch.unsqueeze(o, 0), strided_img_size, mode='bilinear', align_corners=False)[0] for o
-                 in outputs]), 0)
-            sqauresize_cam = sqauresize_cam / \
-                (F.adaptive_max_pool2d(sqauresize_cam, (1, 1)) + 1e-5)
-
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy(),
-                    "sqauresize_cam": sqauresize_cam.cpu().numpy()})
+                    "raw_outputs": outputs.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')

@@ -26,7 +26,7 @@ class IterateCAM:
             raise StopIteration
         c = np.load(self.cam_list[self.index], allow_pickle=True).item()
         self.index += 1
-        return c['sqauresize_cam']
+        return c['raw_outputs']
 
 
 def sum_cams(cam_dir):
