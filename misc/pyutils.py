@@ -26,8 +26,8 @@ def set_gpus(n_gpus, verbose=False):
     selected_gpu = [r[0] for r in res]
 
     print("Using GPU {}".format(','.join([str(s) for s in selected_gpu])))
-    # os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(
-    #     [str(s) for s in selected_gpu])
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(
+        [str(s) for s in selected_gpu])
     return torch.device('cuda:{}'.format(str(selected_gpu[0])))
 
 
