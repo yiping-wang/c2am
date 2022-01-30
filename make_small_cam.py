@@ -29,8 +29,7 @@ def _work(process_id, model, dataset, config):
             img_name = pack['name'][0]
             label = pack['label'][0]
 
-            outputs = [model(img[0].cuda(non_blocking=True))
-                       for img in pack['img']]
+            outputs = model(pack['img'][0][0].cuda(non_blocking=True))
 
             valid_cat = torch.nonzero(label)[:, 0]
 
@@ -38,7 +37,7 @@ def _work(process_id, model, dataset, config):
             # TODO: might improve "raw_outputs" to higher res
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat,
-                    "raw_outputs": outputs[0].cpu().numpy()})
+                    "raw_outputs": outputs.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
