@@ -17,7 +17,6 @@ cudnn.enabled = True
 
 def _work(process_id, model, dataset, config):
     cam_out_dir = config['cam_out_dir']
-    cam_square_shape = config['cam_square_shape']
     databin = dataset[process_id]
     n_gpus = torch.cuda.device_count()
     data_loader = DataLoader(databin, shuffle=False,
@@ -52,10 +51,10 @@ def _work(process_id, model, dataset, config):
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
-            # TODO: might improve "raw_outputs" to higher res
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
-                    {"keys": valid_cat, "cam": strided_cam.cpu(), "high_res": highres_cam.cpu().numpy(),
-                    "raw_outputs": outputs[0].cpu().numpy()})
+                    {"keys": valid_cat,
+                     "cam": strided_cam.cpu(),
+                     "high_res": highres_cam.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')

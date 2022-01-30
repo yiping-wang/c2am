@@ -11,7 +11,7 @@ val_list: "voc12/val.txt"
 # Class Activation Map
 logexpsum_r: 1
 cam_scales: [1.0, 0.5, 1.5, 2.0]
-cam_square_shape: 128
+cam_square_shape: 64
 cam_crop_size: 512
 cam_batch_size: 32
 cam_num_epoches: 10

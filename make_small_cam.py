@@ -30,7 +30,9 @@ def _work(process_id, model, dataset, config):
             label = pack['label'][0]
 
             outputs = model(pack['img'][0][0].cuda(non_blocking=True))
-
+            
+            outputs = F.interpolate(outputs.unsqueeze(
+                0), (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
