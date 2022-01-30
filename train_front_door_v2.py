@@ -63,7 +63,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     cls_model.train()
     vloss = val_loss_meter.pop('loss1')
     print('loss: %.4f' % vloss)
-    return vloss, scams
+    return vloss, None
 
 
 def train(config):
