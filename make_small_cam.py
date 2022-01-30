@@ -41,7 +41,6 @@ def _work(process_id, model, dataset, config):
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
-            # TODO: might improve "raw_outputs" to higher res
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),
                     {"keys": valid_cat,
                     "raw_outputs": raw_outputs.cpu().numpy()})

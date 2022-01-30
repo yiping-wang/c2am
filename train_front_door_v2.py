@@ -105,7 +105,9 @@ def train(config):
                                  pin_memory=True,
                                  drop_last=True)
 
-    cls_model = Net().cuda()
+    cls_model = Net()
+    cls_model.load_state_dict(torch.load(os.path.join(
+        model_root, cam_weights_name), map_location='cpu'), strict=True)
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
