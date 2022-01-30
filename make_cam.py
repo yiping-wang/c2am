@@ -17,10 +17,11 @@ cudnn.enabled = True
 
 def _work(process_id, model, dataset, config):
     cam_out_dir = config['cam_out_dir']
+    num_workers = config['num_workers']
     databin = dataset[process_id]
     n_gpus = torch.cuda.device_count()
     data_loader = DataLoader(databin, shuffle=False,
-                             num_workers=1, pin_memory=False)
+                             num_workers=num_workers//n_gpus, pin_memory=False)
 
     with torch.no_grad(), cuda.device(process_id):
         model.cuda()
@@ -70,7 +71,6 @@ def run(config):
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
-    model = nn.DataParallel(model).cuda()
 
     n_gpus = torch.cuda.device_count()
 
