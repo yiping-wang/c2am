@@ -42,7 +42,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
 
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
+    # os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
     scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
@@ -122,7 +122,7 @@ def train(config):
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
+    # os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
     scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
