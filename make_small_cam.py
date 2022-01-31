@@ -61,7 +61,7 @@ def run(config):
     model.eval()
     model.cuda()
 
-    n_gpus = torch.cuda.device_count()
+    n_gpus = torch.cuda.device_count() - 1
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(train_list,
                                                              voc12_root=voc12_root,

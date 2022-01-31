@@ -172,5 +172,6 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/front_door_v2.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(['1'])
     train(config)
     os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
