@@ -42,7 +42,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
 
     # P(y|x, z)
     # generate CAMs
-    # os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
+    os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
     scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
@@ -172,6 +172,6 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/front_door_v2.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(['1'])
+    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(['7'])
     train(config)
     os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
