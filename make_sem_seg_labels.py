@@ -65,11 +65,11 @@ def _work(process_id, model, dataset, config):
             rw_up_bg = F.pad(rw_up, (0, 0, 0, 0, 1, 0), value=sem_seg_bg_thres)
             rw_pred = torch.argmax(rw_up_bg, dim=0).cpu().numpy()
 
-            rw_pred = keys[rw_pred]
+            rw_pred = keys[rw_pred].astype(np.uint8)
 
-            # rw_pred = colorize_mask(rw_pred.astype(np.uint8))
-            imageio.imsave(os.path.join(sem_seg_out_dir,
-                           img_name + '.png'), rw_pred)
+            rw_pred = colorize_mask(rw_pred.astype(np.uint8))
+            imageio.imsave(os.path.join(
+                sem_seg_out_dir, img_name + '.png'), rw_pred)
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
@@ -82,7 +82,8 @@ def run(config):
     voc12_root = config['voc12_root']
 
     model = EdgeDisplacement()
-    model.load_state_dict(torch.load(os.path.join(model_root, irn_weights_name)), strict=False)
+    model.load_state_dict(torch.load(os.path.join(
+        model_root, irn_weights_name)), strict=False)
     model.eval()
 
     n_gpus = torch.cuda.device_count()
