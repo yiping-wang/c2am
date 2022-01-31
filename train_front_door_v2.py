@@ -137,7 +137,7 @@ def train(config):
             # P(y|do(x))
             #x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
-            x = torchutils.lse_agg(x, r=logexpsum_r)
+            #x = torchutils.lse_agg(x, r=logexpsum_r)
             ## x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
