@@ -6,8 +6,8 @@ import glob
 import os
 import numpy as np
 from torch.utils.data import DataLoader
-from misc import pyutils, torchutils, imutils
-from net.resnet50_cam import CAMDualHeads, Net, CAM
+from misc import pyutils, torchutils
+from net.resnet50_cam import Net
 import itertools
 import operator
 import collections
