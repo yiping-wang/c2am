@@ -158,7 +158,7 @@ def train(config):
                 vloss, vscams = validate(
                     cls_model, val_data_loader, logexpsum_r, cam_out_dir)
                 if vloss < min_loss:
-                    torch.save(cls_model.module.state_dict(), cam_weight_path)
+                    torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
                     scams = vscams
 
