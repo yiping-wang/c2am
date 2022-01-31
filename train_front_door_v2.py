@@ -122,7 +122,7 @@ def train(config):
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
-    # os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
+    os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
     scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -136,7 +136,7 @@ def train(config):
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.lse_agg(x, r=logexpsum_r)
-            ## x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
+            # x = x / (torch.sum(x, dim=1).unsqueeze(1) + 1e-5)
             loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
@@ -172,6 +172,5 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/front_door_v2.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(['7'])
     train(config)
     os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
