@@ -192,7 +192,7 @@ class VOC12SegmentationDataset(Dataset):
 
     def __init__(self, img_name_list_path, label_dir, crop_size, voc12_root,
                  rescale=None, img_normal=TorchvisionNormalize(), hor_flip=False,
-                 crop_method='random'):
+                 crop_method = 'random'):
 
         self.img_name_list = load_img_name_list(img_name_list_path)
         self.voc12_root = voc12_root
@@ -204,8 +204,6 @@ class VOC12SegmentationDataset(Dataset):
         self.img_normal = img_normal
         self.hor_flip = hor_flip
         self.crop_method = crop_method
-        self.size_h = 256
-        self.size_w = 256
 
     def __len__(self):
         return len(self.img_name_list)
@@ -214,19 +212,13 @@ class VOC12SegmentationDataset(Dataset):
         name = self.img_name_list[idx]
         name_str = decode_int_filename(name)
 
-        img = Image.open(get_img_path(
-            name_str, self.voc12_root)).convert('RGB')
-        if self.size_h > 0:
-            img = img.resize((self.size_h, self.size_w), Image.BILINEAR)
-        img = np.asarray(img).copy()
-        # IR Net label
+        img = imageio.imread(get_img_path(name_str, self.voc12_root))
         label = imageio.imread(os.path.join(self.label_dir, name_str + '.png'))
 
         img = np.asarray(img)
 
         if self.rescale:
-            img, label = imutils.random_scale(
-                (img, label), scale_range=self.rescale, order=(3, 0))
+            img, label = imutils.random_scale((img, label), scale_range=self.rescale, order=(3, 0))
 
         if self.img_normal:
             img = self.img_normal(img)
@@ -235,8 +227,7 @@ class VOC12SegmentationDataset(Dataset):
             img, label = imutils.random_lr_flip((img, label))
 
         if self.crop_method == "random":
-            img, label = imutils.random_crop(
-                (img, label), self.crop_size, (0, 255))
+            img, label = imutils.random_crop((img, label), self.crop_size, (0, 255))
         else:
             img = imutils.top_left_crop(img, self.crop_size, 0)
             label = imutils.top_left_crop(label, self.crop_size, 255)
