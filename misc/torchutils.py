@@ -64,4 +64,6 @@ def mean_agg(cam, r):
 
 
 def lse_agg(cam, r):
-    return (1/r) * torch.logsumexp(cam * r, dim=(2, 3))
+    h, w = cam.shape[-2:]
+    return (1/r) * torch.log((1/(h * w)) * torch.sum(torch.exp(cam), dim=(2, 3)))
+    # return (1/r) * torch.log(cam * r, dim=(2, 3))
