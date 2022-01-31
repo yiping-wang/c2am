@@ -43,12 +43,12 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     # P(y|x, z)
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
-    scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
+    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            imgs = pack['img'].cuda(non_blocking=True)
-            labels = pack['label'].cuda(non_blocking=True)
+            imgs = pack['img'].cuda(device, non_blocking=True)
+            labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
             # x = F.softmax(x, dim=1)
@@ -66,7 +66,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     return vloss, scams
 
 
-def train(config):
+def train(config, device):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -105,7 +105,7 @@ def train(config):
                                  pin_memory=True,
                                  drop_last=True)
 
-    cls_model = Net().cuda()
+    cls_model = Net().cuda(device)
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
@@ -123,12 +123,12 @@ def train(config):
     # P(y|x, z)
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/front_door_v2.yml')
-    scams = sum_cams(cam_out_dir).cuda(non_blocking=True)
+    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
-            imgs = pack['img'].cuda(non_blocking=True)
-            labels = pack['label'].cuda(non_blocking=True)
+            imgs = pack['img'].cuda(device, non_blocking=True)
+            labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
             # x = F.softmax(x, dim=1)
@@ -172,5 +172,6 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/front_door_v2.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    train(config)
+    device = torch.device('cuda:7')
+    train(config, device)
     os.system('python3 make_cam.py --config ./cfg/front_door_v2.yml')
