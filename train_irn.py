@@ -1,18 +1,21 @@
+from statistics import mode
 import torch
+import os
 from torch.backends import cudnn
 import argparse
 from torch.utils.data import DataLoader
 import voc12.dataloader
 from misc import pyutils, torchutils, indexing
-import importlib
 from net.resnet50_irn import AffinityDisplacementLoss
 
 
-def train(config, device):
+def train(config):
     train_list = config['train_list']
     ir_label_out_dir = config['ir_label_out_dir']
     infer_list = config['infer_list']
     voc12_root = config['voc12_root']
+    num_workers = config['num_workers']
+    model_root = config['model_root']
     irn_crop_size = config['irn_crop_size']
     irn_batch_size = config['irn_batch_size']
     irn_num_epoches = config['irn_num_epoches']
@@ -36,7 +39,7 @@ def train(config, device):
                                                           rescale=(0.5, 1.5)
                                                           )
     train_data_loader = DataLoader(train_dataset, batch_size=irn_batch_size,
-                                   shuffle=True, num_workers=1, pin_memory=True, drop_last=True)
+                                   shuffle=True, num_workers=num_workers, pin_memory=True, drop_last=True)
 
     max_step = (len(train_dataset) // irn_batch_size) * irn_num_epoches
 
@@ -48,7 +51,7 @@ def train(config, device):
             irn_learning_rate, 'weight_decay': irn_weight_decay}
     ], lr=irn_learning_rate, weight_decay=irn_weight_decay, max_step=max_step)
 
-    model = torch.nn.DataParallel(model).cuda()
+    model = model.cuda()
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -109,8 +112,9 @@ def train(config, device):
                                                        voc12_root=voc12_root,
                                                        crop_size=irn_crop_size,
                                                        crop_method="top_left")
+
     infer_data_loader = DataLoader(infer_dataset, batch_size=irn_batch_size,
-                                   shuffle=False, num_workers=1, pin_memory=True, drop_last=True)
+                                   shuffle=False, num_workers=num_workers, pin_memory=True, drop_last=True)
 
     model.eval()
     print('Analyzing displacements mean ... ', end='')
@@ -125,11 +129,11 @@ def train(config, device):
 
             dp_mean_list.append(torch.mean(dp, dim=(0, 2, 3)).cpu())
 
-        model.module.mean_shift.running_mean = torch.mean(
+        model.mean_shift.running_mean = torch.mean(
             torch.stack(dp_mean_list), dim=0)
     print('done.')
 
-    torch.save(model.module.state_dict(), irn_weights_name)
+    torch.save(model.state_dict(), os.path.join(model_root, irn_weights_name))
     torch.cuda.empty_cache()
 
 
@@ -139,9 +143,5 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/ir_net.yml')
     args = parser.parse_args()
-    if torch.cuda.is_available():
-        device = pyutils.set_gpus(n_gpus=1)
-    else:
-        device = 'cpu'
     config = pyutils.parse_config(args.config)
-    train(config, device)
+    train(config)

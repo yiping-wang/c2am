@@ -14,8 +14,8 @@ def validate(model, data_loader):
     model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            img = pack['img']
-            label = pack['label'].cuda(non_blocking=True)
+            img = pack['img'].cuda(device, non_blocking=True)
+            label = pack['label'].cuda(device, non_blocking=True)
             x = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
@@ -42,7 +42,7 @@ def train(config, device):
 
     model = Net().cuda(device)
 
-    model.load_state_dict(torch.load(cam_weight_path + '.pth'))
+    # model.load_state_dict(torch.load(cam_weight_path + '.pth'))
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
@@ -77,7 +77,7 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    model = torch.nn.DataParallel(model).cuda(device)
+    # model = torch.nn.DataParallel(model).cuda(device)
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -87,7 +87,7 @@ def train(config, device):
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
-            img = pack['img']
+            img = pack['img'].cuda(device, non_blocking=True)
             label = pack['label'].cuda(device, non_blocking=True)
             x = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
@@ -108,8 +108,7 @@ def train(config, device):
                 # validation
                 vloss = validate(model, val_data_loader)
                 if vloss < min_loss:
-                    torch.save(model.module.state_dict(),
-                               cam_weight_path + '.pth')
+                    torch.save(model.state_dict(), cam_weight_path + '.pth')
                     min_loss = vloss
                 timer.reset_stage()
         # empty cache
@@ -120,7 +119,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/base.yml')
+                        help='YAML config file path', default='./cfg/cam.yml')
     args = parser.parse_args()
     if torch.cuda.is_available():
         device = pyutils.set_gpus(n_gpus=1)
