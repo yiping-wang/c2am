@@ -5,7 +5,6 @@ import torch.nn.functional as F
 from torch.backends import cudnn
 from net.resnet50_irn import EdgeDisplacement
 import numpy as np
-import importlib
 import os
 import imageio
 from PIL import Image
@@ -41,9 +40,7 @@ def _work(process_id, model, dataset, config):
                              shuffle=False, num_workers=num_workers // n_gpus, pin_memory=False)
 
     with torch.no_grad(), cuda.device(process_id):
-
         model.cuda()
-
         for iter, pack in enumerate(data_loader):
             img_name = voc12.dataloader.decode_int_filename(pack['name'][0])
             orig_img_size = np.asarray(pack['size'])
@@ -68,9 +65,7 @@ def _work(process_id, model, dataset, config):
             rw_up_bg = F.pad(rw_up, (0, 0, 0, 0, 1, 0), value=sem_seg_bg_thres)
             rw_pred = torch.argmax(rw_up_bg, dim=0).cpu().numpy()
 
-            rw_pred = imutils.crf_inference_label(
-                pack['org_img'].squeeze(), rw_pred, n_labels=keys.shape[0])
-            rw_pred = keys[rw_pred].astype(np.uint8)
+            rw_pred = keys[rw_pred]
 
             # rw_pred = colorize_mask(rw_pred.astype(np.uint8))
             imageio.imsave(os.path.join(sem_seg_out_dir,
@@ -91,14 +86,9 @@ def run(config):
 
     n_gpus = torch.cuda.device_count()
 
-    dataset = voc12.dataloader.VOC12ClassificationDatasetFD(infer_list,
-                                                            voc12_root=voc12_root,
-                                                            scales=(
-                                                                1.0,),
-                                                            size_h=256,
-                                                            size_w=256,
-                                                            hor_flip=False,
-                                                            crop_method="none")
+    dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(infer_list,
+                                                             voc12_root=voc12_root,
+                                                             scales=(1.0,))
     dataset = torchutils.split_dataset(dataset, n_gpus)
 
     print("[", end='')
@@ -115,9 +105,5 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/ir_net.yml')
     args = parser.parse_args()
-    # if torch.cuda.is_available():
-    #     device = pyutils.set_gpus(n_gpus=1)
-    # else:
-    #     device = 'cpu'
     config = pyutils.parse_config(args.config)
     run(config)
