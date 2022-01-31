@@ -125,11 +125,11 @@ def train(config):
         for iter, pack in enumerate(infer_data_loader):
             img = pack['img'].cuda(non_blocking=True)
 
-            aff, dp = model(img[:, 0], False)
+            aff, dp = model(img, False)
 
             dp_mean_list.append(torch.mean(dp, dim=(0, 2, 3)).cpu())
 
-        model.module.mean_shift.running_mean = torch.mean(
+        model.mean_shift.running_mean = torch.mean(
             torch.stack(dp_mean_list), dim=0)
     print('done.')
 
