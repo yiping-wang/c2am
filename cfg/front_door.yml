@@ -2,7 +2,7 @@
 seed: 0
 voc12_root: "/data/home/yipingwang/data/VOCdevkit/VOC2012/"
 model_root: "/data/home/yipingwang/data/Models/Classification/"
-cam_out_dir: "/data/home/yipingwang/data/CAMv2"
+cam_out_dir: "/data/home/yipingwang/data/CAMFrontDoor"
 
 # Dataset
 train_list: "voc12/train_aug.txt"
@@ -18,4 +18,4 @@ cam_batch_size: 16
 cam_num_epoches: 20
 cam_learning_rate: 0.1
 cam_weight_decay: 0.0001
-cam_weights_name: "resnet50_v2.pth"
+cam_weights_name: "resnet50_frontdoor.pth"
