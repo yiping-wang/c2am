@@ -5,7 +5,6 @@ from chainercv.evaluations import calc_semantic_segmentation_confusion
 import imageio
 from misc import pyutils
 import argparse
-from PIL import Image
 
 
 def run(config):
@@ -19,15 +18,10 @@ def run(config):
         i, (1,))[0] for i in range(len(dataset))]
 
     preds = []
-    i = 0
     for id in dataset.ids:
-        # cls_labels = imageio.imread(os.path.join(
-        #     sem_seg_out_dir, id + '.png')).astype(np.uint8)
-        # cls_labels[cls_labels == 255] = 0
-        cls_labels = np.asarray(Image.open(os.path.join(
-            sem_seg_out_dir, id + '.png')).resize(labels[i].shape[::-1], Image.BICUBIC))
+        cls_labels = imageio.imread(os.path.join(
+            sem_seg_out_dir, id + '.png')).astype(np.uint8)
         cls_labels[cls_labels == 255] = 0
-        i += 1
         preds.append(cls_labels.copy())
 
     confusion = calc_semantic_segmentation_confusion(preds, labels)[:21, :21]
@@ -52,9 +46,5 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/ir_net.yml')
     args = parser.parse_args()
-    # if torch.cuda.is_available():
-    #     device = pyutils.set_gpus(n_gpus=1)
-    # else:
-    #     device = 'cpu'
     config = pyutils.parse_config(args.config)
     run(config)
