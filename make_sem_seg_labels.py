@@ -50,7 +50,7 @@ def _work(process_id, model, dataset, config):
             cam_dict = np.load(cam_out_dir + '/' + img_name +
                                '.npy', allow_pickle=True).item()
 
-            cams = cam_dict['cam'][cam_dict['keys']]
+            cams = cam_dict['cam']
             keys = np.pad(cam_dict['keys'] + 1, (1, 0), mode='constant')
 
             cam_downsized_values = cams.cuda()
