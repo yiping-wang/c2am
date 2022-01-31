@@ -114,7 +114,7 @@ def train(config):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    cls_model = torch.nn.DataParallel(cls_model).cuda()
+    #cls_model = torch.nn.DataParallel(cls_model).cuda()
     cls_model.train()
 
     avg_meter = pyutils.AverageMeter()
