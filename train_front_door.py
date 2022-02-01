@@ -51,7 +51,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
+            x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
