@@ -61,3 +61,9 @@ def gap2d(x, keepdims=False):
 
 def agg(cam, r):
     return torch.mean(cam, dim=(1, 2))
+
+
+def lse_agg(cam, r):
+    h, w = cam.shape[-2:]
+    return (1/r) * torch.log((1/(h * w)) * torch.sum(torch.exp(cam), dim=(1, 2)))
+    # return (1/r) * torch.log(cam * r, dim=(2, 3))
