@@ -133,6 +133,8 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
+            print(x.max(), x.min())
+            print(scams.max(), scams.min())
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
