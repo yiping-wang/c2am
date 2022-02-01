@@ -60,4 +60,4 @@ def gap2d(x, keepdims=False):
 
 
 def agg(cam, r):
-    return torch.max(torch.max(cam, 2)[0], 2)[0]
+    return torch.mean(cam, dim=(2, 3))
