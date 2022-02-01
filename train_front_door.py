@@ -133,7 +133,7 @@ def train(config, device):
             x = cls_model(imgs)
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
-            # x = x.unsqueeze(2).unsqueeze(2) * scams
+            x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.agg(scams, r=logexpsum_r)
             loss = F.multilabel_soft_margin_loss(x, labels)
