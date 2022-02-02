@@ -81,9 +81,9 @@ class CAM(nn.Module):
         return (list(self.backbone.parameters()), list(self.newly_added.parameters()))
 
 
-class CAMDualHeads(nn.Module):
+class NetDualHeads(nn.Module):
     def __init__(self):
-        super(CAMDualHeads, self).__init__()
+        super(NetDualHeads, self).__init__()
 
         self.resnet50 = resnet50.resnet50(
             pretrained=True, strides=(2, 2, 2, 1))
@@ -101,17 +101,16 @@ class CAMDualHeads(nn.Module):
 
     def forward(self, x):
         x = self.stage1(x)
-        x = self.stage2(x)
+        x = self.stage2(x).detach()
         x = self.stage3(x)
         x = self.stage4(x)
 
-        logit = torchutils.gap2d(x[0].unsqueeze(0), keepdims=True)
+        logit = torchutils.gap2d(x.unsqueeze(0), keepdims=True)
         logit = self.classifier(logit)
         logit = logit.view(-1, 20)
 
         cam = F.conv2d(x, self.classifier.weight)
         cam = F.relu(cam)
-        cam = cam[0] + cam[1].flip(-1)
         return cam, logit
 
     def train(self, mode=True):

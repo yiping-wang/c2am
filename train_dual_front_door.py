@@ -7,7 +7,7 @@ import os
 import numpy as np
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
-from net.resnet50_cam import Net
+from net.resnet50_cam import NetDualHeads
 import itertools
 import operator
 import collections
@@ -36,21 +36,24 @@ def sum_cams(cam_dir):
     return torch.from_numpy(collections.deque(running_mean, maxlen=1)[0])
 
 
-def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
+def validate(cls_model, data_loader, logexpsum_r, cam_square_shape):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
 
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
+    # scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
-            x = cls_model(imgs)
+            x, scams = cls_model(imgs)
+            scams = F.interpolate(scams, (cam_square_shape, cam_square_shape))
+            scams = scams / (F.adaptive_max_pool2d(scams, (1, 1)) + 1e-5)
+            scams = torch.mean(scams, dim=0)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
@@ -78,6 +81,7 @@ def train(config, device):
     cam_out_dir = config['cam_out_dir']
     logexpsum_r = config['logexpsum_r']
     num_workers = config['num_workers']
+    cam_square_shape = config['cam_square_shape']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
 
@@ -103,7 +107,7 @@ def train(config, device):
                                  pin_memory=True,
                                  drop_last=True)
 
-    cls_model = Net().cuda(device)
+    cls_model = NetDualHeads().cuda(device)
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
@@ -120,15 +124,18 @@ def train(config, device):
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
+    # scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
-            x = cls_model(imgs)
+            x, scams = cls_model(imgs)
+            scams = F.interpolate(scams, (cam_square_shape, cam_square_shape))
+            scams = scams / (F.adaptive_max_pool2d(scams, (1, 1)) + 1e-5)
+            scams = torch.mean(scams, dim=0)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
