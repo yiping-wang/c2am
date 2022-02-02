@@ -59,10 +59,12 @@ def gap2d(x, keepdims=False):
     return out
 
 
-def agg(cam, r):
+def mean_agg(cam, r):
     return torch.mean(cam, dim=(2, 3))
+
+def max_agg(cam, r):
+    return torch.max(torch.max(cam, dim=2), dim=2)
 
 
 def lse_agg(cam, r):
-    # h, w = cam.shape[-2:]
     return (1/r) * torch.logsumexp(cam * r, dim=(2, 3))
