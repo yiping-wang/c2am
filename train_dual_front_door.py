@@ -51,7 +51,8 @@ def validate(cls_model, data_loader, logexpsum_r, cam_square_shape):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x, scams = cls_model(imgs)
-            scams = F.interpolate(scams, (cam_square_shape, cam_square_shape))
+            scams = F.interpolate(
+                scams, (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)
             scams = scams / (F.adaptive_max_pool2d(scams, (1, 1)) + 1e-5)
             scams = torch.mean(scams, dim=0)
             # P(y|do(x))
@@ -133,7 +134,8 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x, scams = cls_model(imgs)
-            scams = F.interpolate(scams, (cam_square_shape, cam_square_shape))
+            scams = F.interpolate(
+                scams, (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)
             scams = scams / (F.adaptive_max_pool2d(scams, (1, 1)) + 1e-5)
             scams = torch.mean(scams, dim=0)
             # P(y|do(x))
