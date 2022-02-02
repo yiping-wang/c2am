@@ -159,7 +159,7 @@ def train(config, device):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vscams = validate(
-                    cls_model, val_data_loader, logexpsum_r, cam_out_dir)
+                    cls_model, val_data_loader, logexpsum_r, cam_square_shape)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
