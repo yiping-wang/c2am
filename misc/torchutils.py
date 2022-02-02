@@ -63,7 +63,7 @@ def mean_agg(cam, r):
     return torch.mean(cam, dim=(2, 3))
 
 def max_agg(cam, r):
-    return torch.max(torch.max(cam, dim=2), dim=2)
+    return torch.max(torch.max(cam, dim=2)[0], dim=2)[0]
 
 
 def lse_agg(cam, r):
