@@ -36,13 +36,11 @@ def train(config, device):
     cam_weight_decay = config['cam_weight_decay']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
-    num_workers = 1
+    num_workers = config['num_workers']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
 
     model = Net().cuda(device)
-
-    # model.load_state_dict(torch.load(cam_weight_path + '.pth'))
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
@@ -77,7 +75,6 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    # model = torch.nn.DataParallel(model).cuda(device)
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -119,7 +116,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/cam.yml')
+                        help='YAML config file path', default='./cfg/baseline.yml')
     args = parser.parse_args()
     if torch.cuda.is_available():
         device = pyutils.set_gpus(n_gpus=1)
