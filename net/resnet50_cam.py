@@ -109,7 +109,7 @@ class NetDualHeads(nn.Module):
         logit = self.classifier(logit)
         logit = logit.view(-1, 20)
 
-        cam = F.conv2d(x, self.classifier.weight)
+        cam = F.conv2d(x.detach(), self.classifier.weight)
         cam = F.relu(cam)
         return cam, logit
 
