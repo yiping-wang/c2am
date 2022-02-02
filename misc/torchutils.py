@@ -65,4 +65,4 @@ def agg(cam, r):
 
 def lse_agg(cam, r):
     h, w = cam.shape[-2:]
-    return (1/r) * torch.log((1/(h * w)) * torch.sum(torch.exp(cam), dim=(2, 3)))
+    return (1/r) * torch.log((1/(h * w)) * torch.sum(torch.exp(cam * 5), dim=(2, 3)))
