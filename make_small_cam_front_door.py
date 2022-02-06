@@ -28,13 +28,14 @@ def _work(process_id, model, dataset, prev_scams, config):
             img_name = pack['name'][0]
             label = pack['label'][0]
 
-            outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
-                       for img in pack['img']]
-
-            print(outputs[0].shape)
-
-            outputs = [l.unsqueeze(2).unsqueeze(
-                2) * prev_scams for l in outputs]
+            if prev_scams:
+                outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
+                           for img in pack['img']]
+                outputs = [l.unsqueeze(2).unsqueeze(
+                    2) * prev_scams for l in outputs]
+            else:
+                outputs = [model(img[0].cuda(non_blocking=True))
+                           for img in pack['img']]
 
             raw_outputs = torch.sum(torch.stack(
                 [F.interpolate(torch.unsqueeze(o, 0),
@@ -61,8 +62,14 @@ def run(config):
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
     cam_out_dir = config['cam_out_dir']
+    scam_name = config['scam_name']
+    scam_path = os.path.join(cam_out_dir, scam_name)
 
-    prev_scams = pyutils.sum_cams(cam_out_dir).cuda()
+    if os.path.exists(scam_path):
+        prev_scams = torch.from_numpy(np.load(scam_path)).cuda()
+    else:
+        prev_scams = None
+
     model = Net()
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name), map_location='cpu'), strict=True)
