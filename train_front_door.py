@@ -2,38 +2,11 @@ import torch.nn.functional as F
 import voc12.dataloader
 import argparse
 import torch
-import glob
 import os
 import numpy as np
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
 from net.resnet50_cam import Net
-import itertools
-import operator
-import collections
-
-
-class IterateCAM:
-    def __init__(self, cam_dir):
-        self.cam_list = glob.glob(os.path.join(cam_dir, '*.npy'))
-        self.index = 0
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.index == len(self.cam_list):
-            raise StopIteration
-        c = np.load(self.cam_list[self.index], allow_pickle=True).item()
-        self.index += 1
-        return c['raw_outputs']
-
-
-def sum_cams(cam_dir):
-    itcam = IterateCAM(cam_dir)
-    running_sum = itertools.accumulate(itcam)
-    running_mean = map(operator.truediv, running_sum, itertools.count(1))
-    return torch.from_numpy(collections.deque(running_mean, maxlen=1)[0])
 
 
 def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
@@ -43,7 +16,7 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
     # P(y|x, z)
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     with torch.no_grad():
         for pack in data_loader:
@@ -121,7 +94,7 @@ def train(config, device):
     # P(y|x, z)
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
-    scams = sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
