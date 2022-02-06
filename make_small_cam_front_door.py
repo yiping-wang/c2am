@@ -61,9 +61,9 @@ def run(config):
     model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
-    cam_out_dir = config['cam_out_dir']
+    scam_out_dir = config['scam_out_dir']
     scam_name = config['scam_name']
-    scam_path = os.path.join(cam_out_dir, scam_name)
+    scam_path = os.path.join(scam_out_dir, scam_name)
 
     if os.path.exists(scam_path):
         prev_scams = torch.from_numpy(np.load(scam_path)).cuda()
