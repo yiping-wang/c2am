@@ -37,8 +37,12 @@ def _work(process_id, model, dataset, prev_scams, config):
             #     outputs = [model(img[0].cuda(non_blocking=True))
             #                for img in pack['img']]
 
+            # raw_outputs = torch.sum(torch.stack(
+            #     [F.interpolate(torch.unsqueeze(o, 0),
+            #                    (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
+            #         for o in outputs]), 0)
             raw_outputs = torch.sum(torch.stack(
-                [F.interpolate(torch.unsqueeze(o, 0),
+                [F.interpolate(o,
                                (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
                     for o in outputs]), 0)
 
