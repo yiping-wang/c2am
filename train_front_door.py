@@ -52,8 +52,10 @@ def train(config, device):
     logexpsum_r = config['logexpsum_r']
     num_workers = config['num_workers']
     scam_name = config['scam_name']
+    scam_out_dir = config['scam_out_dir']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
-    scam_path = os.path.join(cam_out_dir, scam_name)
+    scam_path = os.path.join(scam_out_dir, scam_name)
+
     pyutils.seed_all(seed)
 
     # CAM generation dataset
