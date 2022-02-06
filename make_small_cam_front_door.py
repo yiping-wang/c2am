@@ -24,6 +24,7 @@ def _work(process_id, model, dataset, prev_scams, config):
 
     with torch.no_grad(), cuda.device(process_id):
         model.cuda()
+        prev_scams = prev_scams.cuda()
         for iter, pack in enumerate(data_loader):
             img_name = pack['name'][0]
             label = pack['label'][0]
@@ -70,7 +71,7 @@ def run(config):
     scam_path = os.path.join(scam_out_dir, scam_name)
 
     if os.path.exists(scam_path):
-        prev_scams = torch.from_numpy(np.load(scam_path)).cuda()
+        prev_scams = torch.from_numpy(np.load(scam_path))
     else:
         prev_scams = None
 
