@@ -16,4 +16,4 @@ cam_batch_size: 16
 cam_num_epoches: 10
 cam_learning_rate: 0.1
 cam_weight_decay: 0.0001
-cam_weights_name: "resnet50_baseline.pth"
+cam_weights_name: "resnet50_baseline"
