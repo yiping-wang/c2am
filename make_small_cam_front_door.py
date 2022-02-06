@@ -28,7 +28,7 @@ def _work(process_id, model, dataset, prev_scams, config):
             img_name = pack['name'][0]
             label = pack['label'][0]
 
-            outputs = [model(img[0][0].cuda(non_blocking=True))
+            outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
                        for img in pack['img']]
 
             print(outputs[0].shape)
