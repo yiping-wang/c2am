@@ -28,14 +28,14 @@ def _work(process_id, model, dataset, prev_scams, config):
             img_name = pack['name'][0]
             label = pack['label'][0]
 
-            if prev_scams:
-                outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
-                           for img in pack['img']]
-                outputs = [l.unsqueeze(2).unsqueeze(
-                    2) * prev_scams for l in outputs]
-            else:
-                outputs = [model(img[0].cuda(non_blocking=True))
-                           for img in pack['img']]
+            # if prev_scams:
+            outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
+                       for img in pack['img']]
+            outputs = [l.unsqueeze(2).unsqueeze(
+                2) * prev_scams for l in outputs]
+            # else:
+            #     outputs = [model(img[0].cuda(non_blocking=True))
+            #                for img in pack['img']]
 
             raw_outputs = torch.sum(torch.stack(
                 [F.interpolate(torch.unsqueeze(o, 0),

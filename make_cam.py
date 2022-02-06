@@ -35,14 +35,14 @@ def _work(process_id, model, dataset, prev_scams, config):
             strided_size = imutils.get_strided_size(size, 4)
             strided_up_size = imutils.get_strided_up_size(size, 16)
 
-            if prev_scams:
-                outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
-                           for img in pack['img']]
-                outputs = [l.unsqueeze(2).unsqueeze(
-                    2) * prev_scams for l in outputs]
-            else:
-                outputs = [model(img[0].cuda(non_blocking=True))
-                           for img in pack['img']]
+            # if prev_scams:
+            outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
+                        for img in pack['img']]
+            outputs = [l.unsqueeze(2).unsqueeze(
+                2) * prev_scams for l in outputs]
+            # else:
+            #     outputs = [model(img[0].cuda(non_blocking=True))
+            #                for img in pack['img']]
 
             strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                 o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
@@ -73,14 +73,9 @@ def run(config):
     model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
-    scam_out_dir = config['scam_out_dir']
-    scam_name = config['scam_name']
-    scam_path = os.path.join(scam_out_dir, scam_name)
+    cam_out_dir = config['cam_out_dir']
 
-    if os.path.exists(scam_path):
-        prev_scams = torch.from_numpy(np.load(scam_path)).cuda()
-    else:
-        prev_scams = None
+    prev_scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
 
     model = Net()
     model.load_state_dict(torch.load(os.path.join(
