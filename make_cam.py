@@ -37,15 +37,18 @@ def _work(process_id, model, dataset, prev_scams, config):
 
             # if prev_scams:
             outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
-                        for img in pack['img']]
-            outputs = [(l.unsqueeze(2).unsqueeze(
-                2) * prev_scams).squeeze() for l in outputs]
+                       for img in pack['img']]
+            outputs = [l.unsqueeze(2).unsqueeze(
+                2) * prev_scams for l in outputs]
             # else:
             #     outputs = [model(img[0].cuda(non_blocking=True))
             #                for img in pack['img']]
 
-            strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
-                o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
+            # strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
+            #     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
+            strided_cam = torch.sum(torch.stack([F.interpolate(
+                o, strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
+                
             strided_cam = strided_cam[valid_cat]
             strided_cam /= F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5
 
