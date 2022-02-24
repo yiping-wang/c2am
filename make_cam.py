@@ -43,7 +43,7 @@ def _work(process_id, model, dataset, prev_scams, config):
             # else:
             #     outputs = [model(img[0].cuda(non_blocking=True))
             #                for img in pack['img']]
-
+            print(outputs[0].shape)
             strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                 o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
             strided_cam = strided_cam[valid_cat]
