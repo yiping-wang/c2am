@@ -61,10 +61,10 @@ def _work(process_id, model, dataset, prev_scams, config):
             highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
 
             # save cams
-            np.save(os.path.join(cam_out_dir, img_name + '.npy'),
-                    {"keys": valid_cat,
-                     "cam": strided_cam.cpu(),
-                     "high_res": highres_cam.cpu().numpy()})
+            # np.save(os.path.join(cam_out_dir, img_name + '.npy'),
+            #         {"keys": valid_cat,
+            #          "cam": strided_cam.cpu(),
+            #          "high_res": highres_cam.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
