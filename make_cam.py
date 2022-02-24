@@ -35,14 +35,14 @@ def _work(process_id, model, dataset, prev_scams, config):
             strided_size = imutils.get_strided_size(size, 4)
             strided_up_size = imutils.get_strided_up_size(size, 16)
 
-            if prev_scams:
-                outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
-                            for img in pack['img']]
-                outputs = [l.unsqueeze(2).unsqueeze(
-                    2) * prev_scams for l in outputs]
-            else:
-                outputs = [model(img[0].cuda(non_blocking=True))
-                           for img in pack['img']]
+            # if prev_scams:
+            outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
+                        for img in pack['img']]
+            outputs = [l.unsqueeze(2).unsqueeze(
+                2) * prev_scams for l in outputs]
+            # else:
+            #     outputs = [model(img[0].cuda(non_blocking=True))
+            #                for img in pack['img']]
 
             strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                 o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
