@@ -32,8 +32,8 @@ def _work(process_id, model, dataset, prev_scams, config):
             # if prev_scams:
             outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
                        for img in pack['img']]
-            outputs = [F.softmax(l.unsqueeze(2).unsqueeze(
-                2) * prev_scams, dim=1) for l in outputs]
+            outputs = [l.unsqueeze(2).unsqueeze(
+                2) * prev_scams for l in outputs]
             # else:
             #     outputs = [model(img[0].cuda(non_blocking=True))
             #                for img in pack['img']]
