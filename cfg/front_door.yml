@@ -6,7 +6,7 @@ cam_out_dir: "/data/home/yipingwang/data/CAMFrontDoor"
 scam_out_dir: "/data/home/yipingwang/data/SCAMFrontDoor"
 
 # Dataset
-train_list: "voc12/train_aug.txt"
+train_list: "voc12/val.txt"
 val_list: "voc12/val.txt"
 
 # Class Activation Map
