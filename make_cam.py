@@ -48,7 +48,7 @@ def _work(process_id, model, dataset, prev_scams, config):
             #     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
             strided_cam = torch.sum(torch.stack([F.interpolate(
                 o, strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
-                
+
             strided_cam = strided_cam[valid_cat]
             strided_cam /= F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5
 
