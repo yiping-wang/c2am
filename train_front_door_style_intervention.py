@@ -22,7 +22,7 @@ def concat(names, aug_fn, voc12_root, device):
 
 def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn, voc12_root, alpha, device):
     print('validating ... ', flush=True, end='')
-    val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
+    val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
 
     # P(y|x, z)
     # generate CAMs
@@ -31,7 +31,6 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     mlp.eval()
-    bce_loss = torch.nn.BCEWithLogitsLoss()
 
     with torch.no_grad():
         for pack in data_loader:
@@ -40,7 +39,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
+            x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregation
@@ -57,16 +56,22 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             logprob_qt = F.softmax(score_qt, dim=1)
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
+            bce_loss = torch.nn.BCELoss()(x, labels)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels) + alpha * kl_loss
-            loss = bce_loss(x, labels) + alpha * kl_loss
-            val_loss_meter.add({'loss1': loss.item()})
+            loss = bce_loss + alpha * kl_loss
+            val_loss_meter.add(
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
     cls_model.train()
     mlp.train()
-    vloss = val_loss_meter.pop('loss1')
-    print('loss: %.4f' % vloss)
-    return vloss, scams
+
+    loss = val_loss_meter.pop('loss')
+    bce = val_loss_meter.pop('bce')
+    kl = val_loss_meter.pop('kl')
+    print('Loss: {:.4f} | BCE loss: {:.4f} | KL loss: {:.4f}'.format(
+        loss, bce, kl))
+    return loss, scams
 
 
 def train(config, device):
@@ -125,14 +130,14 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': mlp.parameters(), 'lr': cam_learning_rate,
+        {'params': mlp.parameters(), 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model.train()
     mlp.train()
 
-    avg_meter = pyutils.AverageMeter()
+    avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
 
     bce_loss = torch.nn.BCEWithLogitsLoss()
@@ -151,7 +156,7 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
+            x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregation
@@ -168,10 +173,12 @@ def train(config, device):
             logprob_qt = F.softmax(score_qt, dim=1)
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
+            bce_loss = torch.nn.BCELoss()(x, labels)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels) + alpha * kl_loss
-            loss = bce_loss(x, labels)# + alpha * kl_loss
-            avg_meter.add({'loss1': loss.item()})
+            loss = bce_loss + alpha * kl_loss
+            avg_meter.add(
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
             optimizer.zero_grad()
             loss.backward()
@@ -180,7 +187,9 @@ def train(config, device):
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
-                      'loss:%.4f' % (avg_meter.pop('loss1')),
+                      'loss:%.4f' % (avg_meter.pop('loss')),
+                      'bce:%.4f' % (avg_meter.pop('bce')),
+                      'kl:%.4f' % (avg_meter.pop('kl')),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
