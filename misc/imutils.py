@@ -1,6 +1,6 @@
 import random
 import numpy as np
-
+import torch
 import pydensecrf.densecrf as dcrf
 from pydensecrf.utils import unary_from_labels
 from PIL import Image
