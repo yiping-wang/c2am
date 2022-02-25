@@ -35,7 +35,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
 
     with torch.no_grad():
         for pack in data_loader:
-            names = pack['names']
+            names = pack['name']
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
