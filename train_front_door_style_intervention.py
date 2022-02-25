@@ -1,3 +1,5 @@
+# Idea:
+# BCELoss weighted by SCAM?
 import torch.nn.functional as F
 import voc12.dataloader
 import argparse
@@ -12,12 +14,7 @@ from voc12.dataloader import get_img_path
 
 
 def concat(names, aug_fn, voc12_root, device):
-    ims = []
-    for n in names:
-        im = aug_fn(Image.open(get_img_path(n, voc12_root)
-                               ).convert('RGB')).unsqueeze(0)
-        ims += [im]
-    return torch.cat(ims, dim=0).cuda(device, non_blocking=True)
+    return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(device, non_blocking=True)
 
 
 def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn, voc12_root, alpha, device):
@@ -37,12 +34,13 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             names = pack['name']
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
+            # Front Door Adjustment
             # P(z|x)
             x = cls_model(imgs)
             x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
-            # Aggregation
+            # Aggregate for classification
             x = torchutils.mean_agg(x, r=logexpsum_r)
             # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
@@ -53,11 +51,10 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             score_lk = torch.matmul(proj_l, proj_k.permute(1, 0))
             score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
             logprob_lk = F.log_softmax(score_lk, dim=1)
-            logprob_qt = F.softmax(score_qt, dim=1)
+            prob_qt = F.softmax(score_qt, dim=1)
             # Loss
             kl_loss = alpha * \
-                torch.nn.KLDivLoss(reduction='batchmean')(
-                    logprob_lk, logprob_qt)
+                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.BCELoss()(x, labels)
             loss = bce_loss + kl_loss
             val_loss_meter.add(
@@ -153,12 +150,13 @@ def train(config, device):
             names = pack['name']
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
+            # Front Door Adjustment
             # P(z|x)
             x = cls_model(imgs)
             x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
-            # Aggregation
+            # Aggregate for classification
             x = torchutils.mean_agg(x, r=logexpsum_r)
             # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
@@ -169,11 +167,10 @@ def train(config, device):
             score_lk = torch.matmul(proj_l, proj_k.permute(1, 0))
             score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
             logprob_lk = F.log_softmax(score_lk, dim=1)
-            logprob_qt = F.softmax(score_qt, dim=1)
+            prob_qt = F.softmax(score_qt, dim=1)
             # Loss
             kl_loss = alpha * \
-                torch.nn.KLDivLoss(reduction='batchmean')(
-                    logprob_lk, logprob_qt)
+                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.BCELoss()(x, labels)
             loss = bce_loss + kl_loss
             avg_meter.add(

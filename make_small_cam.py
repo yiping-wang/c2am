@@ -1,3 +1,5 @@
+# Idea: Use most confident maps
+
 import torch
 from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
