@@ -156,7 +156,7 @@ def train(config, device):
             # Aggregation
             x = torchutils.mean_agg(x, r=logexpsum_r)
             # Style Intervention
-            augs = [concat(names, data_aug_fn, voc12_root) for _ in range(4)]
+            augs = [concat(names, data_aug_fn, voc12_root, device) for _ in range(4)]
             feats = [cls_model(aug) for aug in augs]
             projs = [mlp(feat) for feat in feats]
             proj_l, proj_k, proj_q, proj_t = projs
