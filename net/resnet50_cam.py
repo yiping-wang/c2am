@@ -8,11 +8,13 @@ class MLP(nn.Module):
     def __init__(self, input_dim=20, output_dim=20):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, 60)
-        self.fc2 = nn.Linear(60, output_dim)
+        self.fc2 = nn.Linear(120, 60)
+        self.fc3 = nn.Linear(60, output_dim)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
         return x
 
 
