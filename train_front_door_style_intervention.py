@@ -31,7 +31,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     mlp.eval()
-    bce_loss = torch.nn.BCEWithLogitsLoss()
+    bce_loss = torch.nn.BCELoss()
 
     with torch.no_grad():
         for pack in data_loader:
@@ -135,7 +135,7 @@ def train(config, device):
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
-    bce_loss = torch.nn.BCEWithLogitsLoss()
+    bce_loss = torch.nn.BCELoss()
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
