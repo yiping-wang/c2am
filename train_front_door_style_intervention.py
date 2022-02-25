@@ -11,11 +11,11 @@ from net.resnet50_cam import Net, MLP
 from voc12.dataloader import get_img_path
 
 
-def concat(names, aug_fn, voc12_root):
+def concat(names, aug_fn, voc12_root, device):
     ims = []
     for n in names:
         im = aug_fn(Image.open(get_img_path(n, voc12_root)
-                               ).convert('RGB')).unsqueeze(0)
+                               ).convert('RGB')).unsqueeze(0).cuda(device, non_blocking=True)
         ims += [im]
     return torch.cat(ims, dim=0)
 
@@ -46,7 +46,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             # loss
             x = torchutils.mean_agg(x, r=logexpsum_r)
             # Style Intervention
-            augs = [concat(names, data_aug_fn, voc12_root) for _ in range(4)]
+            augs = [concat(names, data_aug_fn, voc12_root, device) for _ in range(4)]
             feats = [cls_model(aug) for aug in augs]
             projs = [mlp(feat) for feat in feats]
             proj_l, proj_k, proj_q, proj_t = projs
@@ -185,7 +185,7 @@ def train(config, device):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vscams = validate(
-                    cls_model, mlp, val_data_loader, logexpsum_r, cam_out_dir, data_aug_fn, voc12_root, alpha)
+                    cls_model, mlp, val_data_loader, logexpsum_r, cam_out_dir, data_aug_fn, voc12_root, alpha, device)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
