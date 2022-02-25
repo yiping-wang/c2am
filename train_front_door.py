@@ -96,7 +96,7 @@ def train(config, device):
     # P(y|x, z)
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
-    pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
