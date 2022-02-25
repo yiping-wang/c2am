@@ -58,8 +58,8 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
-            # loss = F.multilabel_soft_margin_loss(x, labels)
-            loss = bce_loss(x, labels) + alpha * kl_loss
+            loss = F.multilabel_soft_margin_loss(x, labels) + alpha * kl_loss
+            # loss = bce_loss(x, labels) + alpha * kl_loss
             val_loss_meter.add({'loss1': loss.item()})
 
     cls_model.train()
@@ -169,8 +169,8 @@ def train(config, device):
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
-            # loss = F.multilabel_soft_margin_loss(x, labels)
-            loss = bce_loss(x, labels) + alpha * kl_loss
+            loss = F.multilabel_soft_margin_loss(x, labels) + alpha * kl_loss
+            # loss = bce_loss(x, labels) + alpha * kl_loss
             avg_meter.add({'loss1': loss.item()})
 
             optimizer.zero_grad()
