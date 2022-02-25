@@ -55,10 +55,11 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             logprob_lk = F.log_softmax(score_lk, dim=1)
             logprob_qt = F.softmax(score_qt, dim=1)
             # Loss
-            kl_loss = torch.nn.KLDivLoss(
-                reduction='batchmean')(logprob_lk, logprob_qt)
+            kl_loss = alpha * \
+                torch.nn.KLDivLoss(reduction='batchmean')(
+                    logprob_lk, logprob_qt)
             bce_loss = torch.nn.BCELoss()(x, labels)
-            loss = bce_loss + alpha * kl_loss
+            loss = bce_loss + kl_loss
             val_loss_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
@@ -68,8 +69,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
     loss = val_loss_meter.pop('loss')
     bce = val_loss_meter.pop('bce')
     kl = val_loss_meter.pop('kl')
-    print('Loss: {:.4f} | BCE loss: {:.4f} | KL loss: {:.4f}'.format(
-        loss, bce, kl))
+    print('Loss: {:.4f} | BCE: {:.4f} | KL: {:.4f}'.format(loss, bce, kl))
     return loss, scams
 
 
@@ -171,10 +171,11 @@ def train(config, device):
             logprob_lk = F.log_softmax(score_lk, dim=1)
             logprob_qt = F.softmax(score_qt, dim=1)
             # Loss
-            kl_loss = torch.nn.KLDivLoss(
-                reduction='batchmean')(logprob_lk, logprob_qt)
+            kl_loss = alpha * \
+                torch.nn.KLDivLoss(reduction='batchmean')(
+                    logprob_lk, logprob_qt)
             bce_loss = torch.nn.BCELoss()(x, labels)
-            loss = bce_loss + alpha * kl_loss
+            loss = bce_loss + kl_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
@@ -185,9 +186,9 @@ def train(config, device):
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
-                      'loss:%.4f' % (avg_meter.pop('loss')),
-                      'bce:%.4f' % (avg_meter.pop('bce')),
-                      'kl:%.4f' % (avg_meter.pop('kl')),
+                      'Loss:%.4f' % (avg_meter.pop('loss')),
+                      'BCE:%.4f' % (avg_meter.pop('bce')),
+                      'KL:%.4f' % (avg_meter.pop('kl')),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
