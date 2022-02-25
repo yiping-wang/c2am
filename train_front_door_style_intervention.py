@@ -20,7 +20,7 @@ def concat(names, aug_fn, voc12_root, device):
     return torch.cat(ims, dim=0)
 
 
-def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn, voc12_root, alpha):
+def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn, voc12_root, alpha, device):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss1', 'loss2')
 
