@@ -31,7 +31,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     cls_model.eval()
     mlp.eval()
-    bce_loss = torch.nn.BCELoss()
+    bce_loss = torch.nn.BCEWithLogitsLoss()
 
     with torch.no_grad():
         for pack in data_loader:
@@ -59,8 +59,6 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels)
-            print(kl_loss)
-            print(bce_loss(x, labels))
             loss = bce_loss(x, labels) + alpha * kl_loss
             val_loss_meter.add({'loss1': loss.item()})
 
@@ -137,7 +135,7 @@ def train(config, device):
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
-    bce_loss = torch.nn.BCELoss()
+    bce_loss = torch.nn.BCEWithLogitsLoss()
     min_loss = float('inf')
     # P(y|x, z)
     # generate CAMs
@@ -172,8 +170,6 @@ def train(config, device):
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels)
-            print(kl_loss)
-            print(bce_loss(x, labels))
             loss = bce_loss(x, labels) + alpha * kl_loss
             avg_meter.add({'loss1': loss.item()})
 
