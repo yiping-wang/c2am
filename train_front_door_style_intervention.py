@@ -170,7 +170,7 @@ def train(config, device):
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels) + alpha * kl_loss
-            loss = bce_loss(x, labels) + alpha * kl_loss
+            loss = bce_loss(x, labels)# + alpha * kl_loss
             avg_meter.add({'loss1': loss.item()})
 
             optimizer.zero_grad()
