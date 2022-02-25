@@ -54,11 +54,10 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
             logprob_lk = F.log_softmax(score_lk, dim=1)
             logprob_qt = F.softmax(score_qt, dim=1)
+            # Loss
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
             bce_loss = torch.nn.BCELoss()(x, labels)
-            # Loss
-            # loss = F.multilabel_soft_margin_loss(x, labels) + alpha * kl_loss
             loss = bce_loss + alpha * kl_loss
             val_loss_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
@@ -171,11 +170,10 @@ def train(config, device):
             score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
             logprob_lk = F.log_softmax(score_lk, dim=1)
             logprob_qt = F.softmax(score_qt, dim=1)
+            # Loss
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
             bce_loss = torch.nn.BCELoss()(x, labels)
-            # Loss
-            # loss = F.multilabel_soft_margin_loss(x, labels) + alpha * kl_loss
             loss = bce_loss + alpha * kl_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
