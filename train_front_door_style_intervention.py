@@ -54,9 +54,9 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             score_lk = torch.matmul(proj_l, proj_k.permute(1, 0))
             score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
             logprob_lk = torch.nn.functional.log_softmax(score_lk, dim=1)
-            logprob_qt = torch.nn.functional.log_softmax(score_qt, dim=1)
+            logprob_qt = torch.nn.functional.softmax(score_qt, dim=1)
             kl_loss = torch.nn.KLDivLoss(
-                log_target=True, reduction='batchmean')(logprob_lk, logprob_qt)
+                reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels)
             loss = bce_loss(x, labels) + alpha * kl_loss
