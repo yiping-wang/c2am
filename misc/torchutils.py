@@ -120,7 +120,7 @@ def get_simclr_pipeline_transform(size, s=1):
                                             transforms.RandomApply([color_jitter], p=0.8),
                                             transforms.RandomGrayscale(p=0.2),
                                             GaussianBlur(kernel_size=int(0.1 * size)),
-                                            transforms.RandomSolarize(threshold=0.5, p=0.2),
+                                            #transforms.RandomSolarize(threshold=0.5, p=0.2),
                                             transforms.ToTensor(),
                                             transforms.Normalize(
                                                 mean=torch.tensor([0.485, 0.456, 0.406]),
