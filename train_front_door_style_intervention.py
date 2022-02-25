@@ -53,8 +53,8 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             proj_l, proj_k, proj_q, proj_t = projs
             score_lk = torch.matmul(proj_l, proj_k.permute(1, 0))
             score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
-            logprob_lk = torch.nn.functional.log_softmax(score_lk, dim=1)
-            logprob_qt = torch.nn.functional.softmax(score_qt, dim=1)
+            logprob_lk = F.log_softmax(score_lk, dim=1)
+            logprob_qt = F.softmax(score_qt, dim=1)
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
@@ -166,8 +166,8 @@ def train(config, device):
             proj_l, proj_k, proj_q, proj_t = projs
             score_lk = torch.matmul(proj_l, proj_k.permute(1, 0))
             score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
-            logprob_lk = torch.nn.functional.log_softmax(score_lk, dim=1)
-            logprob_qt = torch.nn.functional.softmax(score_qt, dim=1)
+            logprob_lk = F.log_softmax(score_lk, dim=1)
+            logprob_qt = F.softmax(score_qt, dim=1)
             kl_loss = torch.nn.KLDivLoss(
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
