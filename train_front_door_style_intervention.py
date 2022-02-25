@@ -15,9 +15,9 @@ def concat(names, aug_fn, voc12_root, device):
     ims = []
     for n in names:
         im = aug_fn(Image.open(get_img_path(n, voc12_root)
-                               ).convert('RGB')).unsqueeze(0).cuda(device, non_blocking=True)
+                               ).convert('RGB')).unsqueeze(0)
         ims += [im]
-    return torch.cat(ims, dim=0)
+    return torch.cat(ims, dim=0).cuda(device, non_blocking=True)
 
 
 def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn, voc12_root, alpha, device):
@@ -43,7 +43,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
-            # loss
+            # Aggregation
             x = torchutils.mean_agg(x, r=logexpsum_r)
             # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
@@ -59,6 +59,8 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels)
+            print(kl_loss)
+            print(bce_loss(x, labels))
             loss = bce_loss(x, labels) + alpha * kl_loss
             val_loss_meter.add({'loss1': loss.item()})
 
@@ -170,6 +172,8 @@ def train(config, device):
                 reduction='batchmean')(logprob_lk, logprob_qt)
             # Loss
             # loss = F.multilabel_soft_margin_loss(x, labels)
+            print(kl_loss)
+            print(bce_loss(x, labels))
             loss = bce_loss(x, labels) + alpha * kl_loss
             avg_meter.add({'loss1': loss.item()})
 
