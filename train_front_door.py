@@ -30,8 +30,9 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.mean_agg(x, r=logexpsum_r)
-            loss1 = F.multilabel_soft_margin_loss(x, labels)
-            val_loss_meter.add({'loss1': loss1.item()})
+            # loss = F.multilabel_soft_margin_loss(x, labels)
+            loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            val_loss_meter.add({'loss1': loss.item()})
 
     cls_model.train()
     vloss = val_loss_meter.pop('loss1')
@@ -109,7 +110,8 @@ def train(config, device):
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.mean_agg(x, r=logexpsum_r)
-            loss = F.multilabel_soft_margin_loss(x, labels)
+            # loss = F.multilabel_soft_margin_loss(x, labels)
+            loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
             optimizer.zero_grad()
