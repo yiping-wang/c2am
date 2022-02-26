@@ -124,9 +124,10 @@ class NetDualHeads(nn.Module):
         logit = self.classifier(logit)
         logit = logit.view(-1, 20)
 
-        cam = F.conv2d(x.detach(), self.classifier.weight)
+        cam = F.conv2d(x, self.classifier.weight)
         cam = F.relu(cam)
-        return cam, logit
+        cam = cam / (F.adaptive_max_pool2d(cam, (1, 1)) + 1e-5)
+        return logit, cam
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():
