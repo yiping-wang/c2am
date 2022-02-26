@@ -37,7 +37,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             # Front Door Adjustment
             # P(z|x)
             x = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
+            x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
@@ -55,7 +55,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, cam_out_dir, data_aug_fn,
             # Loss
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            bce_loss = torch.nn.BCELoss()(x, labels)
             loss = bce_loss + kl_loss
             val_loss_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
@@ -153,7 +153,7 @@ def train(config, device):
             # Front Door Adjustment
             # P(z|x)
             x = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
+            x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
@@ -171,7 +171,7 @@ def train(config, device):
             # Loss
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            bce_loss = torch.nn.BCELoss()(x, labels)
             loss = bce_loss + kl_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
