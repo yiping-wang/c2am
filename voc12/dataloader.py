@@ -89,7 +89,7 @@ class VOC12ImageDataset(Dataset):
 
     def __init__(self, img_name_list_path, voc12_root,
                  resize_long=None, rescale=None, img_normal=TorchvisionNormalize(), hor_flip=False,
-                 crop_size=None, crop_method=None, to_torch=True, simclr=None):
+                 crop_size=None, crop_method=None, to_torch=True):
 
         self.img_name_list = load_img_name_list(img_name_list_path)
         self.voc12_root = voc12_root
@@ -101,7 +101,6 @@ class VOC12ImageDataset(Dataset):
         self.hor_flip = hor_flip
         self.crop_method = crop_method
         self.to_torch = to_torch
-        self.simclr = simclr
 
     def __len__(self):
         return len(self.img_name_list)
