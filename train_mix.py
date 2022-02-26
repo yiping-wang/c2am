@@ -20,7 +20,7 @@ def validate(cls_model, data_loader, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             logit, cam = cls_model(imgs)
             mix_loss = torch.nn.BCEWithLogitsLoss()(
-                logit.unsqueeze(2).unsqueeze(2) * cam, labels)
+                torchutils.mean_agg(logit.unsqueeze(2).unsqueeze(2) * cam, r=1), labels)
             bce_loss = torch.nn.BCEWithLogitsLoss()(logit, labels)
             cam_loss = torch.nn.BCELoss()(torchutils.mean_agg(cam, r=1), labels)
             loss = mix_loss
