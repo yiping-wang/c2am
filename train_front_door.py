@@ -53,6 +53,7 @@ def train(config, device):
     cam_weights_name = config['cam_weights_name']
     cam_out_dir = config['cam_out_dir']
     logexpsum_r = config['logexpsum_r']
+    scam_path = config['scam_path']
     num_workers = config['num_workers']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
@@ -98,6 +99,7 @@ def train(config, device):
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/front_door.yml')
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    np.save(scam_path, scams.cpu().numpy())
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -133,6 +135,7 @@ def train(config, device):
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
                     scams = vscams
+                    np.save(scam_path, scams.cpu().numpy())
 
                 timer.reset_stage()
         # empty cache
