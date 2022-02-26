@@ -124,6 +124,11 @@ class NetDualHeads(nn.Module):
         logit = self.classifier(logit)
         logit = logit.view(-1, 20)
 
+        # step: 6600/ 6610 Loss:0.1215 BCE:0.0950 CAM:0.0950 imps:336.7 lr: 0.0000 etc:Sat Feb 26 13:58:16 2022
+        # validating ... Loss: 0.2115 | BCE: 0.1115 | CAM: 0.1115
+        # cam = F.conv2d(x.detach(), self.classifier.weight)
+        # ===
+        #
         cam = F.conv2d(x, self.classifier.weight)
         cam = F.relu(cam)
         cam = cam / (F.adaptive_max_pool2d(cam, (1, 1)) + 1e-5)
