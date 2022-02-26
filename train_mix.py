@@ -1,3 +1,4 @@
+from torch.nn import functional as F
 from cmath import log
 import voc12.dataloader
 import argparse
@@ -19,9 +20,10 @@ def validate(cls_model, data_loader, device):
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             logit, cam = cls_model(imgs)
-            mix_loss = torch.nn.BCEWithLogitsLoss()(
+            logit = F.softmax(logit, dim=1)
+            mix_loss = torch.nn.BCELoss()(
                 torchutils.mean_agg(logit.unsqueeze(2).unsqueeze(2) * cam, r=1), labels)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(logit, labels)
+            bce_loss = torch.nn.BCELoss()(logit, labels)
             cam_loss = torch.nn.BCELoss()(torchutils.mean_agg(cam, r=1), labels)
             loss = mix_loss
             val_loss_meter.add(
@@ -99,9 +101,10 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
 
             logit, cam = cls_model(imgs)
-            mix_loss = torch.nn.BCEWithLogitsLoss()(
+            logit = F.softmax(logit, dim=1)
+            mix_loss = torch.nn.BCELoss()(
                 torchutils.mean_agg(logit.unsqueeze(2).unsqueeze(2) * cam, r=1), labels)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(logit, labels)
+            bce_loss = torch.nn.BCELoss()(logit, labels)
             cam_loss = torch.nn.BCELoss()(torchutils.mean_agg(cam, r=1), labels)
             loss = mix_loss
             avg_meter.add(
