@@ -2,7 +2,6 @@ import torch.nn.functional as F
 import voc12.dataloader
 import argparse
 import torch
-import glob
 import os
 import numpy as np
 from torch.utils.data import DataLoader
@@ -25,14 +24,12 @@ def validate(cls_model, data_loader, logexpsum_r, cam_out_dir):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.mean_agg(x, r=logexpsum_r)
-            # loss = F.multilabel_soft_margin_loss(x, labels)
-            loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            val_loss_meter.add({'loss1': loss.item()})
+            loss1 = F.multilabel_soft_margin_loss(x, labels)
+            val_loss_meter.add({'loss1': loss1.item()})
 
     cls_model.train()
     vloss = val_loss_meter.pop('loss1')
@@ -58,6 +55,7 @@ def train(config, device):
     scam_out_dir = config['scam_out_dir']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     scam_path = os.path.join(scam_out_dir, scam_name)
+
     pyutils.seed_all(seed)
 
     # CAM generation dataset
@@ -109,13 +107,11 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             # P(z|x)
             x = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # loss
             x = torchutils.mean_agg(x, r=logexpsum_r)
-            # loss = F.multilabel_soft_margin_loss(x, labels)
-            loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            loss = F.multilabel_soft_margin_loss(x, labels)
             avg_meter.add({'loss1': loss.item()})
 
             optimizer.zero_grad()
@@ -153,4 +149,3 @@ if __name__ == '__main__':
     config = pyutils.parse_config(args.config)
     device = torch.device('cuda:7')
     train(config, device)
-    # os.system('python3 make_cam.py --config ./cfg/front_door.yml')
