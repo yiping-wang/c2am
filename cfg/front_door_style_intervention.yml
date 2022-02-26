@@ -13,7 +13,7 @@ val_list: "voc12/val.txt"
 num_workers: 24
 logexpsum_r: 1
 cam_scales: [1.0, 0.5, 1.5, 2.0]
-cam_square_shape: 64
+cam_square_shape: 8
 cam_crop_size: 256
 cam_batch_size: 16
 cam_num_epoches: 5
