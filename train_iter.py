@@ -34,7 +34,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, scams, data_aug_fn, voc12
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
-            x = torchutils.mean_agg(x, r=logexpsum_r)
+            x = torchutils.lse_agg(x, r=logexpsum_r)
             # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
@@ -148,7 +148,7 @@ def train(config, device):
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
-            x = torchutils.mean_agg(x, r=logexpsum_r)
+            x = torchutils.lse_agg(x, r=logexpsum_r)
             # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
