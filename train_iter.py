@@ -48,7 +48,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, scams, data_aug_fn, voc12
             # Loss
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
-            bce_loss = torch.nn.BCELoss()(x, labels)
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             loss = bce_loss + kl_loss
             val_loss_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
@@ -162,7 +162,7 @@ def train(config, device):
             # Loss
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
-            bce_loss = torch.nn.BCELoss()(x, labels)
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             loss = bce_loss + kl_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
