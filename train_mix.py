@@ -21,10 +21,10 @@ def validate(cls_model, data_loader, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             logit, cam = cls_model(imgs)
             cam = torch.mean(cam, dim=0)
-            # logit = F.softmax(logit, dim=1)
-            mix_loss = torch.nn.BCEWithLogitsLoss()(
+            logit = F.softmax(logit, dim=1)
+            mix_loss = torch.nn.BCELoss()(
                 torchutils.mean_agg(logit.unsqueeze(2).unsqueeze(2) * cam, r=1), labels)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(logit, labels)
+            bce_loss = torch.nn.BCELoss()(logit, labels)
             cam_loss = bce_loss
             loss = mix_loss
             val_loss_meter.add(
@@ -103,10 +103,10 @@ def train(config, device):
 
             logit, cam = cls_model(imgs)
             cam = torch.mean(cam, dim=0)
-            # logit = F.softmax(logit, dim=1)
-            mix_loss = torch.nn.BCEWithLogitsLoss()(
+            logit = F.softmax(logit, dim=1)
+            mix_loss = torch.nn.BCELoss()(
                 torchutils.mean_agg(logit.unsqueeze(2).unsqueeze(2) * cam, r=1), labels)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(logit, labels)
+            bce_loss = torch.nn.BCELoss()(logit, labels)
             cam_loss = bce_loss
             loss = mix_loss
             avg_meter.add(
