@@ -30,7 +30,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, scams, data_aug_fn, voc12
             # Front Door Adjustment
             # P(z|x)
             x = cls_model(imgs)
-            x = F.softmax(x, dim=1)
+            # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
@@ -144,7 +144,7 @@ def train(config, device):
             # Front Door Adjustment
             # P(z|x)
             x = cls_model(imgs)
-            x = F.softmax(x, dim=1)
+            # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
