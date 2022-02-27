@@ -196,6 +196,7 @@ def train(config, device):
 
 
 if __name__ == '__main__':
+    os.system('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline.pth /data/home/yipingwang/data/Models/Classification/resnet50_iter.pth')
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
