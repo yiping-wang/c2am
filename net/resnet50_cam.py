@@ -120,6 +120,7 @@ class NetDualHeads(nn.Module):
         x = self.stage3(x)
         x = self.stage4(x)
 
+        print(x.shape)
         logit = torchutils.gap2d(x, keepdims=True)
         logit = self.classifier(logit)
         logit = logit.view(-1, 20)
