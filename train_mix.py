@@ -102,7 +102,7 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
 
             logit, cam = cls_model(imgs)
-            cam = torch.mean(cam, dim=0).detach()
+            cam = torch.mean(cam, dim=0)
             logit = F.softmax(logit, dim=1)
             mix_loss = torch.nn.BCELoss()(
                 torchutils.mean_agg(logit.unsqueeze(2).unsqueeze(2) * cam, r=1), labels)
