@@ -47,7 +47,7 @@ class Net(nn.Module):
         feat = torchutils.gap2d(x, keepdims=True)
         x = self.classifier(feat)
         x = x.view(-1, 20)
-        return x, feat
+        return x, feat.squeeze()
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():
