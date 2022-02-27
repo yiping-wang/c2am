@@ -5,17 +5,19 @@ from net import resnet50
 
 
 class MLP(nn.Module):
-    def __init__(self, input_dim=20, output_dim=20):
+    def __init__(self, input_dim=2048, output_dim=128):
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, 120)
-        self.fc2 = nn.Linear(120, 60)
-        self.fc3 = nn.Linear(60, output_dim)
+        self.projection_head = nn.Sequential()
+        self.projection_head.add_module('W1', nn.Linear(
+            input_dim, input_dim))
+        self.projection_head.add_module('BN1', nn.BatchNorm1d(input_dim))
+        self.projection_head.add_module('ReLU', nn.ReLU())
+        self.projection_head.add_module('W2', nn.Linear(
+            input_dim, output_dim))
+        self.projection_head.add_module('BN2', nn.BatchNorm1d(output_dim))
 
     def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+        return self.projection_head(x)
 
 
 class Net(nn.Module):
@@ -42,10 +44,10 @@ class Net(nn.Module):
         x = self.stage2(x).detach()
         x = self.stage3(x)
         x = self.stage4(x)
-        x = torchutils.gap2d(x, keepdims=True)
-        x = self.classifier(x)
+        feat = torchutils.gap2d(x, keepdims=True)
+        x = self.classifier(feat)
         x = x.view(-1, 20)
-        return x
+        return x, feat
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():

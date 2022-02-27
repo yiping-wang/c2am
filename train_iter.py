@@ -29,20 +29,21 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, scams, data_aug_fn, voc12
             labels = pack['label'].cuda(device, non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x = cls_model(imgs)
+            x, _ = cls_model(imgs)
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
-            x = torchutils.lse_agg(x, r=logexpsum_r)
+            x = torchutils.mean_agg(x, r=logexpsum_r)
             # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
-            feats = [cls_model(aug) for aug in augs]
+            feats = [cls_model(aug)[1] for aug in augs]
             projs = [mlp(feat) for feat in feats]
-            proj_l, proj_k, proj_q, proj_t = projs
-            score_lk = torch.matmul(proj_l, proj_k.permute(1, 0))
-            score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
+            norms = [F.normalize(proj, dim=1) for proj in projs]
+            proj_l, proj_k, proj_q, proj_t = norms
+            score_lk = torch.matmul(proj_l, proj_k.T)
+            score_qt = torch.matmul(proj_q, proj_t.T)
             logprob_lk = F.log_softmax(score_lk, dim=1)
             prob_qt = F.softmax(score_qt, dim=1)
             # Loss
@@ -143,20 +144,21 @@ def train(config, device):
             labels = pack['label'].cuda(device, non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x = cls_model(imgs)
+            x, _ = cls_model(imgs)
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
-            x = torchutils.lse_agg(x, r=logexpsum_r)
+            x = torchutils.mean_agg(x, r=logexpsum_r)
             # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
-            feats = [cls_model(aug) for aug in augs]
+            feats = [cls_model(aug)[1] for aug in augs]
             projs = [mlp(feat) for feat in feats]
-            proj_l, proj_k, proj_q, proj_t = projs
-            score_lk = torch.matmul(proj_l, proj_k.permute(1, 0))
-            score_qt = torch.matmul(proj_q, proj_t.permute(1, 0))
+            norms = [F.normalize(proj, dim=1) for proj in projs]
+            proj_l, proj_k, proj_q, proj_t = norms
+            score_lk = torch.matmul(proj_l, proj_k.T)
+            score_qt = torch.matmul(proj_q, proj_t.T)
             logprob_lk = F.log_softmax(score_lk, dim=1)
             prob_qt = F.softmax(score_qt, dim=1)
             # Loss
