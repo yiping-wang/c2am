@@ -103,7 +103,7 @@ def train(config, device):
     max_step = (len(train_dataset) // cam_batch_size) * cam_num_epoches
 
     val_dataset = voc12.dataloader.VOC12ClassificationDataset(val_list, voc12_root=voc12_root,
-                                                              crop_size=512)
+                                                              crop_size=cam_crop_size)
     val_data_loader = DataLoader(val_dataset,
                                  batch_size=cam_batch_size,
                                  shuffle=False,
