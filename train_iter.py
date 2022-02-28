@@ -15,13 +15,17 @@ def concat(names, aug_fn, voc12_root, device):
     return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(device, non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, logexpsum_r, data_aug_fn, voc12_root, alpha, device, scams):
+def validate(cls_model, mlp, data_loader, logexpsum_r, data_aug_fn, voc12_root, alpha, device, cam_out_dir):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
 
+    # P(y|x, z)
+    # generate CAMs
+    os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
+    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # ===
     cls_model.eval()
     mlp.eval()
-
     with torch.no_grad():
         for pack in data_loader:
             names = pack['name']
@@ -60,7 +64,7 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, data_aug_fn, voc12_root, 
     bce = val_loss_meter.pop('bce')
     kl = val_loss_meter.pop('kl')
     print('Loss: {:.4f} | BCE: {:.4f} | KL: {:.4f}'.format(loss, bce, kl))
-    return loss
+    return loss, scams
 
 
 def train(config, device):
@@ -182,19 +186,13 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss = validate(cls_model, mlp, val_data_loader, logexpsum_r,
-                                 data_aug_fn, voc12_root, alpha, device, scams)
+                vloss, vscams = validate(cls_model, mlp, val_data_loader, logexpsum_r,
+                                         data_aug_fn, voc12_root, alpha, device, cam_out_dir)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
-                    # P(y|x, z)
-                    # generate CAMs
-                    os.system(
-                        'python3 make_small_cam.py --config ./cfg/iter.yml')
-                    scams = pyutils.sum_cams(cam_out_dir).cuda(
-                        device, non_blocking=True)
+                    scams = vscams
                     np.save(scam_path, scams.cpu().numpy())
-                    # ===
 
                 timer.reset_stage()
         # empty cache
