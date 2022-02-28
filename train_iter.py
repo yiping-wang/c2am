@@ -15,15 +15,10 @@ def concat(names, aug_fn, voc12_root, device):
     return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(device, non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha, device, cam_out_dir):
+def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha, device, scams):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
 
-    # P(y|x, z)
-    # generate CAMs
-    os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
-    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
-    # ===
     cls_model.eval()
     mlp.eval()
     with torch.no_grad():
@@ -31,14 +26,9 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             names = pack['name']
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
-            # Front Door Adjustment
-            # P(z|x)
             x, _ = cls_model(imgs)
-            # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
-            # Aggregate for classification
             x = torchutils.mean_agg(x, r=agg_smooth_r)
-            # Style Intervention
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
             feats = [cls_model(aug)[1] for aug in augs]
@@ -49,7 +39,6 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             score_qt = torch.matmul(proj_q, proj_t.T)
             logprob_lk = F.log_softmax(score_lk, dim=1)
             prob_qt = F.softmax(score_qt, dim=1)
-            # Loss
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
@@ -64,7 +53,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
     bce = val_loss_meter.pop('bce')
     kl = val_loss_meter.pop('kl')
     print('Loss: {:.4f} | BCE: {:.4f} | KL: {:.4f}'.format(loss, bce, kl))
-    return loss, scams
+    return loss
 
 
 def train(config, device):
@@ -138,6 +127,7 @@ def train(config, device):
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    vscams = scams.clone()
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -160,13 +150,20 @@ def train(config, device):
             projs = [mlp(feat) for feat in feats]
             norms = [F.normalize(proj, dim=1) for proj in projs]
             proj_l, proj_k, proj_q, proj_t = norms
+            # cosine similarity of each feature in l to all features in k
+            # each row of score_lk is an image in k and its similarity to all features in l
+            # each col of score_lk is an image in l and its similarity to all features in k
+            # applies the same to another set of augmentations qt
+            # then minimizes the KL-divergence of kl and qt
             score_lk = torch.matmul(proj_l, proj_k.T)
             score_qt = torch.matmul(proj_q, proj_t.T)
             logprob_lk = F.log_softmax(score_lk, dim=1)
             prob_qt = F.softmax(score_qt, dim=1)
             # Loss
+            # KL-divergence loss for Style Intervention
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
+            # Entropy loss for Content Adjustment
             bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
             loss = bce_loss + kl_loss
             avg_meter.add(
@@ -187,12 +184,16 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss, vscams = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                         data_aug_fn, voc12_root, alpha, device, cam_out_dir)
+                vloss = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
+                                 data_aug_fn, voc12_root, alpha, device, vscams)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
                     scams = vscams
+                    os.system(
+                        'python3 make_small_cam.py --config ./cfg/iter.yml')
+                    vscams = pyutils.sum_cams(cam_out_dir).cuda(
+                        device, non_blocking=True)
                     np.save(scam_path, scams.cpu().numpy())
 
                 timer.reset_stage()
