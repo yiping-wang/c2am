@@ -123,7 +123,7 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': mlp.parameters(), 'lr': 0.001 * cam_learning_rate,
+        {'params': mlp.parameters(), 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
@@ -151,6 +151,7 @@ def train(config, device):
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
+            # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Style Intervention from Eq. 3 at 2010.07922
             augs = [concat(names, data_aug_fn, voc12_root, device)
