@@ -15,7 +15,7 @@ def concat(names, aug_fn, voc12_root, device):
     return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(device, non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, logexpsum_r, data_aug_fn, voc12_root, alpha, device, cam_out_dir):
+def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha, device, cam_out_dir):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
 
@@ -37,25 +37,25 @@ def validate(cls_model, mlp, data_loader, logexpsum_r, data_aug_fn, voc12_root, 
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
-            x = torchutils.mean_agg(x, r=logexpsum_r)
+            x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Style Intervention
-            augs = [concat(names, data_aug_fn, voc12_root, device)
-                    for _ in range(4)]
-            feats = [cls_model(aug)[1] for aug in augs]
-            projs = [mlp(feat) for feat in feats]
-            norms = [F.normalize(proj, dim=1) for proj in projs]
-            proj_l, proj_k, proj_q, proj_t = norms
-            score_lk = torch.matmul(proj_l, proj_k.T)
-            score_qt = torch.matmul(proj_q, proj_t.T)
-            logprob_lk = F.log_softmax(score_lk, dim=1)
-            prob_qt = F.softmax(score_qt, dim=1)
+            # augs = [concat(names, data_aug_fn, voc12_root, device)
+            #         for _ in range(4)]
+            # feats = [cls_model(aug)[1] for aug in augs]
+            # projs = [mlp(feat) for feat in feats]
+            # norms = [F.normalize(proj, dim=1) for proj in projs]
+            # proj_l, proj_k, proj_q, proj_t = norms
+            # score_lk = torch.matmul(proj_l, proj_k.T)
+            # score_qt = torch.matmul(proj_q, proj_t.T)
+            # logprob_lk = F.log_softmax(score_lk, dim=1)
+            # prob_qt = F.softmax(score_qt, dim=1)
             # Loss
-            kl_loss = alpha * \
-                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
+            # kl_loss = alpha * \
+            #     torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
-            loss = bce_loss + kl_loss
+            loss = bce_loss# + kl_loss
             val_loss_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
 
     cls_model.train()
     mlp.train()
@@ -80,7 +80,7 @@ def train(config, device):
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
     cam_out_dir = config['cam_out_dir']
-    logexpsum_r = config['logexpsum_r']
+    agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
     scam_name = config['scam_name']
     alpha = config['alpha']
@@ -151,25 +151,25 @@ def train(config, device):
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
-            x = torchutils.mean_agg(x, r=logexpsum_r)
+            x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Style Intervention
-            augs = [concat(names, data_aug_fn, voc12_root, device)
-                    for _ in range(4)]
-            feats = [cls_model(aug)[1] for aug in augs]
-            projs = [mlp(feat) for feat in feats]
-            norms = [F.normalize(proj, dim=1) for proj in projs]
-            proj_l, proj_k, proj_q, proj_t = norms
-            score_lk = torch.matmul(proj_l, proj_k.T)
-            score_qt = torch.matmul(proj_q, proj_t.T)
-            logprob_lk = F.log_softmax(score_lk, dim=1)
-            prob_qt = F.softmax(score_qt, dim=1)
+            # augs = [concat(names, data_aug_fn, voc12_root, device)
+            #         for _ in range(4)]
+            # feats = [cls_model(aug)[1] for aug in augs]
+            # projs = [mlp(feat) for feat in feats]
+            # norms = [F.normalize(proj, dim=1) for proj in projs]
+            # proj_l, proj_k, proj_q, proj_t = norms
+            # score_lk = torch.matmul(proj_l, proj_k.T)
+            # score_qt = torch.matmul(proj_q, proj_t.T)
+            # logprob_lk = F.log_softmax(score_lk, dim=1)
+            # prob_qt = F.softmax(score_qt, dim=1)
             # Loss
-            kl_loss = alpha * \
-                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
+            # kl_loss = alpha * \
+            #     torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
-            loss = bce_loss + kl_loss
+            loss = bce_loss# + kl_loss
             avg_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
 
             optimizer.zero_grad()
             loss.backward()
@@ -186,7 +186,7 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss, vscams = validate(cls_model, mlp, val_data_loader, logexpsum_r,
+                vloss, vscams = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
                                          data_aug_fn, voc12_root, alpha, device, cam_out_dir)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
