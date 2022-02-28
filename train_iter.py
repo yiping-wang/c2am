@@ -39,23 +39,23 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             # Aggregate for classification
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Style Intervention
-            # augs = [concat(names, data_aug_fn, voc12_root, device)
-            #         for _ in range(4)]
-            # feats = [cls_model(aug)[1] for aug in augs]
-            # projs = [mlp(feat) for feat in feats]
-            # norms = [F.normalize(proj, dim=1) for proj in projs]
-            # proj_l, proj_k, proj_q, proj_t = norms
-            # score_lk = torch.matmul(proj_l, proj_k.T)
-            # score_qt = torch.matmul(proj_q, proj_t.T)
-            # logprob_lk = F.log_softmax(score_lk, dim=1)
-            # prob_qt = F.softmax(score_qt, dim=1)
+            augs = [concat(names, data_aug_fn, voc12_root, device)
+                    for _ in range(4)]
+            feats = [cls_model(aug)[1] for aug in augs]
+            projs = [mlp(feat) for feat in feats]
+            norms = [F.normalize(proj, dim=1) for proj in projs]
+            proj_l, proj_k, proj_q, proj_t = norms
+            score_lk = torch.matmul(proj_l, proj_k.T)
+            score_qt = torch.matmul(proj_q, proj_t.T)
+            logprob_lk = F.log_softmax(score_lk, dim=1)
+            prob_qt = F.softmax(score_qt, dim=1)
             # Loss
-            # kl_loss = alpha * \
-            #     torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
+            kl_loss = alpha * \
+                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
-            loss = bce_loss# + kl_loss
+            loss = bce_loss + kl_loss
             val_loss_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
     cls_model.train()
     mlp.train()
@@ -123,7 +123,7 @@ def train(config, device):
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': mlp.parameters(), 'lr': cam_learning_rate,
+        {'params': mlp.parameters(), 'lr': 0.1 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
@@ -152,24 +152,24 @@ def train(config, device):
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             x = torchutils.mean_agg(x, r=agg_smooth_r)
-            # Style Intervention
-            # augs = [concat(names, data_aug_fn, voc12_root, device)
-            #         for _ in range(4)]
-            # feats = [cls_model(aug)[1] for aug in augs]
-            # projs = [mlp(feat) for feat in feats]
-            # norms = [F.normalize(proj, dim=1) for proj in projs]
-            # proj_l, proj_k, proj_q, proj_t = norms
-            # score_lk = torch.matmul(proj_l, proj_k.T)
-            # score_qt = torch.matmul(proj_q, proj_t.T)
-            # logprob_lk = F.log_softmax(score_lk, dim=1)
-            # prob_qt = F.softmax(score_qt, dim=1)
+            # Style Intervention from Eq. 3 at 2010.07922
+            augs = [concat(names, data_aug_fn, voc12_root, device)
+                    for _ in range(4)]
+            feats = [cls_model(aug)[1] for aug in augs]
+            projs = [mlp(feat) for feat in feats]
+            norms = [F.normalize(proj, dim=1) for proj in projs]
+            proj_l, proj_k, proj_q, proj_t = norms
+            score_lk = torch.matmul(proj_l, proj_k.T)
+            score_qt = torch.matmul(proj_q, proj_t.T)
+            logprob_lk = F.log_softmax(score_lk, dim=1)
+            prob_qt = F.softmax(score_qt, dim=1)
             # Loss
-            # kl_loss = alpha * \
-            #     torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
+            kl_loss = alpha * \
+                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
-            loss = bce_loss# + kl_loss
+            loss = bce_loss + kl_loss
             avg_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
             optimizer.zero_grad()
             loss.backward()

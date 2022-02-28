@@ -17,7 +17,7 @@ cam_square_shape: 8
 cam_crop_size: 256
 cam_batch_size: 32
 cam_num_epoches: 50
-cam_learning_rate: 0.1
+cam_learning_rate: 0.1 # 0.01
 cam_weight_decay: 0.0001
 cam_weights_name: "resnet50_iter.pth"
 scam_name: "scam_si.npy"
