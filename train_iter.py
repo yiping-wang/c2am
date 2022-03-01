@@ -69,6 +69,7 @@ def train(config, device):
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
+    cam_weights_name_min = config['cam_weights_name_min']
     cam_out_dir = config['cam_out_dir']
     agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
@@ -76,6 +77,7 @@ def train(config, device):
     alpha = config['alpha']
     scam_out_dir = config['scam_out_dir']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
+    cam_weight_min_path = os.path.join(model_root, cam_weights_name_min)
     scam_path = os.path.join(scam_out_dir, scam_name)
 
     pyutils.seed_all(seed)
@@ -128,6 +130,7 @@ def train(config, device):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         # P(y|x, z)
         # generate CAMs
+        torch.save(cls_model.state_dict(), cam_weight_path)
         os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
         scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
         # ===
@@ -189,6 +192,7 @@ def train(config, device):
                                  data_aug_fn, voc12_root, alpha, device, scams)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
+                    torch.save(cls_model.state_dict(), cam_weight_min_path)
                     min_loss = vloss
                     os.system(
                         'python3 make_small_cam.py --config ./cfg/iter.yml')
