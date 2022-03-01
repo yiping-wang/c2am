@@ -125,15 +125,14 @@ def train(config, device):
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
 
+    # P(y|x, z)
+    # generate CAMs
+    os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
+    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # ===
     min_loss = float('inf')
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
-        # P(y|x, z)
-        # generate CAMs
-        torch.save(cls_model.state_dict(), cam_weight_path)
-        os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
-        scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
-        # ===
         for step, pack in enumerate(train_data_loader):
             names = pack['name']
             imgs = pack['img'].cuda(device, non_blocking=True)
@@ -191,14 +190,16 @@ def train(config, device):
                 vloss = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
                                  data_aug_fn, voc12_root, alpha, device, scams)
                 if vloss < min_loss:
-                    torch.save(cls_model.state_dict(), cam_weight_path)
                     torch.save(cls_model.state_dict(), cam_weight_min_path)
                     min_loss = vloss
-                    os.system(
-                        'python3 make_small_cam.py --config ./cfg/iter.yml')
-                    scams = pyutils.sum_cams(cam_out_dir).cuda(
-                        device, non_blocking=True)
                     np.save(scam_path, scams.cpu().numpy())
+                # P(y|x, z)
+                # generate CAMs
+                torch.save(cls_model.state_dict(), cam_weight_path)
+                os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
+                scams = pyutils.sum_cams(cam_out_dir).cuda(
+                    device, non_blocking=True)
+                # ===
 
                 timer.reset_stage()
         # empty cache
