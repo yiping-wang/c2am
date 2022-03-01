@@ -27,7 +27,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             x, _ = cls_model(imgs)
-            x = F.softmax(x, dim=1)
+            # x = F.softmax(x, dim=1)
             x = x.unsqueeze(2).unsqueeze(2) * scams
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             augs = [concat(names, data_aug_fn, voc12_root, device)
@@ -42,7 +42,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             prob_qt = F.softmax(score_qt, dim=1)
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
-            bce_loss = torch.nn.BCELoss()(x, labels)
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             loss = bce_loss + kl_loss
             val_loss_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
@@ -138,7 +138,7 @@ def train(config, device):
             # Front Door Adjustment
             # P(z|x)
             x, _ = cls_model(imgs)
-            x = F.softmax(x, dim=1)
+            # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
@@ -165,7 +165,7 @@ def train(config, device):
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             # Entropy loss for Content Adjustment
-            bce_loss = torch.nn.BCELoss()(x, labels)
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             loss = bce_loss + kl_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
