@@ -29,7 +29,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             x, _ = cls_model(imgs)
             x = F.softmax(x, dim=1)
             x = x.unsqueeze(2).unsqueeze(2) * scams
-            x = torchutils.max_agg(x, r=agg_smooth_r)
+            x = torchutils.mean_agg(x, r=agg_smooth_r)
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
             feats = [cls_model(aug)[1] for aug in augs]
@@ -143,7 +143,7 @@ def train(config, device):
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.max_agg(x, r=agg_smooth_r)
+            x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Style Intervention from Eq. 3 at 2010.07922
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
