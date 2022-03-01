@@ -43,7 +43,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             # kl_loss = alpha * \
             #     torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            loss = bce_loss + kl_loss
+            loss = bce_loss# + kl_loss
             val_loss_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
 
