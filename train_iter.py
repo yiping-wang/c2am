@@ -186,7 +186,7 @@ def train(config, device):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                 data_aug_fn, voc12_root, alpha, device, scams)
+                                 data_aug_fn, voc12_root, alpha, device, 0)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
