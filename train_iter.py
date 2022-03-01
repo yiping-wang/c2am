@@ -27,6 +27,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             x, _ = cls_model(imgs)
+            x = F.softmax(x, dim=1)
             x = x.unsqueeze(2).unsqueeze(2) * scams
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             augs = [concat(names, data_aug_fn, voc12_root, device)
@@ -41,7 +42,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             prob_qt = F.softmax(score_qt, dim=1)
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
-            bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
+            bce_loss = torch.nn.BCELoss()(x, labels)
             loss = bce_loss + kl_loss
             val_loss_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
@@ -127,7 +128,6 @@ def train(config, device):
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
-    vscams = scams.clone()
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -138,6 +138,7 @@ def train(config, device):
             # Front Door Adjustment
             # P(z|x)
             x, _ = cls_model(imgs)
+            x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
@@ -164,7 +165,7 @@ def train(config, device):
             kl_loss = alpha * \
                 torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             # Entropy loss for Content Adjustment
-            bce_loss = torch.nn.MultiLabelSoftMarginLoss()(x, labels)
+            bce_loss = torch.nn.BCELoss()(x, labels)
             loss = bce_loss + kl_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
@@ -189,11 +190,9 @@ def train(config, device):
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
-                    # improve stability target network
-                    scams = vscams
                     os.system(
                         'python3 make_small_cam.py --config ./cfg/iter.yml')
-                    vscams = pyutils.sum_cams(cam_out_dir).cuda(
+                    scams = pyutils.sum_cams(cam_out_dir).cuda(
                         device, non_blocking=True)
                     np.save(scam_path, scams.cpu().numpy())
 
