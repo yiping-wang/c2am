@@ -27,7 +27,6 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             x, _ = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
             x = x.unsqueeze(2).unsqueeze(2) * scams
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             augs = [concat(names, data_aug_fn, voc12_root, device)
@@ -129,6 +128,7 @@ def train(config, device):
     # generate CAMs
     os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
     for ep in range(cam_num_epoches):
@@ -140,7 +140,6 @@ def train(config, device):
             # Front Door Adjustment
             # P(z|x)
             x, _ = cls_model(imgs)
-            # x = F.softmax(x, dim=1)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
@@ -190,16 +189,8 @@ def train(config, device):
                 vloss = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
                                  data_aug_fn, voc12_root, alpha, device, scams)
                 if vloss < min_loss:
-                    torch.save(cls_model.state_dict(), cam_weight_min_path)
+                    torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
-                    np.save(scam_path, scams.cpu().numpy())
-                # P(y|x, z)
-                # generate CAMs
-                torch.save(cls_model.state_dict(), cam_weight_path)
-                os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
-                scams = pyutils.sum_cams(cam_out_dir).cuda(
-                    device, non_blocking=True)
-                # ===
 
                 timer.reset_stage()
         # empty cache
