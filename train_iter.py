@@ -28,8 +28,8 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             labels = pack['label'].cuda(device, non_blocking=True)
             x, _ = cls_model(imgs)
             # x = F.softmax(x, dim=1)
-            x = x.unsqueeze(2).unsqueeze(2) * scams
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = x.unsqueeze(2).unsqueeze(2) * scams
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
             feats = [cls_model(aug)[1] for aug in augs]
@@ -127,8 +127,8 @@ def train(config, device):
 
     # P(y|x, z)
     # generate CAMs
-    os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
-    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
+    # scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     # ===
     min_loss = float('inf')
     for ep in range(cam_num_epoches):
@@ -142,10 +142,10 @@ def train(config, device):
             x, _ = cls_model(imgs)
             # x = F.softmax(x, dim=1)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
+            # x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Style Intervention from Eq. 3 at 2010.07922
             augs = [concat(names, data_aug_fn, voc12_root, device)
                     for _ in range(4)]
@@ -195,9 +195,10 @@ def train(config, device):
                     np.save(scam_path, scams.cpu().numpy())
                 # P(y|x, z)
                 # generate CAMs
-                torch.save(cls_model.state_dict(), cam_weight_path)
-                os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
-                scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+                # torch.save(cls_model.state_dict(), cam_weight_path)
+                # os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
+                # scams = pyutils.sum_cams(cam_out_dir).cuda(
+                #     device, non_blocking=True)
                 # ===
 
                 timer.reset_stage()
