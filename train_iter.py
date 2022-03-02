@@ -30,22 +30,22 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             # x = F.softmax(x, dim=1)
             x = x.unsqueeze(2).unsqueeze(2) * scams
             x = torchutils.mean_agg(x, r=agg_smooth_r)
-            # augs = [concat(names, data_aug_fn, voc12_root, device)
-            #         for _ in range(4)]
-            # feats = [cls_model(aug)[1] for aug in augs]
-            # projs = [mlp(feat) for feat in feats]
-            # norms = [F.normalize(proj, dim=1) for proj in projs]
-            # proj_l, proj_k, proj_q, proj_t = norms
-            # score_lk = torch.matmul(proj_l, proj_k.T)
-            # score_qt = torch.matmul(proj_q, proj_t.T)
-            # logprob_lk = F.log_softmax(score_lk, dim=1)
-            # prob_qt = F.softmax(score_qt, dim=1)
-            # kl_loss = alpha * \
-            #     torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
+            augs = [concat(names, data_aug_fn, voc12_root, device)
+                    for _ in range(4)]
+            feats = [cls_model(aug)[1] for aug in augs]
+            projs = [mlp(feat) for feat in feats]
+            norms = [F.normalize(proj, dim=1) for proj in projs]
+            proj_l, proj_k, proj_q, proj_t = norms
+            score_lk = torch.matmul(proj_l, proj_k.T)
+            score_qt = torch.matmul(proj_q, proj_t.T)
+            logprob_lk = F.log_softmax(score_lk, dim=1)
+            prob_qt = F.softmax(score_qt, dim=1)
+            kl_loss = alpha * \
+                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            loss = bce_loss# + kl_loss
+            loss = bce_loss + kl_loss
             val_loss_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
     cls_model.train()
     mlp.train()
@@ -147,30 +147,30 @@ def train(config, device):
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Style Intervention from Eq. 3 at 2010.07922
-            # augs = [concat(names, data_aug_fn, voc12_root, device)
-            #         for _ in range(4)]
-            # feats = [cls_model(aug)[1] for aug in augs]
-            # projs = [mlp(feat) for feat in feats]
-            # norms = [F.normalize(proj, dim=1) for proj in projs]
-            # proj_l, proj_k, proj_q, proj_t = norms
+            augs = [concat(names, data_aug_fn, voc12_root, device)
+                    for _ in range(4)]
+            feats = [cls_model(aug)[1] for aug in augs]
+            projs = [mlp(feat) for feat in feats]
+            norms = [F.normalize(proj, dim=1) for proj in projs]
+            proj_l, proj_k, proj_q, proj_t = norms
             # cosine similarity of each feature in l to all features in k
             # each row of score_lk is an image in k and its similarity to all features in l
             # each col of score_lk is an image in l and its similarity to all features in k
             # applies the same to another set of augmentations qt
             # then minimizes the KL-divergence of kl and qt
-            # score_lk = torch.matmul(proj_l, proj_k.T)
-            # score_qt = torch.matmul(proj_q, proj_t.T)
-            # logprob_lk = F.log_softmax(score_lk, dim=1)
-            # prob_qt = F.softmax(score_qt, dim=1)
+            score_lk = torch.matmul(proj_l, proj_k.T)
+            score_qt = torch.matmul(proj_q, proj_t.T)
+            logprob_lk = F.log_softmax(score_lk, dim=1)
+            prob_qt = F.softmax(score_qt, dim=1)
             # Loss
             # KL-divergence loss for Style Intervention
-            # kl_loss = alpha * \
-            #     torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
+            kl_loss = alpha * \
+                torch.nn.KLDivLoss(reduction='batchmean')(logprob_lk, prob_qt)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            loss = bce_loss# + kl_loss
+            loss = bce_loss + kl_loss
             avg_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
             optimizer.zero_grad()
             loss.backward()
@@ -197,8 +197,7 @@ def train(config, device):
                 # generate CAMs
                 torch.save(cls_model.state_dict(), cam_weight_path)
                 os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
-                scams = pyutils.sum_cams(cam_out_dir).cuda(
-                    device, non_blocking=True)
+                scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
                 # ===
 
                 timer.reset_stage()
