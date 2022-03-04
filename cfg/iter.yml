@@ -19,7 +19,6 @@ cam_batch_size: 32
 cam_num_epoches: 50
 cam_learning_rate: 0.01
 cam_weight_decay: 0.0001
-cam_weights_name_min: "resnet50_iter_min.pth"
-cam_weights_name: "resnet50_iter_256.pth"
+cam_weights_name: "resnet50_iter.pth"
 scam_name: "scam_si.npy"
 alpha: 1
