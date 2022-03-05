@@ -7,6 +7,32 @@ import torch
 import os
 from pynvml import *
 
+import itertools
+import operator
+import collections
+import glob
+
+class IterateCAM:
+    def __init__(self, cam_dir):
+        self.cam_list = glob.glob(os.path.join(cam_dir, '*.npy'))
+        self.index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index == len(self.cam_list):
+            raise StopIteration
+        c = np.load(self.cam_list[self.index], allow_pickle=True).item()
+        self.index += 1
+        return c['raw_outputs']
+
+
+def sum_cams(cam_dir):
+    itcam = IterateCAM(cam_dir)
+    running_sum = itertools.accumulate(itcam)
+    running_mean = map(operator.truediv, running_sum, itertools.count(1))
+    return torch.from_numpy(collections.deque(running_mean, maxlen=1)[0])
 
 def set_gpus(n_gpus, verbose=False):
     selected_gpu = []

@@ -3,7 +3,7 @@ from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from torch.backends import cudnn
-from net.resnet50_cam import Net
+from net.resnet50_cam import CAM
 
 import argparse
 import numpy as np
@@ -15,7 +15,7 @@ from misc import torchutils, imutils, pyutils
 cudnn.enabled = True
 
 
-def _work(process_id, model, dataset, prev_scams, config):
+def _work(process_id, model, dataset, config):
     cam_out_dir = config['cam_out_dir']
     num_workers = config['num_workers']
     databin = dataset[process_id]
@@ -35,38 +35,27 @@ def _work(process_id, model, dataset, prev_scams, config):
             strided_size = imutils.get_strided_size(size, 4)
             strided_up_size = imutils.get_strided_up_size(size, 16)
 
-            # if prev_scams:
-            outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
+            outputs = [model(img[0].cuda(non_blocking=True))
                        for img in pack['img']]
-            outputs = [l.unsqueeze(2).unsqueeze(
-                2) * prev_scams for l in outputs]
-            # else:
-            #     outputs = [model(img[0].cuda(non_blocking=True))
-            #                for img in pack['img']]
 
-            # strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
-            #     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
-            strided_cam = torch.sum(torch.stack([F.interpolate(
-                o, strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
-
+            strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
+                o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
             strided_cam = strided_cam[valid_cat]
             strided_cam /= F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5
 
-            # highres_cam = [F.interpolate(torch.unsqueeze(
-            #     o, 1), strided_up_size, mode='bilinear', align_corners=False) for o in outputs]
-            highres_cam = [F.interpolate(
-                o, strided_up_size, mode='bilinear', align_corners=False) for o in outputs]
+            highres_cam = [F.interpolate(torch.unsqueeze(
+                o, 1), strided_up_size, mode='bilinear', align_corners=False) for o in outputs]
             highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[
                 :, 0, :size[0], :size[1]]
-
+                
             highres_cam = highres_cam[valid_cat]
             highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
 
             # save cams
-            # np.save(os.path.join(cam_out_dir, img_name + '.npy'),
-            #         {"keys": valid_cat,
-            #          "cam": strided_cam.cpu(),
-            #          "high_res": highres_cam.cpu().numpy()})
+            np.save(os.path.join(cam_out_dir, img_name + '.npy'),
+                    {"keys": valid_cat,
+                     "cam": strided_cam.cpu(),
+                     "high_res": highres_cam.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
@@ -78,11 +67,7 @@ def run(config):
     model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
-    cam_out_dir = config['cam_out_dir']
-
-    prev_scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-
-    model = Net()
+    model = CAM()
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
@@ -97,7 +82,7 @@ def run(config):
 
     print('[ ', end='')
     multiprocessing.spawn(_work, nprocs=n_gpus, args=(
-        model, dataset, prev_scams, config), join=True)
+        model, dataset, config), join=True)
     print(']')
 
     torch.cuda.empty_cache()
@@ -107,7 +92,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/front_door.yml')
+                        help='YAML config file path', default='./cfg/front_door_style_intervention.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
     run(config)

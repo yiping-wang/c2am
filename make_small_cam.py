@@ -1,3 +1,5 @@
+# Idea: Use most confident maps
+
 import torch
 from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
@@ -17,6 +19,7 @@ cudnn.enabled = True
 def _work(process_id, model, dataset, config):
     cam_out_dir = config['cam_out_dir']
     cam_square_shape = config['cam_square_shape']
+
     databin = dataset[process_id]
     n_gpus = torch.cuda.device_count()
     data_loader = DataLoader(databin, shuffle=False,
@@ -59,7 +62,6 @@ def run(config):
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
-    model.cuda()
 
     n_gpus = torch.cuda.device_count() - 1
 
@@ -80,8 +82,7 @@ def run(config):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
-    parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/front_door_v2.yml')
+    parser.add_argument('--config', type=str, help='YAML config file path')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
     run(config)

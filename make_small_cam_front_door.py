@@ -4,36 +4,30 @@ from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from torch.backends import cudnn
 from net.resnet50_cam import Net
-
 import argparse
 import numpy as np
 import os
 
 import voc12.dataloader
-from misc import torchutils, imutils, pyutils
+from misc import torchutils, pyutils
 
 cudnn.enabled = True
 
 
 def _work(process_id, model, dataset, prev_scams, config):
     cam_out_dir = config['cam_out_dir']
-    num_workers = config['num_workers']
+    cam_square_shape = config['cam_square_shape']
     databin = dataset[process_id]
     n_gpus = torch.cuda.device_count()
     data_loader = DataLoader(databin, shuffle=False,
-                             num_workers=num_workers//n_gpus, pin_memory=False)
+                             num_workers=1, pin_memory=False)
 
     with torch.no_grad(), cuda.device(process_id):
         model.cuda()
+        prev_scams = prev_scams.cuda()
         for iter, pack in enumerate(data_loader):
             img_name = pack['name'][0]
             label = pack['label'][0]
-            size = pack['size']
-
-            valid_cat = torch.nonzero(label)[:, 0]
-
-            strided_size = imutils.get_strided_size(size, 4)
-            strided_up_size = imutils.get_strided_up_size(size, 16)
 
             # if prev_scams:
             outputs = [model(img[0][0].unsqueeze(0).cuda(non_blocking=True))
@@ -44,29 +38,23 @@ def _work(process_id, model, dataset, prev_scams, config):
             #     outputs = [model(img[0].cuda(non_blocking=True))
             #                for img in pack['img']]
 
-            # strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
-            #     o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
-            strided_cam = torch.sum(torch.stack([F.interpolate(
-                o, strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
+            # raw_outputs = torch.sum(torch.stack(
+            #     [F.interpolate(torch.unsqueeze(o, 0),
+            #                    (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
+            #         for o in outputs]), 0)
+            raw_outputs = torch.sum(torch.stack(
+                [F.interpolate(o,
+                               (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
+                    for o in outputs]), 0)
 
-            strided_cam = strided_cam[valid_cat]
-            strided_cam /= F.adaptive_max_pool2d(strided_cam, (1, 1)) + 1e-5
-
-            # highres_cam = [F.interpolate(torch.unsqueeze(
-            #     o, 1), strided_up_size, mode='bilinear', align_corners=False) for o in outputs]
-            highres_cam = [F.interpolate(
-                o, strided_up_size, mode='bilinear', align_corners=False) for o in outputs]
-            highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[
-                :, 0, :size[0], :size[1]]
-
-            highres_cam = highres_cam[valid_cat]
-            highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
+            raw_outputs = raw_outputs / \
+                (F.adaptive_max_pool2d(raw_outputs, (1, 1)) + 1e-5)
+            valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
-            # np.save(os.path.join(cam_out_dir, img_name + '.npy'),
-            #         {"keys": valid_cat,
-            #          "cam": strided_cam.cpu(),
-            #          "high_res": highres_cam.cpu().numpy()})
+            np.save(os.path.join(cam_out_dir, img_name + '.npy'),
+                    {"keys": valid_cat,
+                    "raw_outputs": raw_outputs.cpu().numpy()})
 
             if process_id == n_gpus - 1 and iter % (len(databin) // 20) == 0:
                 print("%d " % ((5*iter+1)//(len(databin) // 20)), end='')
@@ -78,16 +66,22 @@ def run(config):
     model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
-    cam_out_dir = config['cam_out_dir']
+    scam_out_dir = config['scam_out_dir']
+    scam_name = config['scam_name']
+    scam_path = os.path.join(scam_out_dir, scam_name)
 
-    prev_scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    if os.path.exists(scam_path):
+        prev_scams = torch.from_numpy(np.load(scam_path))
+    else:
+        prev_scams = None
 
     model = Net()
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
+    model.cuda()
 
-    n_gpus = torch.cuda.device_count()
+    n_gpus = torch.cuda.device_count() - 1
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(train_list,
                                                              voc12_root=voc12_root,

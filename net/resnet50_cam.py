@@ -4,6 +4,22 @@ from misc import torchutils
 from net import resnet50
 
 
+class MLP(nn.Module):
+    def __init__(self, input_dim=2048, output_dim=128):
+        super().__init__()
+        self.projection_head = nn.Sequential()
+        self.projection_head.add_module('W1', nn.Linear(
+            input_dim, input_dim))
+        self.projection_head.add_module('BN1', nn.BatchNorm1d(input_dim))
+        self.projection_head.add_module('ReLU', nn.ReLU())
+        self.projection_head.add_module('W2', nn.Linear(
+            input_dim, output_dim))
+        self.projection_head.add_module('BN2', nn.BatchNorm1d(output_dim))
+
+    def forward(self, x):
+        return self.projection_head(x)
+
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -28,10 +44,10 @@ class Net(nn.Module):
         x = self.stage2(x).detach()
         x = self.stage3(x)
         x = self.stage4(x)
-        x = torchutils.gap2d(x, keepdims=True)
-        x = self.classifier(x)
+        feat = torchutils.gap2d(x, keepdims=True)
+        x = self.classifier(feat)
         x = x.view(-1, 20)
-        return x
+        return x, feat.squeeze()
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():
@@ -66,6 +82,7 @@ class CAM(nn.Module):
         x = self.stage2(x)
         x = self.stage3(x)
         x = self.stage4(x)
+        # Idea: juse stage 4 feat map (connected) and classifier.weights (disconnted) to generate CAM within batch
         x = F.conv2d(x, self.classifier.weight)
         x = F.relu(x)
         x = x[0] + x[1].flip(-1)
@@ -81,9 +98,9 @@ class CAM(nn.Module):
         return (list(self.backbone.parameters()), list(self.newly_added.parameters()))
 
 
-class CAMDualHeads(nn.Module):
+class NetDualHeads(nn.Module):
     def __init__(self):
-        super(CAMDualHeads, self).__init__()
+        super(NetDualHeads, self).__init__()
 
         self.resnet50 = resnet50.resnet50(
             pretrained=True, strides=(2, 2, 2, 1))
@@ -101,18 +118,23 @@ class CAMDualHeads(nn.Module):
 
     def forward(self, x):
         x = self.stage1(x)
-        x = self.stage2(x)
+        x = self.stage2(x).detach()
         x = self.stage3(x)
         x = self.stage4(x)
 
-        logit = torchutils.gap2d(x[0].unsqueeze(0), keepdims=True)
+        logit = torchutils.gap2d(x, keepdims=True)
         logit = self.classifier(logit)
         logit = logit.view(-1, 20)
 
-        cam = F.conv2d(x, self.classifier.weight)
+        # step: 6600/ 6610 Loss:0.1215 BCE:0.0950 CAM:0.0950 imps:336.7 lr: 0.0000 etc:Sat Feb 26 13:58:16 2022
+        # validating ... Loss: 0.2115 | BCE: 0.1115 | CAM: 0.1115
+        # cam = F.conv2d(x.detach(), self.classifier.weight)
+        # ===
+        #
+        cam = F.conv2d(x.detach(), self.classifier.weight.detach())
         cam = F.relu(cam)
-        cam = cam[0] + cam[1].flip(-1)
-        return cam, logit
+        cam = cam / (F.adaptive_max_pool2d(cam, (1, 1)) + 1e-5)
+        return logit, cam
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():
