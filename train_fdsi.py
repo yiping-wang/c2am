@@ -83,7 +83,7 @@ def train(config, device):
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list, voc12_root=voc12_root,
-                                                                resize_long=(160, 320), hor_flip=True,
+                                                                resize_long=(320, 640), hor_flip=True,
                                                                 crop_size=cam_crop_size, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
