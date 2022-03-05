@@ -16,7 +16,7 @@ def validate(model, data_loader):
         for pack in data_loader:
             img = pack['img'].cuda(device, non_blocking=True)
             label = pack['label'].cuda(device, non_blocking=True)
-            x = model(img)
+            x, _ = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
     model.train()
