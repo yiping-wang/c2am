@@ -87,7 +87,7 @@ def train(config, device):
         for step, pack in enumerate(train_data_loader):
             img = pack['img'].cuda(device, non_blocking=True)
             label = pack['label'].cuda(device, non_blocking=True)
-            x = model(img)
+            x, _ = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
             avg_meter.add({'loss1': loss.item()})
 
