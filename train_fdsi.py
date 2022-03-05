@@ -129,7 +129,7 @@ def train(config, device):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    os.system('python3 make_small_cam.py --config ./cfg/iter.yml')
+    os.system('python3 make_small_cam.py --config ./cfg/fdsi.yml')
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     np.save(scam_path, scams.cpu().numpy())
     # ===
@@ -199,7 +199,7 @@ def train(config, device):
                     # generate CAMs
                     # Using the current best weights
                     os.system(
-                        'python3 make_small_cam.py --config ./cfg/iter.yml')
+                        'python3 make_small_cam.py --config ./cfg/fdsi.yml')
                     scams = pyutils.sum_cams(cam_out_dir).cuda(
                         device, non_blocking=True)
                     np.save(scam_path, scams.cpu().numpy())
@@ -211,11 +211,11 @@ def train(config, device):
 
 
 if __name__ == '__main__':
-    os.system('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline.pth /data/home/yipingwang/data/Models/Classification/resnet50_iter.pth')
+    os.system('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline.pth /data/home/yipingwang/data/Models/Classification/resnet50_fdsi.pth')
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/iter.yml')
+                        help='YAML config file path', default='./cfg/fdsi.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
     device = torch.device('cuda:7')
