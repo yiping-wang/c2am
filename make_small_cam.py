@@ -20,7 +20,6 @@ def _work(process_id, model, dataset, config):
     cam_out_dir = config['cam_out_dir']
     cam_square_shape = config['cam_square_shape']
 
-    model.cuda()
     databin = dataset[process_id]
     n_gpus = torch.cuda.device_count()
     data_loader = DataLoader(databin, shuffle=False,

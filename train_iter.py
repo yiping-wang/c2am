@@ -184,6 +184,7 @@ def train(config, device):
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'BCE:%.4f' % (avg_meter.pop('bce')),
                       'KL:%.4f' % (avg_meter.pop('kl')),
+                      'Min:%.4f' % (min_loss),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
