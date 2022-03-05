@@ -37,6 +37,7 @@ def train(config, device):
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
     num_workers = config['num_workers']
+    cam_crop_size = config['cam_crop_size']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
 
@@ -45,9 +46,9 @@ def train(config, device):
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
                                                                 resize_long=(
-                                                                    320, 640),
+                                                                    160, 320),
                                                                 hor_flip=True,
-                                                                crop_size=512, crop_method="random")
+                                                                crop_size=cam_crop_size, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
                                    shuffle=True,
@@ -59,7 +60,7 @@ def train(config, device):
 
     val_dataset = voc12.dataloader.VOC12ClassificationDataset(val_list,
                                                               voc12_root=voc12_root,
-                                                              crop_size=512)
+                                                              crop_size=cam_crop_size)
     val_data_loader = DataLoader(val_dataset,
                                  batch_size=cam_batch_size,
                                  shuffle=False,
