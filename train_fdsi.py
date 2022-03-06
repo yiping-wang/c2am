@@ -53,7 +53,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
     bce = val_loss_meter.pop('bce')
     kl = val_loss_meter.pop('kl')
     print('Loss: {:.4f} | BCE: {:.4f} | KL: {:.4f}'.format(loss, bce, kl))
-    return loss
+    return loss, bce, kl
 
 
 def train(config, device):
@@ -134,6 +134,8 @@ def train(config, device):
     np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
+    min_bce = float('inf')
+    min_kl = float('inf')
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -190,11 +192,13 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                 data_aug_fn, voc12_root, alpha, device, scams)
+                vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
+                                            data_aug_fn, voc12_root, alpha, device, scams)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
+                    min_bce = vbce
+                    min_kl = vkl
                     # P(y|x, z)
                     # generate CAMs
                     # Using the current best weights
@@ -210,7 +214,9 @@ def train(config, device):
         torch.cuda.empty_cache()
 
     with open(cam_weights_name + '.txt', 'w') as f:
-        f.write('Min Validation Loss: {:.4f}'.format(min_loss))
+        f.write('Min Validation Loss: {:.4f}'.format(min_loss) + '\n')
+        f.write('Min BCE Loss: {:.4f}'.format(min_bce) + '\n')
+        f.write('Min KL Loss: {:.4f}'.format(min_kl) + '\n')
 
 
 if __name__ == '__main__':
