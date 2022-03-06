@@ -209,6 +209,8 @@ def train(config, device):
         # empty cache
         torch.cuda.empty_cache()
 
+    print('Min Validation Loss: {:.4f}'.format(min_loss))
+
 
 if __name__ == '__main__':
     os.system('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_256.pth /data/home/yipingwang/data/Models/Classification/resnet50_fdsi.pth')
