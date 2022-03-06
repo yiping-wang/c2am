@@ -209,17 +209,19 @@ def train(config, device):
         # empty cache
         torch.cuda.empty_cache()
 
-    print('=== Min Validation Loss: {:.4f}'.format(min_loss))
+    with open(cam_weights_name + '.txt', 'w') as f:
+        f.write('Min Validation Loss: {:.4f}'.format(min_loss))
 
 
 if __name__ == '__main__':
-    os.system('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_256.pth /data/home/yipingwang/data/Models/Classification/resnet50_fdsi_exp1.pth')
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
                         help='YAML config file path', default='./cfg/fdsi.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
+    os.system(
+        'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_256.pth /data/home/yipingwang/data/Models/Classification/{}'.format(config['cam_weights_name']))
     device = torch.device('cuda:7')
     train(config, device)
     # os.system('python3 make_cam.py --config ./cfg/front_door.yml')
