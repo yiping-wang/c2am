@@ -209,11 +209,11 @@ def train(config, device):
         # empty cache
         torch.cuda.empty_cache()
 
-    print('Min Validation Loss: {:.4f}'.format(min_loss))
+    print('=== Min Validation Loss: {:.4f}'.format(min_loss))
 
 
 if __name__ == '__main__':
-    os.system('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_256.pth /data/home/yipingwang/data/Models/Classification/resnet50_fdsi.pth')
+    os.system('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_256.pth /data/home/yipingwang/data/Models/Classification/resnet50_fdsi_exp1.pth')
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
