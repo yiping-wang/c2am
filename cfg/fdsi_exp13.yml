@@ -17,7 +17,7 @@ cam_square_shape: 8
 cam_crop_size: 256
 cam_batch_size: 32
 cam_num_epoches: 5
-cam_learning_rate: 0.04
+cam_learning_rate: 0.08
 cam_weight_decay: 0.00001
 cam_weights_name: "resnet50_fdsi_exp13.pth"
 scam_name: "scam_fdsi.npy"
