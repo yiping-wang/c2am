@@ -1,5 +1,4 @@
-python3 train_fdsi.py --config ./cfg/fdsi_exp14.yml
-python3 train_fdsi.py --config ./cfg/fdsi_exp15.yml
+python3 train_fdsi.py --config ./cfg/fdsi_exp16.yml
 
 python3 train_fdsi.py --config ./cfg/fdsi_exp3.yml
 python3 train_fdsi.py --config ./cfg/fdsi_exp4.yml
