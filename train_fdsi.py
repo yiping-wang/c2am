@@ -82,7 +82,7 @@ def train(config, device):
     else:
         resize_long = (160, 320)
     print('resize long: {}'.format(resize_long))
-    
+
     pyutils.seed_all(seed)
 
     data_aug_fn = torchutils.get_simclr_pipeline_transform(size=cam_crop_size)
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
     os.system(
-        'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_256.pth /data/home/yipingwang/data/Models/Classification/{}'.format(config['cam_weights_name']))
+        'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(config['cam_crop_size'], config['cam_weights_name']))
     device = torch.device('cuda:7')
     train(config, device)
     # os.system('python3 make_cam.py --config ./cfg/front_door.yml')
