@@ -48,8 +48,8 @@ def train(config, device):
     print('resize long: {}'.format(resize_long))
 
     model = Net().cuda(device)
-    model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name)), strict=True)
+    # model.load_state_dict(torch.load(os.path.join(
+    #     model_root, cam_weights_name)), strict=True)
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
