@@ -236,4 +236,6 @@ if __name__ == '__main__':
         'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(config['cam_crop_size'], config['cam_weights_name']))
     device = torch.device('cuda:7')
     train(config, device)
+    print('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
+        config['cam_crop_size'], config['cam_weights_name']))
     # os.system('python3 make_cam.py --config ./cfg/front_door.yml')
