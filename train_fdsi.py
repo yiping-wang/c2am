@@ -232,10 +232,10 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/fdsi.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    os.system(
-        'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(config['cam_crop_size'], config['cam_weights_name']))
+    copy_weights = 'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
+        config['cam_crop_size'], config['cam_weights_name'])
+    print(copy_weights)
+    os.system(copy_weights)
     device = torch.device('cuda:7')
     train(config, device)
-    print('cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
-        config['cam_crop_size'], config['cam_weights_name']))
     # os.system('python3 make_cam.py --config ./cfg/front_door.yml')
