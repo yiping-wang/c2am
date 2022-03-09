@@ -81,7 +81,8 @@ def train(config, device):
         resize_long = (320, 640)
     else:
         resize_long = (160, 320)
-
+    print('resize long: {}'.format(resize_long))
+    
     pyutils.seed_all(seed)
 
     data_aug_fn = torchutils.get_simclr_pipeline_transform(size=cam_crop_size)

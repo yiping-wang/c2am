@@ -45,6 +45,7 @@ def train(config, device):
         resize_long = (320, 640)
     else:
         resize_long = (160, 320)
+    print('resize long: {}'.format(resize_long))
 
     model = Net().cuda(device)
     model.load_state_dict(torch.load(os.path.join(
