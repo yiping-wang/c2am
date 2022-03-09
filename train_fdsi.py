@@ -77,13 +77,18 @@ def train(config, device):
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     scam_path = os.path.join(scam_out_dir, scam_name)
 
+    if cam_crop_size == 512:
+        resize_long = (320, 640)
+    else:
+        resize_long = (160, 320)
+
     pyutils.seed_all(seed)
 
     data_aug_fn = torchutils.get_simclr_pipeline_transform(size=cam_crop_size)
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list, voc12_root=voc12_root,
-                                                                resize_long=(320, 640), hor_flip=True,
+                                                                resize_long=resize_long, hor_flip=True,
                                                                 crop_size=cam_crop_size, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,

@@ -41,14 +41,18 @@ def train(config, device):
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
 
+    if cam_crop_size == 512:
+        resize_long = (320, 640)
+    else:
+        resize_long = (160, 320)
+
     model = Net().cuda(device)
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name)), strict=True)
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
-                                                                resize_long=(
-                                                                    160, 320),
+                                                                resize_long=resize_long,
                                                                 hor_flip=True,
                                                                 crop_size=cam_crop_size, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
