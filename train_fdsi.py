@@ -30,7 +30,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             x = x.unsqueeze(2).unsqueeze(2) * scams
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.)
+            kl_loss = torch.tensor(0.).cuda(device)
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root, device)
                         for _ in range(4)]
@@ -161,7 +161,7 @@ def train(config, device):
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.)
+            kl_loss = torch.tensor(0.).cuda(device)
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root, device)
