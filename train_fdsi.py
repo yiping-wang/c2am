@@ -59,7 +59,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
     return loss, bce, kl
 
 
-def train(config, device):
+def train(config, device, config_path):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -138,7 +138,7 @@ def train(config, device):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    os.system('python3 make_small_cam.py --config ./cfg/fdsi.yml')
+    os.system('python3 make_small_cam.py --config {}'.format(config_path))
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     np.save(scam_path, scams.cpu().numpy())
     # ===
@@ -215,7 +215,7 @@ def train(config, device):
                     # generate CAMs
                     # Using the current best weights
                     os.system(
-                        'python3 make_small_cam.py --config ./cfg/fdsi.yml')
+                        'python3 make_small_cam.py --config {}'.format(config_path))
                     scams = pyutils.sum_cams(cam_out_dir).cuda(
                         device, non_blocking=True)
                     np.save(scam_path, scams.cpu().numpy())
@@ -241,7 +241,7 @@ if __name__ == '__main__':
     copy_weights = 'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
         config['cam_crop_size'], config['cam_weights_name'])
     print(copy_weights)
+    print(args.config)
     os.system(copy_weights)
     device = torch.device('cuda:7')
-    train(config, device)
-    # os.system('python3 make_cam.py --config ./cfg/front_door.yml')
+    train(config, device, args.config)
