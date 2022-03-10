@@ -29,6 +29,8 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             x, _ = cls_model(imgs)
             x = x.unsqueeze(2).unsqueeze(2) * scams
             x = torchutils.mean_agg(x, r=agg_smooth_r)
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            kl_loss = torch.tensor(0.)
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root, device)
                         for _ in range(4)]
@@ -43,15 +45,9 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
                 kl_loss = alpha * \
                     torch.nn.KLDivLoss(reduction='batchmean')(
                         logprob_lk, prob_qt)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            if alpha > 0:
-                loss = bce_loss + kl_loss
-                val_loss_meter.add(
-                    {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
-            else:
-                loss = bce_loss
-                val_loss_meter.add(
-                    {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
+            loss = bce_loss + kl_loss
+            val_loss_meter.add(
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
     cls_model.train()
     mlp.train()
@@ -117,7 +113,7 @@ def train(config, device):
                                  drop_last=True)
 
     cls_model = Net().cuda(device)
-    mlp = MLP().cuda(device)
+    mlp = MLP().cuda(device) if alpha > 0 else MLP()
 
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(os.path.join(
@@ -163,6 +159,9 @@ def train(config, device):
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # Entropy loss for Content Adjustment
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            kl_loss = torch.tensor(0.)
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root, device)
@@ -184,16 +183,10 @@ def train(config, device):
                 kl_loss = alpha * \
                     torch.nn.KLDivLoss(reduction='batchmean')(
                         logprob_lk, prob_qt)
-            # Entropy loss for Content Adjustment
-            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            if alpha > 0:
-                loss = bce_loss + kl_loss
-                avg_meter.add(
-                    {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
-            else:
-                loss = bce_loss
-                avg_meter.add(
-                    {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': 0})
+            # Loss
+            loss = bce_loss + kl_loss
+            avg_meter.add(
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
             optimizer.zero_grad()
             loss.backward()
