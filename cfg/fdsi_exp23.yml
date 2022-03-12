@@ -8,6 +8,7 @@ scam_out_dir: "/data/home/yipingwang/data/SCAMFdsi"
 # Dataset
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
+cam_list: "voc12/train_aug_val.txt"
 
 # Class Activation Map
 num_workers: 24
