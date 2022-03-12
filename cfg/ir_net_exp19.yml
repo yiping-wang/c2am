@@ -6,7 +6,7 @@ model_root: "/data/home/yipingwang/data/Models/Classification/"
 # Dataset
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
-chainer_eval_set: "train"
+chainer_eval_set: "val"
 
 irn_weights_name: "irnet_exp19.pth"
 cam_out_dir: "/data/home/yipingwang/data/CAMFdsi"
