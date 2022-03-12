@@ -11,7 +11,7 @@ chainer_eval_set: "val"
 irn_weights_name: "irnet_baseline_256_e10.pth"
 cam_out_dir: "/data/home/yipingwang/data/CAMBaseline"
 ir_label_out_dir: "/data/home/yipingwang/data/IRLabelBaseline"
-infer_list: "voc12/train.txt"
+infer_list: "voc12/val.txt"
 
 # IRNet
 num_workers: 24
