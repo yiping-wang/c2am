@@ -58,7 +58,7 @@ def run(config):
     model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
-    model = IntervenedCAM(config['cam_out_dir'])
+    model = IntervenedCAM(config['cam_out_dir'], config['cam_square_shape'])
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()

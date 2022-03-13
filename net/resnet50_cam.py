@@ -101,7 +101,7 @@ class CAM(nn.Module):
 
 
 class IntervenedCAM(nn.Module):
-    def __init__(self, cam_dir):
+    def __init__(self, cam_dir, cam_square):
         super(IntervenedCAM, self).__init__()
         self.resnet50 = resnet50.resnet50(
             pretrained=True, strides=(2, 2, 2, 1))
@@ -118,24 +118,21 @@ class IntervenedCAM(nn.Module):
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
 
-        self.cam_is_empty = len(os.listdir(cam_dir)) == 0
-        self.cam_dir = cam_dir
+        cam_is_empty = len(os.listdir(cam_dir)) == 0
+        if cam_is_empty:
+            self.scams = torch.ones(20, cam_square, cam_square)
+        else:
+            self.scams = pyutils.sum_cams(self.cam_dir)
 
     def forward(self, x):
-        if self.cam_is_empty:
-            print('!!!')
-            scams = torch.ones(20, 32, 32)
-        else:
-            print('????')
-            scams = pyutils.sum_cams(self.cam_dir).cuda(non_blocking=True)
-
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
         x = self.stage4(x)
-
         x = F.conv2d(x, self.classifier.weight)
-        x = x * scams.unsqueeze(0)
+
+        x = x * F.interpolate(self.scams.unsqueeze(0), size=x.shape[2:],
+                              mode='bilinear', align_corners=False).cuda(non_blocking=True)
 
         x = F.relu(x)
         x = x[0] + x[1].flip(-1)

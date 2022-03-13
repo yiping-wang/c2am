@@ -47,7 +47,7 @@ def _work(process_id, model, dataset, config):
                 o, 1), strided_up_size, mode='bilinear', align_corners=False) for o in outputs]
             highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[
                 :, 0, :size[0], :size[1]]
-                
+
             highres_cam = highres_cam[valid_cat]
             highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
 
@@ -67,7 +67,7 @@ def run(config):
     model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
-    model = IntervenedCAM(config['cam_out_dir'])
+    model = IntervenedCAM(config['cam_out_dir'], config['cam_square_shape'])
     model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
