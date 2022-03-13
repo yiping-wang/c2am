@@ -123,6 +123,7 @@ class IntervenedCAM(nn.Module):
 
     def forward(self, x):
         if self.cam_is_empty:
+            print('!!!')
             scams = torch.ones(20, 32, 32)
         else:
             print('????')
