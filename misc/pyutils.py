@@ -58,7 +58,7 @@ def set_gpus(n_gpus, verbose=False):
 
 
 def seed_all(seed=0):
-    torch.manual_seed(0)
+    torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
 
