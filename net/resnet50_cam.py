@@ -122,7 +122,7 @@ class IntervenedCAM(nn.Module):
         if cam_is_empty:
             self.scams = torch.ones(20, cam_square, cam_square)
         else:
-            self.scams = pyutils.sum_cams(self.cam_dir)
+            self.scams = pyutils.sum_cams(cam_dir)
 
     def forward(self, x):
         x = self.stage1(x)
