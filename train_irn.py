@@ -10,6 +10,7 @@ from net.resnet50_irn import AffinityDisplacementLoss
 
 
 def train(config):
+    seed = config['seed']
     train_list = config['train_list']
     ir_label_out_dir = config['ir_label_out_dir']
     infer_list = config['infer_list']
@@ -22,6 +23,8 @@ def train(config):
     irn_learning_rate = config['irn_learning_rate']
     irn_weight_decay = config['irn_weight_decay']
     irn_weights_name = config['irn_weights_name']
+
+    pyutils.seed_all(seed)
 
     path_index = indexing.PathIndex(radius=10, default_size=(
         irn_crop_size // 4, irn_crop_size // 4))

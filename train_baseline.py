@@ -16,7 +16,7 @@ def validate(model, data_loader):
         for pack in data_loader:
             img = pack['img'].cuda(device, non_blocking=True)
             label = pack['label'].cuda(device, non_blocking=True)
-            x = model(img)
+            x, _ = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
     model.train()
@@ -37,17 +37,25 @@ def train(config, device):
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
     num_workers = config['num_workers']
+    cam_crop_size = config['cam_crop_size']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
 
+    if cam_crop_size == 512:
+        resize_long = (320, 640)
+    else:
+        resize_long = (160, 320)
+    print('resize long: {}'.format(resize_long))
+
     model = Net().cuda(device)
+    # model.load_state_dict(torch.load(os.path.join(
+    #     model_root, cam_weights_name)), strict=True)
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
-                                                                resize_long=(
-                                                                    320, 640),
+                                                                resize_long=resize_long,
                                                                 hor_flip=True,
-                                                                crop_size=512, crop_method="random")
+                                                                crop_size=cam_crop_size, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
                                    shuffle=True,
@@ -59,7 +67,7 @@ def train(config, device):
 
     val_dataset = voc12.dataloader.VOC12ClassificationDataset(val_list,
                                                               voc12_root=voc12_root,
-                                                              crop_size=512)
+                                                              crop_size=cam_crop_size)
     val_data_loader = DataLoader(val_dataset,
                                  batch_size=cam_batch_size,
                                  shuffle=False,
@@ -86,7 +94,7 @@ def train(config, device):
         for step, pack in enumerate(train_data_loader):
             img = pack['img'].cuda(device, non_blocking=True)
             label = pack['label'].cuda(device, non_blocking=True)
-            x = model(img)
+            x, _ = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
             avg_meter.add({'loss1': loss.item()})
 
@@ -105,7 +113,7 @@ def train(config, device):
                 # validation
                 vloss = validate(model, val_data_loader)
                 if vloss < min_loss:
-                    torch.save(model.state_dict(), cam_weight_path + '.pth')
+                    torch.save(model.state_dict(), cam_weight_path)
                     min_loss = vloss
                 timer.reset_stage()
         # empty cache
