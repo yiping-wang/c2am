@@ -138,7 +138,7 @@ def train(config, device, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    os.system('python3 make_small_intervened_cam.py --config {}'.format(config_path))
+    os.system('python3 make_small_cam.py --config {}'.format(config_path))
     scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
     np.save(scam_path, scams.cpu().numpy())
     # ===
@@ -215,7 +215,7 @@ def train(config, device, config_path):
                     # generate CAMs
                     # Using the current best weights
                     os.system(
-                        'python3 make_small_intervened_cam.py --config {}'.format(config_path))
+                        'python3 make_small_cam.py --config {}'.format(config_path))
                     scams = pyutils.sum_cams(cam_out_dir).cuda(
                         device, non_blocking=True)
                     np.save(scam_path, scams.cpu().numpy())

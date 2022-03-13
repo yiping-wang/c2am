@@ -1,39 +1,27 @@
-echo "======= Exp E ========="
+echo "======= Exp 32 ========="
 rm /data/home/yipingwang/data/CAMFdsi/*
 rm /data/home/yipingwang/data/IRLabelFdsi/*
 rm /data/home/yipingwang/data/SemSegFdsi/*
-python3 train_fdsi.py --config ./cfg/fdsi_expE.yml
-python3 make_intervened_cam.py --config ./cfg/fdsi_expE.yml
-python3 cam_to_ir_label.py     --config ./cfg/ir_net_expE.yml
-python3 train_irn.py           --config ./cfg/ir_net_expE.yml
-python3 make_sem_seg_labels.py --config ./cfg/ir_net_expE.yml
-python3 eval_sem_seg.py        --config ./cfg/ir_net_expE.yml
+python3 train_fdsi.py --config ./cfg/fdsi_exp32.yml
+python3 make_cam_regular.py    --config ./cfg/fdsi_exp32.yml
+python3 cam_to_ir_label.py     --config ./cfg/ir_net_exp32.yml
+python3 train_irn.py           --config ./cfg/ir_net_exp32.yml
+python3 make_sem_seg_labels.py --config ./cfg/ir_net_exp32.yml
+python3 eval_sem_seg.py        --config ./cfg/ir_net_exp32.yml
 echo "========================"
 
-# echo "======= Exp 32 ========="
-# rm /data/home/yipingwang/data/CAMFdsi/*
-# rm /data/home/yipingwang/data/IRLabelFdsi/*
-# rm /data/home/yipingwang/data/SemSegFdsi/*
-# python3 train_fdsi.py --config ./cfg/fdsi_exp32.yml
-# python3 make_cam_regular.py    --config ./cfg/fdsi_exp32.yml
-# python3 cam_to_ir_label.py     --config ./cfg/ir_net_exp32.yml
-# python3 train_irn.py           --config ./cfg/ir_net_exp32.yml
-# python3 make_sem_seg_labels.py --config ./cfg/ir_net_exp32.yml
-# python3 eval_sem_seg.py        --config ./cfg/ir_net_exp32.yml
-# echo "========================"
 
-
-# echo "======= Exp 33 ========="
-# rm /data/home/yipingwang/data/CAMFdsi/*
-# rm /data/home/yipingwang/data/IRLabelFdsi/*
-# rm /data/home/yipingwang/data/SemSegFdsi/*
-# python3 train_fdsi.py --config ./cfg/fdsi_exp33.yml
-# python3 make_cam_regular.py    --config ./cfg/fdsi_exp33.yml
-# python3 cam_to_ir_label.py     --config ./cfg/ir_net_exp33.yml
-# python3 train_irn.py           --config ./cfg/ir_net_exp33.yml
-# python3 make_sem_seg_labels.py --config ./cfg/ir_net_exp33.yml
-# python3 eval_sem_seg.py        --config ./cfg/ir_net_exp33.yml
-# echo "========================"
+echo "======= Exp 33 ========="
+rm /data/home/yipingwang/data/CAMFdsi/*
+rm /data/home/yipingwang/data/IRLabelFdsi/*
+rm /data/home/yipingwang/data/SemSegFdsi/*
+python3 train_fdsi.py --config ./cfg/fdsi_exp33.yml
+python3 make_cam_regular.py    --config ./cfg/fdsi_exp33.yml
+python3 cam_to_ir_label.py     --config ./cfg/ir_net_exp33.yml
+python3 train_irn.py           --config ./cfg/ir_net_exp33.yml
+python3 make_sem_seg_labels.py --config ./cfg/ir_net_exp33.yml
+python3 eval_sem_seg.py        --config ./cfg/ir_net_exp33.yml
+echo "========================"
 
 
 # echo "======= Exp 25 ========="
@@ -207,4 +195,16 @@ echo "========================"
 # python3 train_irn.py           --config ./cfg/ir_net_exp31.yml
 # python3 make_sem_seg_labels.py --config ./cfg/ir_net_exp31.yml
 # python3 eval_sem_seg.py        --config ./cfg/ir_net_exp31.yml
+# echo "========================"
+
+# echo "======= Exp E ========="
+# rm /data/home/yipingwang/data/CAMFdsi/*
+# rm /data/home/yipingwang/data/IRLabelFdsi/*
+# rm /data/home/yipingwang/data/SemSegFdsi/*
+# python3 train_fdsi.py --config ./cfg/fdsi_expE.yml
+# python3 make_intervened_cam.py --config ./cfg/fdsi_expE.yml
+# python3 cam_to_ir_label.py     --config ./cfg/ir_net_expE.yml
+# python3 train_irn.py           --config ./cfg/ir_net_expE.yml
+# python3 make_sem_seg_labels.py --config ./cfg/ir_net_expE.yml
+# python3 eval_sem_seg.py        --config ./cfg/ir_net_expE.yml
 # echo "========================"
