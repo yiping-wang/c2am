@@ -125,6 +125,7 @@ class IntervenedCAM(nn.Module):
         if self.cam_is_empty:
             scams = torch.ones(20, 32, 32)
         else:
+            print('????')
             scams = pyutils.sum_cams(self.cam_dir).cuda(non_blocking=True)
 
         x = self.stage1(x)
