@@ -41,6 +41,9 @@ def _work(process_id, model, dataset, config):
 
             raw_outputs = raw_outputs / \
                 (F.adaptive_max_pool2d(raw_outputs, (1, 1)) + 1e-5)
+
+            # filter out errorous cams
+            raw_outputs = label.unsqueeze(1).unsqueeze(1) * raw_outputs
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
