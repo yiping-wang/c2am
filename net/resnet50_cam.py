@@ -23,7 +23,7 @@ class MLP(nn.Module):
 
 
 class IntervenedNet(nn.Module):
-    def __init__(self, cam_dir, cam_square):
+    def __init__(self):
         super(IntervenedNet, self).__init__()
 
         self.resnet50 = resnet50.resnet50(
@@ -41,18 +41,12 @@ class IntervenedNet(nn.Module):
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
 
-        cam_is_empty = len(os.listdir(cam_dir)) == 0
-        if cam_is_empty:
-            self.scams = torch.ones(20, cam_square, cam_square)
-        else:
-            self.scams = pyutils.sum_cams(cam_dir)
-
-    def forward(self, x):
+    def forward(self, x, scams):
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
         x = self.stage4(x)
-        x = x * self.scams.unsqueeze(0)
+        x = x * scams.unsqueeze(0)
 
         feat = torchutils.gap2d(x, keepdims=True)
         x = self.classifier(feat)

@@ -112,8 +112,7 @@ def train(config, device, config_path):
                                  pin_memory=True,
                                  drop_last=True)
 
-    cls_model = IntervenedNet(
-        cam_out_dir, config['cam_square_shape']).cuda(device)
+    cls_model = IntervenedNet().cuda(device)
     mlp = MLP().cuda(device) if alpha > 0 else MLP()
 
     # load the pre-trained weights
@@ -154,7 +153,7 @@ def train(config, device, config_path):
             labels = pack['label'].cuda(device, non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x, _ = cls_model(imgs)
+            x, _ = cls_model(imgs, scams)
             # P(y|do(x))
             # x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
