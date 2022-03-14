@@ -112,7 +112,8 @@ def train(config, device, config_path):
                                  pin_memory=True,
                                  drop_last=True)
 
-    cls_model = IntervenedNet().cuda(device)
+    cls_model = IntervenedNet(
+        cam_out_dir, config['cam_square_shape']).cuda(device)
     mlp = MLP().cuda(device) if alpha > 0 else MLP()
 
     # load the pre-trained weights
