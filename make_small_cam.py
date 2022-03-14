@@ -1,5 +1,6 @@
 # Idea: Use most confident maps
 
+from zmq import device
 import torch
 from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
@@ -43,7 +44,7 @@ def _work(process_id, model, dataset, config):
                 (F.adaptive_max_pool2d(raw_outputs, (1, 1)) + 1e-5)
 
             # filter out errorous cams
-            raw_outputs = label.unsqueeze(1).unsqueeze(1) * raw_outputs
+            raw_outputs = label.unsqueeze(1).unsqueeze(1).cuda() * raw_outputs
             valid_cat = torch.nonzero(label)[:, 0]
 
             # save cams
