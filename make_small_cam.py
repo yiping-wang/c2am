@@ -1,6 +1,5 @@
 # Idea: Use most confident maps
 
-from zmq import device
 import torch
 from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
