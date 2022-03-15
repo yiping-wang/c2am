@@ -122,9 +122,6 @@ def train(config, config_path):
     cls_model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name)), strict=True)
 
-    cls_model = torch.nn.DataParallel(cls_model).cuda()
-    recam_predictor = torch.nn.DataParallel(recam_predictor).cuda()
-
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': 0.1 * cam_learning_rate,
@@ -141,6 +138,9 @@ def train(config, config_path):
     mlp.train()
     recam_predictor.train()
 
+    cls_model = torch.nn.DataParallel(cls_model).cuda()
+    recam_predictor = torch.nn.DataParallel(recam_predictor).cuda()
+    
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
 
