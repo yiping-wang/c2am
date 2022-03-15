@@ -195,6 +195,9 @@ def train(config, config_path):
                         logprob_lk, prob_qt)
             # Loss
             loss = bce_loss + recam_loss_weight * sce_loss
+            print(bce_loss)
+            print(sce_loss)
+            print(loss)
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'sce': sce_loss.item()})
 
