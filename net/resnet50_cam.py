@@ -302,7 +302,7 @@ class Class_Predictor(nn.Module):
         return loss/batch_size, acc/num
 
 
-class ReCAM(Net):
+class ReCAM(ReNet):
 
     def __init__(self, stride=16, n_classes=20):
         super(ReCAM, self).__init__(stride=stride, n_classes=n_classes)
