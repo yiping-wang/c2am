@@ -116,14 +116,14 @@ def train(config, config_path):
     cls_model = Net_CAM_Feature()
     recam_predictor = Class_Predictor(20, 2048)
 
-    cls_model = torch.nn.DataParallel(cls_model).cuda()
-    recam_predictor = torch.nn.DataParallel(recam_predictor).cuda()
-
     mlp = MLP().cuda() if alpha > 0 else MLP()
 
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(os.path.join(
         model_root, cam_weights_name)), strict=True)
+
+    cls_model = torch.nn.DataParallel(cls_model).cuda()
+    recam_predictor = torch.nn.DataParallel(recam_predictor).cuda()
 
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
