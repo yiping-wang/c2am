@@ -136,7 +136,7 @@ def train(config):
             torch.stack(dp_mean_list), dim=0)
     print('done.')
 
-    torch.save(model.state_dict(), os.path.join(model_root, irn_weights_name))
+    torch.save(model.module.state_dict(), os.path.join(model_root, irn_weights_name))
     torch.cuda.empty_cache()
 
 
