@@ -23,12 +23,13 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
     mlp.eval()
     with torch.no_grad():
         for pack in data_loader:
+            # NOTE: Not adjust here?
             names = pack['name']
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
             x, _, _ = cls_model(imgs)
-            # x = x.unsqueeze(2).unsqueeze(2) * scams
-            # x = torchutils.mean_agg(x, r=agg_smooth_r)
+            x = x.unsqueeze(2).unsqueeze(2) * scams
+            x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             kl_loss = torch.tensor(0.).cuda(
             ) if alpha > 0 else torch.tensor(0.)
@@ -205,7 +206,7 @@ def train(config, config_path):
                         logprob_lk, prob_qt)
             # Loss
             sce_loss = sce_loss.mean()
-            loss = bce_loss + recam_loss_weight * sce_loss
+            loss = bce_loss + recam_loss_weight * sce_loss  # + kl_loss
 
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'sce': sce_loss.item(), 'kl': kl_loss.item()})
