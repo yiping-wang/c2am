@@ -132,11 +132,12 @@ def train(config):
 
             dp_mean_list.append(torch.mean(dp, dim=(0, 2, 3)).cpu())
 
-        model.mean_shift.running_mean = torch.mean(
+        model.module.mean_shift.running_mean = torch.mean(
             torch.stack(dp_mean_list), dim=0)
     print('done.')
 
-    torch.save(model.module.state_dict(), os.path.join(model_root, irn_weights_name))
+    torch.save(model.module.state_dict(),
+               os.path.join(model_root, irn_weights_name))
     torch.cuda.empty_cache()
 
 
