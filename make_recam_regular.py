@@ -68,8 +68,8 @@ def run(config):
     voc12_root = config['voc12_root']
     model_root = config['model_root']
     cam_scales = config['cam_scales']
-    cam_weights_name = config['cam_weights_name']
-    recam_weights_name = config['recam_weights_name']
+    cam_weights_name = config['laste_cam_weights_name']
+    recam_weights_name = config['laste_recam_weight_path']
     recam_weight_path = os.path.join(model_root, recam_weights_name)
     cam_weight_path = os.path.join(model_root, cam_weights_name)
 

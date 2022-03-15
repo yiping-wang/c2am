@@ -23,5 +23,7 @@ cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
 cam_weights_name: "resnet50_fdsi_expReCAM.pth"
 recam_weights_name: "recam_fdsi_expReCAM.pth"
+laste_cam_weights_name: "resnet50_fdsi_expReCAM_laste.pth"
+laste_recam_weights_name: "recam_fdsi_expReCAM_laste.pth"
 scam_name: "scam_fdsi_expE.npy"
 alpha: 0

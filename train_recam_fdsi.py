@@ -30,7 +30,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             # x = x.unsqueeze(2).unsqueeze(2) * scams
             # x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.).cuda()
+            kl_loss = torch.tensor(0.)  # .cuda()
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root)
                         for _ in range(4)]
@@ -79,8 +79,13 @@ def train(config, config_path):
     alpha = config['alpha']
     recam_loss_weight = config['recam_loss_weight']
     scam_out_dir = config['scam_out_dir']
+    laste_cam_weights_name = config['laste_cam_weights_name']
+    laste_recam_weights_name = config['laste_recam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     recam_weight_path = os.path.join(model_root, recam_weights_name)
+    laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
+    laste_recam_weight_path = os.path.join(
+        model_root, laste_recam_weights_name)
     scam_path = os.path.join(scam_out_dir, scam_name)
 
     if cam_crop_size == 512:
@@ -149,7 +154,7 @@ def train(config, config_path):
     # generate CAMs
     # Using the pre-trained weights
     # os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    # scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
     # np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
@@ -232,14 +237,16 @@ def train(config, config_path):
                     # Using the current best weights
                     # os.system(
                     #     'python3 make_small_cam.py --config {}'.format(config_path))
-                    # scams = pyutils.sum_cams(cam_out_dir).cuda(
-                    #     device, non_blocking=True)
+                    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
                     # np.save(scam_path, scams.cpu().numpy())
                     # ===
 
                 timer.reset_stage()
         # empty cache
         torch.cuda.empty_cache()
+        torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
+        torch.save(recam_predictor.module.state_dict(),
+                   laste_recam_weight_path)
 
     with open(cam_weights_name + '.txt', 'w') as f:
         f.write('Min Validation Loss: {:.4f}'.format(min_loss) + '\n')
