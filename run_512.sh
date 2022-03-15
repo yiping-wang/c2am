@@ -1,12 +1,12 @@
 # with Fd: 0.6447031600493294
 # Without Fd: 0.62408110726733
 
-echo "======= Exp E ========="
+echo "======= Exp ReCAM ========="
 rm /data/home/yipingwang/data/CAMFdsi/*
 rm /data/home/yipingwang/data/IRLabelFdsi/*
 rm /data/home/yipingwang/data/SemSegFdsi/*
 python3 train_re_fdsi.py --config ./cfg/fdsi_expE.yml
-python3 make_cam_regular.py    --config ./cfg/fdsi_expE.yml
+python3 make_recam_regular.py    --config ./cfg/fdsi_expE.yml
 python3 cam_to_ir_label.py     --config ./cfg/ir_net_expE.yml
 python3 train_irn.py           --config ./cfg/ir_net_expE.yml
 python3 make_sem_seg_labels.py --config ./cfg/ir_net_expE.yml

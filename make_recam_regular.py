@@ -3,7 +3,7 @@ from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from torch.backends import cudnn
-from net.resnet50_cam import CAM
+from net.resnet50_cam import ReCAM, Class_Predictor
 
 import argparse
 import numpy as np
@@ -15,7 +15,7 @@ from misc import torchutils, imutils, pyutils
 cudnn.enabled = True
 
 
-def _work(process_id, model, dataset, config):
+def _work(process_id, model, recam_predictor, dataset, config):
     cam_out_dir = config['cam_out_dir']
     num_workers = config['num_workers']
     databin = dataset[process_id]
@@ -25,6 +25,8 @@ def _work(process_id, model, dataset, config):
 
     with torch.no_grad(), cuda.device(process_id):
         model.cuda()
+        recam_predictor.cuda()
+
         for iter, pack in enumerate(data_loader):
             img_name = pack['name'][0]
             label = pack['label'][0]
@@ -35,8 +37,8 @@ def _work(process_id, model, dataset, config):
             strided_size = imutils.get_strided_size(size, 4)
             strided_up_size = imutils.get_strided_up_size(size, 16)
 
-            outputs = [model(img[0].cuda(non_blocking=True))
-                       for img in pack['img']]
+            outputs = [model.forward2(img[0].cuda(
+                non_blocking=True), recam_predictor.classifier.weight) for img in pack['img']]  # b x 20 x w x h
 
             strided_cam = torch.sum(torch.stack([F.interpolate(torch.unsqueeze(
                 o, 0), strided_size, mode='bilinear', align_corners=False)[0] for o in outputs]), 0)
@@ -47,7 +49,7 @@ def _work(process_id, model, dataset, config):
                 o, 1), strided_up_size, mode='bilinear', align_corners=False) for o in outputs]
             highres_cam = torch.sum(torch.stack(highres_cam, 0), 0)[
                 :, 0, :size[0], :size[1]]
-                
+
             highres_cam = highres_cam[valid_cat]
             highres_cam /= F.adaptive_max_pool2d(highres_cam, (1, 1)) + 1e-5
 
@@ -67,10 +69,19 @@ def run(config):
     model_root = config['model_root']
     cam_scales = config['cam_scales']
     cam_weights_name = config['cam_weights_name']
-    model = CAM()
-    model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name), map_location='cpu'), strict=True)
+    recam_weights_name = config['recam_weights_name']
+    recam_weight_path = os.path.join(model_root, recam_weights_name)
+    cam_weight_path = os.path.join(model_root, cam_weights_name)
+
+    model = ReCAM()
+    model.load_state_dict(torch.load(
+        cam_weight_path, map_location='cpu'), strict=True)
     model.eval()
+
+    recam_predictor = Class_Predictor(20, 2048)
+    recam_predictor.load_state_dict(torch.load(
+        recam_weight_path, map_location='cpu'), strict=True)
+    recam_predictor.eval()
 
     n_gpus = torch.cuda.device_count()
 
@@ -82,7 +93,7 @@ def run(config):
 
     print('[ ', end='')
     multiprocessing.spawn(_work, nprocs=n_gpus, args=(
-        model, dataset, config), join=True)
+        model, recam_predictor, dataset, config), join=True)
     print(']')
 
     torch.cuda.empty_cache()

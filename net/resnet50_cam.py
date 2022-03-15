@@ -300,3 +300,49 @@ class Class_Predictor(nn.Module):
             num += label.size(0)
 
         return loss/batch_size, acc/num
+
+
+class ReCAM(Net):
+
+    def __init__(self, stride=16, n_classes=20):
+        super(ReCAM, self).__init__(stride=stride, n_classes=n_classes)
+
+    def forward(self, x, separate=False):
+        x = self.stage1(x)
+        x = self.stage2(x)
+        x = self.stage3(x)
+        x = self.stage4(x)
+        x = F.conv2d(x, self.classifier.weight)
+        if separate:
+            return x
+        x = F.relu(x)
+        x = x[0] + x[1].flip(-1)
+
+        return x
+
+    def forward1(self, x, weight, separate=False):
+        x = self.stage1(x)
+        x = self.stage2(x)
+        x = self.stage3(x)
+        x = self.stage4(x)
+        x = F.conv2d(x, weight)
+
+        if separate:
+            return x
+        x = F.relu(x)
+        x = x[0] + x[1].flip(-1)
+
+        return x
+
+    def forward2(self, x, weight, separate=False):
+        x = self.stage1(x)
+        x = self.stage2(x)
+        x = self.stage3(x)
+        x = self.stage4(x)
+        x = F.conv2d(x, weight*self.classifier.weight)
+
+        if separate:
+            return x
+        x = F.relu(x)
+        x = x[0] + x[1].flip(-1)
+        return x

@@ -62,7 +62,7 @@ def _work(process_id, model, dataset, config):
 
 
 def run(config):
-    train_list = config['cam_list']
+    train_list = config['train_list']
     voc12_root = config['voc12_root']
     model_root = config['model_root']
     cam_scales = config['cam_scales']

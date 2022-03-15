@@ -74,11 +74,13 @@ def train(config, config_path):
     cam_out_dir = config['cam_out_dir']
     agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
+    recam_weights_name = config['recam_weights_name']
     scam_name = config['scam_name']
     alpha = config['alpha']
     recam_loss_weight = config['recam_loss_weight']
     scam_out_dir = config['scam_out_dir']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
+    recam_weight_path = os.path.join(model_root, recam_weights_name)
     scam_path = os.path.join(scam_out_dir, scam_name)
 
     if cam_crop_size == 512:
@@ -220,6 +222,8 @@ def train(config, config_path):
                                             data_aug_fn, voc12_root, alpha, 0)
                 if vloss < min_loss:
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
+                    torch.save(recam_predictor.module.state_dict(),
+                               recam_weight_path)
                     min_loss = vloss
                     min_bce = vbce
                     min_kl = vkl
