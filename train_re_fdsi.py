@@ -27,8 +27,8 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
             x, _, _ = cls_model(imgs)
-            x = x.unsqueeze(2).unsqueeze(2) * scams
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            #x = x.unsqueeze(2).unsqueeze(2) * scams
+            #x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             kl_loss = torch.tensor(0.).cuda(device)
             if alpha > 0:
@@ -143,9 +143,9 @@ def train(config, device, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
-    np.save(scam_path, scams.cpu().numpy())
+    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
+    # scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
     min_bce = float('inf')
@@ -160,10 +160,10 @@ def train(config, device, config_path):
             # P(z|x)
             x, cam, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
+            #x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            #x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             sce_loss, _ = recam_predictor(cam, labels)
@@ -212,7 +212,7 @@ def train(config, device, config_path):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                            data_aug_fn, voc12_root, alpha, device, scams)
+                                            data_aug_fn, voc12_root, alpha, device, 0)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
@@ -221,11 +221,11 @@ def train(config, device, config_path):
                     # P(y|x, z)
                     # generate CAMs
                     # Using the current best weights
-                    os.system(
-                        'python3 make_small_cam.py --config {}'.format(config_path))
-                    scams = pyutils.sum_cams(cam_out_dir).cuda(
-                        device, non_blocking=True)
-                    np.save(scam_path, scams.cpu().numpy())
+                    # os.system(
+                    #     'python3 make_small_cam.py --config {}'.format(config_path))
+                    # scams = pyutils.sum_cams(cam_out_dir).cuda(
+                    #     device, non_blocking=True)
+                    # np.save(scam_path, scams.cpu().numpy())
                     # ===
 
                 timer.reset_stage()

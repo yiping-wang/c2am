@@ -1,3 +1,5 @@
+# with Fd: 0.6447031600493294
+
 echo "======= Exp E ========="
 rm /data/home/yipingwang/data/CAMFdsi/*
 rm /data/home/yipingwang/data/IRLabelFdsi/*
