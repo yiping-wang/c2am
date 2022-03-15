@@ -161,6 +161,7 @@ def train(config, config_path):
             # Front Door Adjustment
             # P(z|x)
             x, _ = cls_model(imgs)
+            print(x.shape)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
