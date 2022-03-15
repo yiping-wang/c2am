@@ -1,7 +1,7 @@
 echo "======= Exp ReCAM ========="
 mkdir -p /data/home/yipingwang/data/CAMReCAM/
 mkdir -p /data/home/yipingwang/data/IRLabelReCAM/
-mdkir -p /data/home/yipingwang/data/SemSegReCAM/
+mkdir -p /data/home/yipingwang/data/SemSegReCAM/
 rm /data/home/yipingwang/data/CAMReCAM/*
 rm /data/home/yipingwang/data/IRLabelReCAM/*
 rm /data/home/yipingwang/data/SemSegReCAM/*
