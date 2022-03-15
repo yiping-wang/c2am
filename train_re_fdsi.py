@@ -11,11 +11,11 @@ from net.resnet50_cam import Net_CAM_Feature, MLP, Class_Predictor
 from voc12.dataloader import get_img_path
 
 
-def concat(names, aug_fn, voc12_root, device):
-    return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(device, non_blocking=True)
+def concat(names, aug_fn, voc12_root):
+    return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha, device, scams):
+def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha, scams):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
 
@@ -24,15 +24,15 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
     with torch.no_grad():
         for pack in data_loader:
             names = pack['name']
-            imgs = pack['img'].cuda(device, non_blocking=True)
-            labels = pack['label'].cuda(device, non_blocking=True)
+            imgs = pack['img'].cuda(non_blocking=True)
+            labels = pack['label'].cuda(non_blocking=True)
             x, _, _ = cls_model(imgs)
-            #x = x.unsqueeze(2).unsqueeze(2) * scams
-            #x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = x.unsqueeze(2).unsqueeze(2) * scams
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.).cuda(device)
+            kl_loss = torch.tensor(0.).cuda()
             if alpha > 0:
-                augs = [concat(names, data_aug_fn, voc12_root, device)
+                augs = [concat(names, data_aug_fn, voc12_root)
                         for _ in range(4)]
                 feats = [cls_model(aug)[1] for aug in augs]
                 projs = [mlp(feat) for feat in feats]
@@ -59,7 +59,7 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
     return loss, bce, kl
 
 
-def train(config, device, config_path):
+def train(config, config_path):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -113,9 +113,13 @@ def train(config, device, config_path):
                                  pin_memory=True,
                                  drop_last=True)
 
-    cls_model = Net_CAM_Feature().cuda(device)
-    recam_predictor = Class_Predictor(20, 2048).cuda(device)
-    mlp = MLP().cuda(device) if alpha > 0 else MLP()
+    cls_model = Net_CAM_Feature()
+    recam_predictor = Class_Predictor(20, 2048)
+
+    cls_model = torch.nn.DataParallel(cls_model).cuda()
+    recam_predictor = torch.nn.DataParallel(recam_predictor).cuda()
+
+    mlp = MLP().cuda() if alpha > 0 else MLP()
 
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(os.path.join(
@@ -154,23 +158,23 @@ def train(config, device, config_path):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             names = pack['name']
-            imgs = pack['img'].cuda(device, non_blocking=True)
-            labels = pack['label'].cuda(device, non_blocking=True)
+            imgs = pack['img'].cuda(non_blocking=True)
+            labels = pack['label'].cuda(non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
             x, cam, _ = cls_model(imgs)
             # P(y|do(x))
-            #x = x.unsqueeze(2).unsqueeze(2) * scams
+            # x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            #x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             sce_loss, _ = recam_predictor(cam, labels)
-            kl_loss = torch.tensor(0.).cuda(device)
+            kl_loss = torch.tensor(0.).cuda()
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
-                augs = [concat(names, data_aug_fn, voc12_root, device)
+                augs = [concat(names, data_aug_fn, voc12_root)
                         for _ in range(4)]
                 feats = [cls_model(aug)[1] for aug in augs]
                 projs = [mlp(feat) for feat in feats]
@@ -212,7 +216,7 @@ def train(config, device, config_path):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                            data_aug_fn, voc12_root, alpha, device, 0)
+                                            data_aug_fn, voc12_root, alpha, 0)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
@@ -250,5 +254,4 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-    device = torch.device('cuda:7')
-    train(config, device, args.config)
+    train(config, args.config)

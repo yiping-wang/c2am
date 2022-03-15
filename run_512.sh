@@ -1,4 +1,5 @@
 # with Fd: 0.6447031600493294
+# Without Fd: 0.62408110726733
 
 echo "======= Exp E ========="
 rm /data/home/yipingwang/data/CAMFdsi/*
