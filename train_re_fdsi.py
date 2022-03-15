@@ -26,9 +26,9 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             names = pack['name']
             imgs = pack['img'].cuda(device, non_blocking=True)
             labels = pack['label'].cuda(device, non_blocking=True)
-            x, _ = cls_model(imgs)
-            x = x.unsqueeze(2).unsqueeze(2) * scams
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            x, _, _ = cls_model(imgs)
+            #x = x.unsqueeze(2).unsqueeze(2) * scams
+            #x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             kl_loss = torch.tensor(0.).cuda(device)
             if alpha > 0:
@@ -212,7 +212,7 @@ def train(config, device, config_path):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                            data_aug_fn, voc12_root, alpha, device, scams)
+                                            data_aug_fn, voc12_root, alpha, device, 0)
                 if vloss < min_loss:
                     torch.save(cls_model.state_dict(), cam_weight_path)
                     min_loss = vloss
