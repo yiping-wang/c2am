@@ -2,7 +2,7 @@
 seed: 0
 voc12_root: "/data/home/yipingwang/data/VOCdevkit/VOC2012/"
 model_root: "/data/home/yipingwang/data/Models/Classification/"
-cam_out_dir: "/data/home/yipingwang/data/CAMFdsi"
+cam_out_dir: "/data/home/yipingwang/data/CAMReCAM/"
 scam_out_dir: "/data/home/yipingwang/data/SCAMFdsi"
 
 # Dataset
@@ -21,7 +21,7 @@ cam_batch_size: 16
 cam_num_epoches: 1
 cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
-cam_weights_name: "resnet50_fdsi_expE.pth"
-recam_weights_name: "recam_fdsi_expE.pth"
+cam_weights_name: "resnet50_fdsi_expReCAM.pth"
+recam_weights_name: "recam_fdsi_expReCAM.pth"
 scam_name: "scam_fdsi_expE.npy"
 alpha: 0
