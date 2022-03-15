@@ -154,6 +154,8 @@ def train(config, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
+    torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
+    torch.save(recam_predictor.module.state_dict(), laste_recam_weight_path)
     os.system('python3 make_small_recam.py --config {}'.format(config_path))
     scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
     np.save(scam_path, scams.cpu().numpy())
@@ -228,6 +230,7 @@ def train(config, config_path):
                 vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
                                             data_aug_fn, voc12_root, alpha, scams)
                 if vloss < min_loss:
+                    # NOTE: update scams every epoch?
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
                     torch.save(recam_predictor.module.state_dict(),
                                recam_weight_path)
@@ -237,6 +240,10 @@ def train(config, config_path):
                     # P(y|x, z)
                     # generate CAMs
                     # Using the current best weights
+                    torch.save(cls_model.module.state_dict(),
+                               laste_cam_weight_path)
+                    torch.save(recam_predictor.module.state_dict(),
+                               laste_recam_weight_path)
                     os.system(
                         'python3 make_small_recam.py --config {}'.format(config_path))
                     scams = pyutils.sum_cams(
