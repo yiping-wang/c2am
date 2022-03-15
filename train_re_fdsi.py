@@ -140,7 +140,7 @@ def train(config, config_path):
 
     cls_model = torch.nn.DataParallel(cls_model).cuda()
     recam_predictor = torch.nn.DataParallel(recam_predictor).cuda()
-    
+
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
 
@@ -218,7 +218,7 @@ def train(config, config_path):
                 vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
                                             data_aug_fn, voc12_root, alpha, 0)
                 if vloss < min_loss:
-                    torch.save(cls_model.state_dict(), cam_weight_path)
+                    torch.save(cls_model.module.state_dict(), cam_weight_path)
                     min_loss = vloss
                     min_bce = vbce
                     min_kl = vkl
