@@ -170,7 +170,7 @@ def train(config, config_path):
             # Entropy loss for Content Adjustment
             bce_loss = F.multilabel_soft_margin_loss(x, labels)
             sce_loss, _ = recam_predictor(cam, labels)
-            # kl_loss = torch.tensor(0.).cuda()
+            kl_loss = torch.tensor(0.)  # .cuda()
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root)
@@ -199,7 +199,7 @@ def train(config, config_path):
             print(sce_loss)
             print(loss)
             avg_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'sce': sce_loss.item()})
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'sce': sce_loss.item(), 'kl': kl_loss.item()})
 
             optimizer.zero_grad()
             loss.backward()
