@@ -2,7 +2,7 @@ echo "======= Exp E ========="
 rm /data/home/yipingwang/data/CAMFdsi/*
 rm /data/home/yipingwang/data/IRLabelFdsi/*
 rm /data/home/yipingwang/data/SemSegFdsi/*
-python3 train_fdsi.py --config ./cfg/fdsi_expE.yml
+python3 train_re_fdsi.py --config ./cfg/fdsi_expE.yml
 python3 make_cam_regular.py    --config ./cfg/fdsi_expE.yml
 python3 cam_to_ir_label.py     --config ./cfg/ir_net_expE.yml
 python3 train_irn.py           --config ./cfg/ir_net_expE.yml

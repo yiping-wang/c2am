@@ -143,9 +143,9 @@ def train(config, device, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
-    np.save(scam_path, scams.cpu().numpy())
+    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
+    # scams = pyutils.sum_cams(cam_out_dir).cuda(device, non_blocking=True)
+    # np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
     min_bce = float('inf')
@@ -160,10 +160,10 @@ def train(config, device, config_path):
             # P(z|x)
             x, cam, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
+            #x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            #x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             sce_loss, _ = recam_predictor(cam, labels)
@@ -221,11 +221,11 @@ def train(config, device, config_path):
                     # P(y|x, z)
                     # generate CAMs
                     # Using the current best weights
-                    os.system(
-                        'python3 make_small_cam.py --config {}'.format(config_path))
-                    scams = pyutils.sum_cams(cam_out_dir).cuda(
-                        device, non_blocking=True)
-                    np.save(scam_path, scams.cpu().numpy())
+                    # os.system(
+                    #     'python3 make_small_cam.py --config {}'.format(config_path))
+                    # scams = pyutils.sum_cams(cam_out_dir).cuda(
+                    #     device, non_blocking=True)
+                    # np.save(scam_path, scams.cpu().numpy())
                     # ===
 
                 timer.reset_stage()
