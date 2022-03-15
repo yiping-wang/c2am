@@ -30,7 +30,8 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             # x = x.unsqueeze(2).unsqueeze(2) * scams
             # x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.)  # .cuda()
+            kl_loss = torch.tensor(0.).cuda(
+            ) if alpha > 0 else torch.tensor(0.)
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root)
                         for _ in range(4)]
@@ -125,8 +126,8 @@ def train(config, config_path):
     mlp = MLP().cuda() if alpha > 0 else MLP()
 
     # load the pre-trained weights
-    cls_model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name)), strict=True)
+    cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
+    recam_predictor.load_state_dict(torch.load(recam_weight_path), strict=True)
 
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
@@ -153,9 +154,9 @@ def train(config, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    # np.save(scam_path, scams.cpu().numpy())
+    os.system('python3 make_small_recam.py --config {}'.format(config_path))
+    scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
     min_bce = float('inf')
@@ -170,14 +171,15 @@ def train(config, config_path):
             # P(z|x)
             x, cam, _ = cls_model(imgs)
             # P(y|do(x))
-            # x = x.unsqueeze(2).unsqueeze(2) * scams
+            x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            # x = torchutils.mean_agg(x, r=agg_smooth_r)
+            x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = F.multilabel_soft_margin_loss(x, labels)
             sce_loss, _ = recam_predictor(cam, labels)
-            kl_loss = torch.tensor(0.)  # .cuda()
+            kl_loss = torch.tensor(0.).cuda(
+            ) if alpha > 0 else torch.tensor(0.)
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
                 augs = [concat(names, data_aug_fn, voc12_root)
@@ -224,7 +226,7 @@ def train(config, config_path):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                            data_aug_fn, voc12_root, alpha, 0)
+                                            data_aug_fn, voc12_root, alpha, scams)
                 if vloss < min_loss:
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
                     torch.save(recam_predictor.module.state_dict(),
@@ -235,10 +237,11 @@ def train(config, config_path):
                     # P(y|x, z)
                     # generate CAMs
                     # Using the current best weights
-                    # os.system(
-                    #     'python3 make_small_cam.py --config {}'.format(config_path))
-                    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-                    # np.save(scam_path, scams.cpu().numpy())
+                    os.system(
+                        'python3 make_small_recam.py --config {}'.format(config_path))
+                    scams = pyutils.sum_cams(
+                        cam_out_dir).cuda(non_blocking=True)
+                    np.save(scam_path, scams.cpu().numpy())
                     # ===
 
                 timer.reset_stage()
@@ -261,8 +264,12 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/fdsi.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    copy_weights = 'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
-        config['cam_crop_size'], config['cam_weights_name'])
+    copy_weights = 'cp /data/home/yipingwang/data/Models/Classification/resnet50_fdsi_expReCAM_laste.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
+        config['cam_weights_name'])
+    print(copy_weights)
+    os.system(copy_weights)
+    copy_weights = 'cp /data/home/yipingwang/data/Models/Classification/recam_fdsi_expReCAM_laste.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
+        config['recam_weights_name'])
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)

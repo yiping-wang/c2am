@@ -137,11 +137,11 @@ def train(config, config_path):
     cls_model.train()
     mlp.train()
 
+    # Parallel
     cls_model = torch.nn.DataParallel(cls_model).cuda()
 
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
-
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
