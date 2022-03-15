@@ -93,6 +93,7 @@ class Net(nn.Module):
         return x, feat.squeeze()
 
     def train(self, mode=True):
+        super(Net, self).train(mode)
         for p in self.resnet50.conv1.parameters():
             p.requires_grad = False
         for p in self.resnet50.bn1.parameters():

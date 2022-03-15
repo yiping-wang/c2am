@@ -8,7 +8,6 @@ scam_out_dir: "/data/home/yipingwang/data/SCAMFdsi"
 # Dataset
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
-# cam_list: "voc12/train_aug_val.txt"
 
 # Class Activation Map
 num_workers: 24
@@ -16,12 +15,11 @@ agg_smooth_r: 8
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_square_shape: 8
 cam_crop_size: 512
-cam_batch_size: 8
+cam_batch_size: 16
 cam_num_epoches: 5
-cam_learning_rate: 0.01
+cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
 cam_weights_name: "resnet50_fdsi_exp36.pth"
+laste_cam_weights_name: "resnet50_fdsi_exp36_laste.pth"
 scam_name: "scam_fdsi_exp36.npy"
 alpha: 1
-
-#
