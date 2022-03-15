@@ -145,9 +145,9 @@ def train(config, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    # np.save(scam_path, scams.cpu().numpy())
+    os.system('python3 make_small_cam.py --config {}'.format(config_path))
+    scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
     min_bce = float('inf')
