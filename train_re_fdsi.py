@@ -115,7 +115,6 @@ def train(config, config_path):
 
     cls_model = Net_CAM_Feature()
     recam_predictor = Class_Predictor(20, 2048)
-
     mlp = MLP().cuda() if alpha > 0 else MLP()
 
     # load the pre-trained weights
@@ -194,6 +193,7 @@ def train(config, config_path):
                     torch.nn.KLDivLoss(reduction='batchmean')(
                         logprob_lk, prob_qt)
             # Loss
+            sce_loss = sce_loss.mean()
             loss = bce_loss + recam_loss_weight * sce_loss
             print(bce_loss)
             print(sce_loss)

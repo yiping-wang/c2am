@@ -11,7 +11,7 @@ val_list: "voc12/val.txt"
 cam_list: "voc12/train_aug_val.txt"
 
 # Class Activation Map
-num_workers: 24
+num_workers: 12
 agg_smooth_r: 8
 recam_loss_weight: 1.0
 cam_scales: [1.0, 0.5, 1.5, 2.0]
