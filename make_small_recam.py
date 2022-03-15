@@ -25,6 +25,7 @@ def _work(process_id, model, recam_predictor, dataset, config):
 
     with torch.no_grad(), cuda.device(process_id):
         model.cuda()
+        recam_predictor.cuda()
         for iter, pack in enumerate(data_loader):
             img_name = pack['name'][0]
             label = pack['label'][0]
