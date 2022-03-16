@@ -72,7 +72,7 @@ def run(config):
         recam_weight_path, map_location='cpu'), strict=True)
     recam_predictor.eval()
 
-    n_gpus = torch.cuda.device_count() - 1
+    n_gpus = torch.cuda.device_count()
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(train_list,
                                                              voc12_root=voc12_root,
