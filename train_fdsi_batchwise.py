@@ -200,9 +200,7 @@ def train(config):
                     cls_model, mlp, val_data_loader, data_aug_fn, voc12_root, alpha)
                 if vloss < min_loss:
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
-                    min_loss = vloss
-                    min_bce = vbce
-                    min_kl = vkl
+                    min_loss, min_bce, min_kl = vloss, vbce, vkl
 
                 timer.reset_stage()
         # empty cache
