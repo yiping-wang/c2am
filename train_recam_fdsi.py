@@ -28,8 +28,8 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
             x, _, _ = cls_model(imgs)
-            x = x.unsqueeze(2).unsqueeze(2) * scams
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = x.unsqueeze(2).unsqueeze(2) * scams
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             kl_loss = torch.tensor(0.).cuda(
             ) if alpha > 0 else torch.tensor(0.)
@@ -134,7 +134,7 @@ def train(config, config_path):
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': 0.1 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': param_groups[1], 'lr': 0.1 * cam_learning_rate,
+        {'params': param_groups[1], 'lr': 100 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
         {'params': mlp.parameters(), 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
@@ -179,7 +179,7 @@ def train(config, config_path):
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
-            bce_loss = F.multilabel_soft_margin_loss(x, labels)
+            bce_loss = torch.nn.BCEWithLogitsLoss(x, labels)
             sce_loss, _ = recam_predictor(cam, labels)
             kl_loss = torch.tensor(0.).cuda(
             ) if alpha > 0 else torch.tensor(0.)
