@@ -29,17 +29,21 @@ def _work(process_id, model, dataset, config):
             img_name = pack['name'][0]
             label = pack['label'][0]
 
+            valid_cat = torch.nonzero(label)[:, 0]
+            raw_outputs = torch.zeros(
+                (20, cam_square_shape, cam_square_shape)).cuda()
+
             outputs = [model(img[0].cuda(non_blocking=True))
                        for img in pack['img']]
 
-            raw_outputs = torch.sum(torch.stack(
+            outputs = torch.sum(torch.stack(
                 [F.interpolate(torch.unsqueeze(o, 0),
                                (cam_square_shape, cam_square_shape), mode='bilinear', align_corners=False)[0]
                     for o in outputs]), 0)
 
-            raw_outputs = raw_outputs / \
-                (F.adaptive_max_pool2d(raw_outputs, (1, 1)) + 1e-5)
-            valid_cat = torch.nonzero(label)[:, 0]
+            outputs = outputs[valid_cat]
+            outputs = outputs / (F.adaptive_max_pool2d(outputs, (1, 1)) + 1e-5)
+            raw_outputs[valid_cat] = outputs
 
             # save cams
             np.save(os.path.join(cam_out_dir, img_name + '.npy'),

@@ -85,8 +85,8 @@ def train(config, config_path):
     cls_model = Net()
 
     # load the pre-trained weights
-    cls_model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name)), strict=True)
+    # cls_model.load_state_dict(torch.load(os.path.join(
+    #     model_root, cam_weights_name)), strict=True)
 
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
@@ -106,9 +106,10 @@ def train(config, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    np.save(scam_path, scams.cpu().numpy())
+    # os.system('python3 make_sup_small_cam.py --config {}'.format(config_path))
+    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    # np.save(scam_path, scams.cpu().numpy())
+    scams = torch.from_numpy(np.load(scam_path)).cuda()
     # ===
     min_loss = float('inf')
     for ep in range(cam_num_epoches):
