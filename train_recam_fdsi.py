@@ -179,7 +179,7 @@ def train(config, config_path):
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
-            bce_loss = torch.nn.BCEWithLogitsLoss(x, labels)
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             sce_loss, _ = recam_predictor(cam, labels)
             kl_loss = torch.tensor(0.).cuda(
             ) if alpha > 0 else torch.tensor(0.)
