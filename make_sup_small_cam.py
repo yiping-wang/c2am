@@ -43,7 +43,6 @@ def _work(process_id, model, dataset, config):
 
             outputs = outputs[valid_cat]
             outputs = outputs / (F.adaptive_max_pool2d(outputs, (1, 1)) + 1e-5)
-
             raw_outputs[valid_cat] = outputs
 
             # save cams
