@@ -141,9 +141,9 @@ def train(config, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    # np.save(scam_path, scams.cpu().numpy())
+    os.system('python3 make_small_cam.py --config {}'.format(config_path))
+    scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
     min_bce = float('inf')
@@ -156,9 +156,9 @@ def train(config, config_path):
             labels = pack['label'].cuda(non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x, cams = cls_model(imgs)
+            x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * torch.mean(cams, dim=0)
+            x = x.unsqueeze(2).unsqueeze(2) * scams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
@@ -218,11 +218,11 @@ def train(config, config_path):
                     # P(y|x, z)
                     # generate CAMs
                     # Using the current best weights
-                    # os.system(
-                    #     'python3 make_small_cam.py --config {}'.format(config_path))
-                    # scams = pyutils.sum_cams(
-                    #     cam_out_dir).cuda(non_blocking=True)
-                    # np.save(scam_path, scams.cpu().numpy())
+                    os.system(
+                        'python3 make_small_cam.py --config {}'.format(config_path))
+                    scams = pyutils.sum_cams(
+                        cam_out_dir).cuda(non_blocking=True)
+                    np.save(scam_path, scams.cpu().numpy())
                     # ===
 
                 timer.reset_stage()

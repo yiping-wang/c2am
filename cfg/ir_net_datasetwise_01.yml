@@ -8,7 +8,7 @@ train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
 chainer_eval_set: "train"
 
-irn_weights_name: "irnet_exp37.pth"
+irn_weights_name: "irnet_fdsi_datasetwise_01.pth"
 cam_out_dir: "/data/home/yipingwang/data/CAMFdsi"
 ir_label_out_dir: "/data/home/yipingwang/data/IRLabelFdsi"
 infer_list: "voc12/train_aug.txt"
