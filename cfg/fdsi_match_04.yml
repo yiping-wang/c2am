@@ -21,5 +21,5 @@ cam_learning_rate: 0.1
 cam_weight_decay: 0.0001
 cam_weights_name: "resnet50_fdsi_exp_match_04.pth"
 laste_cam_weights_name: "resnet50_fdsi_exp_match_04_laste.pth"
-scam_name: "scam_fdsi_match_04.npy"
+scam_name: "scam_fdsi_match_03.npy"
 alpha: 0
