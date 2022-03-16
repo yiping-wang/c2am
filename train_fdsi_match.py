@@ -130,7 +130,7 @@ def train(config, config_path):
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             # x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
-            l1_loss = torch.nn.L1Loss()(match_cams, match_scams)
+            l1_loss = torch.nn.MSELoss()(match_cams, match_scams)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             # Loss
             loss = bce_loss + l1_loss
