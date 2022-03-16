@@ -15,7 +15,7 @@ def concat(names, aug_fn, voc12_root):
     return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha):
+def validate(cls_model, mlp, data_loader, data_aug_fn, voc12_root, alpha):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
 
@@ -77,10 +77,8 @@ def train(config, config_path):
     alpha = config['alpha']
     scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
-
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
-
     scam_path = os.path.join(scam_out_dir, scam_name)
 
     if cam_crop_size == 512:
@@ -210,8 +208,8 @@ def train(config, config_path):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                            data_aug_fn, voc12_root, alpha)
+                vloss, vbce, vkl = validate(
+                    cls_model, mlp, val_data_loader, data_aug_fn, voc12_root, alpha)
                 if vloss < min_loss:
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
                     min_loss = vloss
