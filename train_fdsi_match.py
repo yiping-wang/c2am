@@ -174,4 +174,4 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-    train(config, args.config_path)
+    train(config, args.config)
