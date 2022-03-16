@@ -63,7 +63,7 @@ def run(config):
         model_root, cam_weights_name), map_location='cpu'), strict=True)
     model.eval()
 
-    n_gpus = torch.cuda.device_count() - 1
+    n_gpus = torch.cuda.device_count()
 
     dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(train_list,
                                                              voc12_root=voc12_root,
