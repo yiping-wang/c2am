@@ -3,7 +3,6 @@ import voc12.dataloader
 import argparse
 import torch
 import os
-import numpy as np
 from PIL import Image
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
@@ -58,7 +57,7 @@ def validate(cls_model, mlp, data_loader, data_aug_fn, voc12_root, alpha):
     return loss, bce, kl
 
 
-def train(config, config_path):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -70,16 +69,12 @@ def train(config, config_path):
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
-    cam_out_dir = config['cam_out_dir']
     agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
-    scam_name = config['scam_name']
     alpha = config['alpha']
-    scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
-    scam_path = os.path.join(scam_out_dir, scam_name)
 
     if cam_crop_size == 512:
         resize_long = (320, 640)
@@ -138,13 +133,6 @@ def train(config, config_path):
 
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
-    # P(y|x, z)
-    # generate CAMs
-    # Using the pre-trained weights
-    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    # np.save(scam_path, scams.cpu().numpy())
-    # ===
     min_loss = float('inf')
     min_bce = float('inf')
     min_kl = float('inf')
@@ -215,15 +203,6 @@ def train(config, config_path):
                     min_loss = vloss
                     min_bce = vbce
                     min_kl = vkl
-                    # P(y|x, z)
-                    # generate CAMs
-                    # Using the current best weights
-                    # os.system(
-                    #     'python3 make_small_cam.py --config {}'.format(config_path))
-                    # scams = pyutils.sum_cams(
-                    #     cam_out_dir).cuda(non_blocking=True)
-                    # np.save(scam_path, scams.cpu().numpy())
-                    # ===
 
                 timer.reset_stage()
         # empty cache
@@ -248,4 +227,4 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-    train(config, args.config)
+    train(config)
