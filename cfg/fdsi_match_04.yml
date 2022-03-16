@@ -17,7 +17,7 @@ cam_square_shape: 32
 cam_crop_size: 512
 cam_batch_size: 32
 cam_num_epoches: 4
-cam_learning_rate: 0.1
+cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
 cam_weights_name: "resnet50_fdsi_exp_match_04.pth"
 laste_cam_weights_name: "resnet50_fdsi_exp_match_04_laste.pth"
