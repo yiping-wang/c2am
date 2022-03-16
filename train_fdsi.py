@@ -15,7 +15,7 @@ def concat(names, aug_fn, voc12_root):
     return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha, scams):
+def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root, alpha):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
 
@@ -27,8 +27,6 @@ def validate(cls_model, mlp, data_loader, agg_smooth_r, data_aug_fn, voc12_root,
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
             x, _ = cls_model(imgs)
-            x = x.unsqueeze(2).unsqueeze(2) * scams
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             kl_loss = torch.tensor(0.).cuda(
             ) if alpha > 0 else torch.tensor(0.)
@@ -145,9 +143,9 @@ def train(config, config_path):
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
-    os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    np.save(scam_path, scams.cpu().numpy())
+    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
+    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    # np.save(scam_path, scams.cpu().numpy())
     # ===
     min_loss = float('inf')
     min_bce = float('inf')
@@ -160,9 +158,9 @@ def train(config, config_path):
             labels = pack['label'].cuda(non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x, _ = cls_model(imgs)
+            x, cams = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
+            x = x.unsqueeze(2).unsqueeze(2) * torch.mean(cams, dim=0)
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
@@ -213,7 +211,7 @@ def train(config, config_path):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
                 vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                            data_aug_fn, voc12_root, alpha, scams)
+                                            data_aug_fn, voc12_root, alpha)
                 if vloss < min_loss:
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
                     min_loss = vloss
@@ -222,11 +220,11 @@ def train(config, config_path):
                     # P(y|x, z)
                     # generate CAMs
                     # Using the current best weights
-                    os.system(
-                        'python3 make_small_cam.py --config {}'.format(config_path))
-                    scams = pyutils.sum_cams(
-                        cam_out_dir).cuda(non_blocking=True)
-                    np.save(scam_path, scams.cpu().numpy())
+                    # os.system(
+                    #     'python3 make_small_cam.py --config {}'.format(config_path))
+                    # scams = pyutils.sum_cams(
+                    #     cam_out_dir).cuda(non_blocking=True)
+                    # np.save(scam_path, scams.cpu().numpy())
                     # ===
 
                 timer.reset_stage()

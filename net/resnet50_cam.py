@@ -88,9 +88,14 @@ class Net(nn.Module):
         x = self.stage3(x)
         x = self.stage4(x)
         feat = torchutils.gap2d(x, keepdims=True)
+
+        cams = F.conv2d(feat, self.classifier.weight)
+        cams = F.relu(cams)
+        cams = cams/(F.adaptive_max_pool2d(cams, (1, 1)) + 1e-5)
+
         x = self.classifier(feat)
         x = x.view(-1, 20)
-        return x, feat.squeeze()
+        return x, cams
 
     def train(self, mode=True):
         super(Net, self).train(mode)
