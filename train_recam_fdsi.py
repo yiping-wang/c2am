@@ -225,8 +225,8 @@ def train(config, config_path):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss, vbce, vkl = validate(cls_model, mlp, val_data_loader, agg_smooth_r,
-                                            data_aug_fn, voc12_root, alpha)
+                vloss, vbce, vkl = validate(
+                    cls_model, mlp, val_data_loader, data_aug_fn, voc12_root, alpha)
                 if vloss < min_loss:
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
                     torch.save(recam_predictor.module.state_dict(),
