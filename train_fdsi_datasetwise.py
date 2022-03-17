@@ -15,47 +15,23 @@ def concat(names, aug_fn, voc12_root):
     return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, data_aug_fn, voc12_root, alpha):
+def validate(cls_model, data_loader):
     print('validating ... ', flush=True, end='')
-    val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
+    val_loss_meter = pyutils.AverageMeter('loss')
 
     cls_model.eval()
-    mlp.eval()
     with torch.no_grad():
         for pack in data_loader:
-            names = pack['name']
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
             x, _ = cls_model(imgs)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.).cuda(
-            ) if alpha > 0 else torch.tensor(0.)
-            if alpha > 0:
-                augs = [concat(names, data_aug_fn, voc12_root)
-                        for _ in range(4)]
-                feats = [cls_model(aug)[1] for aug in augs]
-                projs = [mlp(feat) for feat in feats]
-                norms = [F.normalize(proj, dim=1) for proj in projs]
-                proj_l, proj_k, proj_q, proj_t = norms
-                score_lk = torch.matmul(proj_l, proj_k.T)
-                score_qt = torch.matmul(proj_q, proj_t.T)
-                logprob_lk = F.log_softmax(score_lk, dim=1)
-                prob_qt = F.softmax(score_qt, dim=1)
-                kl_loss = alpha * \
-                    torch.nn.KLDivLoss(reduction='batchmean')(
-                        logprob_lk, prob_qt)
-            loss = bce_loss + kl_loss
-            val_loss_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
+            loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            val_loss_meter.add({'loss': loss.item()})
 
     cls_model.train()
-    mlp.train()
-
     loss = val_loss_meter.pop('loss')
-    bce = val_loss_meter.pop('bce')
-    kl = val_loss_meter.pop('kl')
-    print('Loss: {:.4f} | BCE: {:.4f} | KL: {:.4f}'.format(loss, bce, kl))
-    return loss, bce, kl
+    print('Loss: {:.4f}'.format(loss))
+    return loss
 
 
 def train(config, config_path):
@@ -140,15 +116,11 @@ def train(config, config_path):
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
     # P(y|x, z)
-    # generate CAMs
-    # Using the pre-trained weights
+    # generate Global CAMs
     os.system('python3 make_small_cam.py --config {}'.format(config_path))
     gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
     np.save(scam_path, gcams.cpu().numpy())
     # ===
-    min_loss = float('inf')
-    min_bce = float('inf')
-    min_kl = float('inf')
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -203,36 +175,25 @@ def train(config, config_path):
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'BCE:%.4f' % (avg_meter.pop('bce')),
                       'KL:%.4f' % (avg_meter.pop('kl')),
-                      'Min:%.4f' % (min_loss),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
-                # validation
-                vloss, vbce, vkl = validate(
-                    cls_model, mlp, val_data_loader, data_aug_fn, voc12_root, alpha)
-                if vloss < min_loss and update_gcam:
-                    torch.save(cls_model.module.state_dict(), cam_weight_path)
-                    min_loss, min_bce, min_kl = vloss, vbce, vkl
+                if update_gcam:
                     # P(y|x, z)
-                    # generate CAMs
-                    # Using the current best weights
+                    # generate Global CAMs
                     os.system(
                         'python3 make_small_cam.py --config {}'.format(config_path))
                     gcams = pyutils.sum_cams(
                         cam_out_dir).cuda(non_blocking=True)
                     np.save(scam_path, gcams.cpu().numpy())
                     # ===
-
+            else:
+                validate(cls_model, val_data_loader)
                 timer.reset_stage()
         # empty cache
-        torch.cuda.empty_cache()
         torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
-
-    with open(cam_weights_name + '.txt', 'w') as f:
-        f.write('Min Validation Loss: {:.4f}'.format(min_loss) + '\n')
-        f.write('Min BCE Loss: {:.4f}'.format(min_bce) + '\n')
-        f.write('Min KL Loss: {:.4f}'.format(min_kl) + '\n')
+        torch.cuda.empty_cache()
 
 
 if __name__ == '__main__':
