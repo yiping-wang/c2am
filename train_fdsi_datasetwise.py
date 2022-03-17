@@ -76,6 +76,7 @@ def train(config, config_path):
     scam_name = config['scam_name']
     alpha = config['alpha']
     scam_out_dir = config['scam_out_dir']
+    update_gcam = config['update_gcam']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
@@ -210,7 +211,7 @@ def train(config, config_path):
                 # validation
                 vloss, vbce, vkl = validate(
                     cls_model, mlp, val_data_loader, data_aug_fn, voc12_root, alpha)
-                if vloss < min_loss:
+                if vloss < min_loss and update_gcam:
                     torch.save(cls_model.module.state_dict(), cam_weight_path)
                     min_loss, min_bce, min_kl = vloss, vbce, vkl
                     # P(y|x, z)
