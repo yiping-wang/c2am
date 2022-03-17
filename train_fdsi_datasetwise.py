@@ -171,6 +171,7 @@ def train(config, config_path):
 
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
+                validate(cls_model, val_data_loader)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'BCE:%.4f' % (avg_meter.pop('bce')),
@@ -189,7 +190,6 @@ def train(config, config_path):
                     np.save(scam_path, gcams.cpu().numpy())
                     # ===
             else:
-                validate(cls_model, val_data_loader)
                 timer.reset_stage()
         # empty cache
         torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
