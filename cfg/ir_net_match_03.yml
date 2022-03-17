@@ -20,7 +20,7 @@ conf_bg_thres: 0.1
 irn_crop_size: 512
 irn_batch_size: 16
 irn_num_epoches: 3
-irn_learning_rate: 0.1
+irn_learning_rate: 0.01
 irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8

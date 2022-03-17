@@ -120,8 +120,16 @@ def train(config, config_path):
             # Front Door Adjustment
             # P(z|x)
             x, cams = cls_model(imgs)
-            match_cams = torch.cat([torch.index_select(cams[b], dim=0, index=torch.nonzero(
-                labels[b]).flatten()) for b in range(cam_batch_size)], dim=0)
+            match_cams = []
+            for b in range(cam_batch_size):
+                match_cam = torch.index_select(
+                    cams[b], dim=0, index=torch.nonzero(labels[b]).flatten())
+                match_cam = match_cam / \
+                    (F.adaptive_max_pool2d(match_cam, (1, 1)) + 1e-5)
+                match_cams += [match_cam]
+            match_cams = torch.cat(match_cams, dim=0)
+            # match_cams = torch.cat([torch.index_select(cams[b], dim=0, index=torch.nonzero(
+            #     labels[b]).flatten()) for b in range(cam_batch_size)], dim=0)
             match_scams = torch.cat([torch.index_select(scams, dim=0, index=torch.nonzero(
                 labels[b]).flatten()) for b in range(cam_batch_size)], dim=0)
             # P(y|do(x))
@@ -130,7 +138,7 @@ def train(config, config_path):
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             # x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
-            l1_loss = torch.nn.MSELoss()(match_cams, match_scams)
+            l1_loss = torch.nn.L1Loss()(match_cams, match_scams)
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             # Loss
             loss = bce_loss + l1_loss
