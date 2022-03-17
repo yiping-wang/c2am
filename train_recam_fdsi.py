@@ -171,10 +171,10 @@ def train(config, config_path):
             # P(z|x)
             x, cam_feats, cams = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * torch.mean(cams, dim=0)
+            # x = x.unsqueeze(2).unsqueeze(2) * torch.mean(cams, dim=0)
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             sce_loss, _ = recam_predictor(cam_feats, labels)

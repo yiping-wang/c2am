@@ -267,8 +267,8 @@ class Net_CAM_Feature(ReNet):
         cams = F.conv2d(feature, self.classifier.weight)
         cams = F.relu(cams)
         cams = cams/(F.adaptive_max_pool2d(cams, (1, 1)) + 1e-5)
-        cams_feature = cams.unsqueeze(
-            2)*feature.unsqueeze(1)  # bs*20*2048*32*32
+        cams_feature = cams.unsqueeze(2).detach(
+        ) * feature.unsqueeze(1)  # bs*20*2048*32*32
         cams_feature = cams_feature.view(cams_feature.size(
             0), cams_feature.size(1), cams_feature.size(2), -1)
         cams_feature = torch.mean(cams_feature, -1)
