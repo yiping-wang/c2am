@@ -142,8 +142,8 @@ def train(config, config_path):
     # generate CAMs
     # Using the pre-trained weights
     os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    np.save(scam_path, scams.cpu().numpy())
+    gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    np.save(scam_path, gcams.cpu().numpy())
     # ===
     min_loss = float('inf')
     min_bce = float('inf')
@@ -158,7 +158,7 @@ def train(config, config_path):
             # P(z|x)
             x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * scams
+            x = x.unsqueeze(2).unsqueeze(2) * gcams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
@@ -218,9 +218,9 @@ def train(config, config_path):
                     # Using the current best weights
                     os.system(
                         'python3 make_small_cam.py --config {}'.format(config_path))
-                    scams = pyutils.sum_cams(
+                    gcams = pyutils.sum_cams(
                         cam_out_dir).cuda(non_blocking=True)
-                    np.save(scam_path, scams.cpu().numpy())
+                    np.save(scam_path, gcams.cpu().numpy())
                     # ===
 
                 timer.reset_stage()

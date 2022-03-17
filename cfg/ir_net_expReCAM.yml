@@ -8,7 +8,7 @@ train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
 chainer_eval_set: "train"
 
-irn_weights_name: "irnet_expReCAM.pth"
+irn_weights_name: "irnet_expReCAM_detach.pth"
 cam_out_dir: "/data/home/yipingwang/data/CAMReCAM/"
 ir_label_out_dir: "/data/home/yipingwang/data/IRLabelReCAM/"
 infer_list: "voc12/train_aug.txt"

@@ -23,6 +23,6 @@ cam_weights_name: "resnet50_fdsi_expReCAM_detach.pth"
 recam_weights_name: "recam_fdsi_expReCAM_detach.pth"
 laste_cam_weights_name: "resnet50_fdsi_expReCAM_laste_detach.pth"
 laste_recam_weights_name: "recam_fdsi_expReCAM_laste_detach.pth"
-scam_name: "scam_fdsi_expE.npy"
+scam_name: "scam_recam.npy"
 alpha: 0
 recam_loss_weight: 1.0
