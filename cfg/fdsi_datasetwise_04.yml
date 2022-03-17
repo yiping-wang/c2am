@@ -17,11 +17,11 @@ cam_square_shape: 8
 cam_crop_size: 512
 cam_batch_size: 16
 cam_num_epoches: 3
-cam_learning_rate: 0.01
+cam_learning_rate: 0.001
 cam_weight_decay: 0.0001
-cam_weights_name: "resnet50_fdsi_exp_datasetwise_03.pth"
-laste_cam_weights_name: "resnet50_fdsi_exp_datasetwise_03_laste.pth"
-scam_name: "scam_fdsi_datasetwise_03.npy"
-start_weight_name: "resnet50_baseline_512.pth"
+cam_weights_name: "resnet50_fdsi_exp_datasetwise_04.pth"
+laste_cam_weights_name: "resnet50_fdsi_exp_datasetwise_04_laste.pth"
+scam_name: "scam_fdsi_datasetwise_04.npy"
+start_weight_name: "resnet50_fdsi_exp_datasetwise_02_laste.pth"
 alpha: 0
 update_gcam: False

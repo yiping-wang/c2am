@@ -203,8 +203,13 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/fdsi.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    copy_weights = 'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
-        config['cam_crop_size'], config['cam_weights_name'])
+    start_weight_name = config['start_weight_name']
+    cam_weights_name = config['cam_weights_name']
+    model_root = config['model_root']
+    start_weight_path = os.path.join(model_root, start_weight_name)
+    cam_weight_path = os.path.join(model_root, cam_weights_name)
+    copy_weights = 'cp {} {}'.format(start_weight_path, cam_weight_path)
+    
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
