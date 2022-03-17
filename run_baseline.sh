@@ -1,4 +1,4 @@
-echo "======= Exp FDSI Dataset-wise 2 ========="
+echo "======= Baseline ========="
 mkdir -p /data/home/yipingwang/data/CAMBaseline/
 mkdir -p /data/home/yipingwang/data/IRLabelBaseline/
 mkdir -p /data/home/yipingwang/data/SemSegBaseline/
