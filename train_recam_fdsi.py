@@ -7,8 +7,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
-from net.resnet50_cam import Net_CAM_Feature, MLP, Class_Predictor
-from voc12.dataloader import get_img_path
+from net.resnet50_cam import Net_CAM_Feature, Class_Predictor
 
 
 def validate(cls_model, data_loader):
@@ -33,7 +32,7 @@ def validate(cls_model, data_loader):
     return loss
 
 
-def train(config, config_path):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -94,7 +93,6 @@ def train(config, config_path):
 
     cls_model = Net_CAM_Feature()
     recam_predictor = Class_Predictor(20, 2048)
-    mlp = MLP().cuda() if alpha > 0 else MLP()
 
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
@@ -106,22 +104,18 @@ def train(config, config_path):
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 0.1 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': mlp.parameters(), 'lr': cam_learning_rate,
-            'weight_decay': cam_weight_decay},
         {'params': recam_predictor.parameters(), 'lr': cam_learning_rate,
          'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model.train()
-    mlp.train()
     recam_predictor.train()
 
     cls_model = torch.nn.DataParallel(cls_model).cuda()
     recam_predictor = torch.nn.DataParallel(recam_predictor).cuda()
 
-    avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
+    avg_meter = pyutils.AverageMeter('loss', 'bce', 'sce')
     timer = pyutils.Timer()
-
     # P(y|x, z)
     # generate CAMs
     # Using the pre-trained weights
@@ -185,11 +179,26 @@ if __name__ == '__main__':
                         help='YAML config file path', default='./cfg/fdsi.yml')
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    start_weight_name = config['start_weight_name']
-    cam_weights_name = config['cam_weights_name']
+
     model_root = config['model_root']
+    start_weight_name = config['start_weight_name']
+    start_weight_name_recam = config['start_weight_name_recam']
+    cam_weights_name = config['cam_weights_name']
+    recam_weights_name = config['recam_weights_name']
+
     start_weight_path = os.path.join(model_root, start_weight_name)
+    start_weight_name_recam_path = os.path.join(
+        model_root, start_weight_name_recam)
+
     cam_weight_path = os.path.join(model_root, cam_weights_name)
+    recam_weight_path = os.path.join(model_root, recam_weights_name)
+
     copy_weights = 'cp {} {}'.format(start_weight_path, cam_weight_path)
+    print(copy_weights)
     os.system(copy_weights)
-    train(config, args.config)
+    copy_weights = 'cp {} {}'.format(
+        start_weight_name_recam_path, recam_weight_path)
+    print(copy_weights)
+    os.system(copy_weights)
+
+    train(config)

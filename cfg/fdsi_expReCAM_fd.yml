@@ -24,6 +24,7 @@ recam_weights_name: "recam_fdsi_expReCAM_fd.pth"
 laste_cam_weights_name: "resnet50_fdsi_expReCAM_fd_laste.pth"
 laste_recam_weights_name: "recam_fdsi_expReCAM_fd_laste.pth"
 scam_name: "scam_fdsi_datasetwise_02.npy"
-start_weight_name: "resnet50_baseline_512.pth"
+start_weight_name: "resnet50_fdsi_expReCAM_laste.pth"
+start_weight_name_recam: "recam_fdsi_expReCAM_laste.pth"
 alpha: 0
 recam_loss_weight: 1.0
