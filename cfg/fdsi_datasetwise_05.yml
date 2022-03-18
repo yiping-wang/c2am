@@ -21,7 +21,7 @@ cam_learning_rate: 0.0001
 cam_weight_decay: 0.0001
 cam_weights_name: "resnet50_fdsi_exp_datasetwise_05.pth"
 laste_cam_weights_name: "resnet50_fdsi_exp_datasetwise_05_laste.pth"
-scam_name: "scam_fdsi_datasetwise_02.npy"
+scam_name: "scam_fdsi_datasetwise_05.npy"
 start_weight_name: "resnet50_baseline_512.pth"
 alpha: 0
 update_gcam: False
