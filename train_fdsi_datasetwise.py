@@ -209,7 +209,7 @@ if __name__ == '__main__':
     start_weight_path = os.path.join(model_root, start_weight_name)
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     copy_weights = 'cp {} {}'.format(start_weight_path, cam_weight_path)
-    
+
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
