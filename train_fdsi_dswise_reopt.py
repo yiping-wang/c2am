@@ -143,16 +143,16 @@ def train(config, config_path):
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
             else:
                 timer.reset_stage()
+        torch.save(cls_model.module.state_dict(),
+                   laste_cam_weight_path + str(ep + 1))
+        torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
+        torch.save(cls_model.module.state_dict(), cam_weight_path)
         # P(y|x, z)
         # generate Global CAMs
         os.system('python3 make_small_cam.py --config {}'.format(config_path))
         gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
         np.save(scam_path + str(ep + 1), gcams.cpu().numpy())
         # ===
-        torch.save(cls_model.module.state_dict(),
-                   laste_cam_weight_path + str(ep + 1))
-        torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
-        torch.cuda.empty_cache()
         # Reinit optimizer
         param_groups = cls_model.module.trainable_parameters()
         optimizer = torchutils.PolyOptimizer([
@@ -162,6 +162,7 @@ def train(config, config_path):
                 'weight_decay': cam_weight_decay},
         ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
         # ===
+        torch.cuda.empty_cache()
 
 
 if __name__ == '__main__':
