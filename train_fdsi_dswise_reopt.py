@@ -48,7 +48,6 @@ def train(config, config_path):
     scam_name = config['scam_name']
     alpha = config['alpha']
     scam_out_dir = config['scam_out_dir']
-    update_gcam = config['update_gcam']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
