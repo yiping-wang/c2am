@@ -46,7 +46,6 @@ def train(config, config_path):
     agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
     scam_name = config['scam_name']
-    alpha = config['alpha']
     scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
@@ -105,10 +104,9 @@ def train(config, config_path):
     timer = pyutils.Timer()
     # P(y|x, z)
     # generate Global CAMs
-    # os.system('python3 make_small_cam.py --config {}'.format(config_path))
-    # gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    # np.save(scam_path + '0', gcams.cpu().numpy())
-    gcams = torch.from_numpy(np.load('/data/home/yipingwang/data/SCAMFdsi/scam_fdsi_datasetwise_02.npy')).cuda()
+    os.system('python3 make_small_cam.py --config {}'.format(config_path))
+    gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    np.save(scam_path + '0', gcams.cpu().numpy())
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -129,13 +127,13 @@ def train(config, config_path):
             loss = bce_loss
             avg_meter.add({'loss': loss.item(), 'bce': bce_loss.item()})
 
-            #optimizer.zero_grad()
-            #loss.backward()
-            #optimizer.step()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
-                # validate(cls_model, val_data_loader)
+                validate(cls_model, val_data_loader)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'BCE:%.4f' % (avg_meter.pop('bce')),
@@ -147,10 +145,9 @@ def train(config, config_path):
                 timer.reset_stage()
         # P(y|x, z)
         # generate Global CAMs
-        # os.system('python3 make_small_cam.py --config {}'.format(config_path))
-        # gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-        # np.save(scam_path + str(ep + 1), gcams.cpu().numpy())
-        gcams = torch.from_numpy(np.load('/data/home/yipingwang/data/SCAMFdsi/scam_fdsi_datasetwise_02.npy')).cuda()
+        os.system('python3 make_small_cam.py --config {}'.format(config_path))
+        gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+        np.save(scam_path + str(ep + 1), gcams.cpu().numpy())
         # ===
         torch.save(cls_model.module.state_dict(),
                    laste_cam_weight_path + str(ep + 1))
