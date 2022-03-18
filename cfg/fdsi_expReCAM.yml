@@ -19,10 +19,10 @@ cam_batch_size: 16
 cam_num_epoches: 4
 cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
-cam_weights_name: "resnet50_fdsi_expReCAM_detach.pth"
-recam_weights_name: "recam_fdsi_expReCAM_detach.pth"
-laste_cam_weights_name: "resnet50_fdsi_expReCAM_laste_detach.pth"
-laste_recam_weights_name: "recam_fdsi_expReCAM_laste_detach.pth"
+cam_weights_name: "resnet50_fdsi_expReCAM.pth"
+recam_weights_name: "recam_fdsi_expReCAM.pth"
+laste_cam_weights_name: "resnet50_fdsi_expReCAM_laste.pth"
+laste_recam_weights_name: "recam_fdsi_expReCAM_laste.pth"
 scam_name: "scam_recam.npy"
 alpha: 0
 recam_loss_weight: 1.0
