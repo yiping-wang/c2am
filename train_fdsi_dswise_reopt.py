@@ -129,13 +129,13 @@ def train(config, config_path):
             loss = bce_loss
             avg_meter.add({'loss': loss.item(), 'bce': bce_loss.item()})
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            #optimizer.zero_grad()
+            #loss.backward()
+            #optimizer.step()
 
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
-                validate(cls_model, val_data_loader)
+                # validate(cls_model, val_data_loader)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'BCE:%.4f' % (avg_meter.pop('bce')),

@@ -16,7 +16,7 @@ cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_square_shape: 8
 cam_crop_size: 512
 cam_batch_size: 16
-cam_num_epoches: 3
+cam_num_epoches: 10
 cam_learning_rate: 0.001
 cam_weight_decay: 0.0001
 cam_weights_name: "resnet50_fdsi_exp_dswise_reopt_01.pth"
