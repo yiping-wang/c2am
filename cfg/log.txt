@@ -42,6 +42,195 @@ pth
 ./cfg/fdsi_datasetwise_06.yml
 resize long: (320, 640)
 ...
+Epoch 1/10                                                                      
+validating ... Loss: 0.0494                                                     
+step:    0/ 6610 Loss:0.4677 BCE:0.4677 KL:0.0000 imps:0.1 lr: 0.0005 etc:Fri Ap
+r  8 17:21:30 2022                                                              
+validating ... Loss: 0.0774                                                     
+step:  100/ 6610 Loss:0.4308 BCE:0.4308 KL:0.0000 imps:77.3 lr: 0.0005 etc:Fri M
+ar 18 19:01:57 2022                                                             
+validating ... Loss: 0.3698                                                     
+step:  200/ 6610 Loss:0.2946 BCE:0.2946 KL:0.0000 imps:147.0 lr: 0.0005 etc:Fri 
+Mar 18 16:28:36 2022                                                            
+validating ... Loss: 0.8162                                                     
+step:  300/ 6610 Loss:0.1442 BCE:0.1442 KL:0.0000 imps:222.7 lr: 0.0005 etc:Fri 
+Mar 18 15:38:46 2022                                                            
+validating ... Loss: 0.8855                                                     
+step:  400/ 6610 Loss:0.1147 BCE:0.1147 KL:0.0000 imps:288.4 lr: 0.0005 etc:Fri 
+Mar 18 15:13:09 2022                                                            
+validating ... Loss: 0.8928                                                     
+step:  500/ 6610 Loss:0.1051 BCE:0.1051 KL:0.0000 imps:362.6 lr: 0.0005 etc:Fri 
+Mar 18 14:57:48 2022                                                            
+validating ... Loss: 0.8720                                                     
+step:  600/ 6610 Loss:0.0953 BCE:0.0953 KL:0.0000 imps:468.5 lr: 0.0005 etc:Fri 
+Mar 18 14:48:10 2022  
+Epoch 2/10                                                                      
+validating ... Loss: 0.8665                                                     
+step:  700/ 6610 Loss:0.0901 BCE:0.0901 KL:0.0000 imps:28.7 lr: 0.0005 etc:Fri M
+ar 18 14:42:03 2022                                                             
+validating ... Loss: 0.8595                                                     
+step:  800/ 6610 Loss:0.0860 BCE:0.0860 KL:0.0000 imps:99.0 lr: 0.0004 etc:Fri M
+ar 18 14:36:20 2022                                                             
+validating ... Loss: 0.8145                                                     
+step:  900/ 6610 Loss:0.0838 BCE:0.0838 KL:0.0000 imps:176.0 lr: 0.0004 etc:Fri 
+Mar 18 14:32:00 2022                                                            
+validating ... Loss: 0.8130                                                     
+step: 1000/ 6610 Loss:0.0828 BCE:0.0828 KL:0.0000 imps:224.5 lr: 0.0004 etc:Fri 
+Mar 18 14:28:40 2022                                                            
+validating ... Loss: 0.8156                                                     
+step: 1100/ 6610 Loss:0.0804 BCE:0.0804 KL:0.0000 imps:311.3 lr: 0.0004 etc:Fri 
+Mar 18 14:25:57 2022                                                            
+validating ... Loss: 0.8130                                                     
+step: 1200/ 6610 Loss:0.0739 BCE:0.0739 KL:0.0000 imps:392.0 lr: 0.0004 etc:Fri 
+Mar 18 14:23:26 2022                                                            
+validating ... Loss: 0.8086                                                     
+step: 1300/ 6610 Loss:0.0743 BCE:0.0743 KL:0.0000 imps:413.5 lr: 0.0004 etc:Fri 
+Mar 18 14:22:29 2022                                                            
+Epoch 3/10                                                                      
+validating ... Loss: 0.8110                                                     
+step: 1400/ 6610 Loss:0.0741 BCE:0.0741 KL:0.0000 imps:49.6 lr: 0.0004 etc:Fri M
+ar 18 14:22:46 2022                                                             
+validating ... Loss: 0.7825                                                     
+step: 1500/ 6610 Loss:0.0718 BCE:0.0718 KL:0.0000 imps:120.5 lr: 0.0004 etc:Fri 
+Mar 18 14:21:31 2022                                                            
+validating ... Loss: 0.7913                                                     
+step: 1600/ 6610 Loss:0.0751 BCE:0.0751 KL:0.0000 imps:203.5 lr: 0.0004 etc:Fri 
+Mar 18 14:20:03 2022                                                            
+validating ... Loss: 0.7947                                                     
+step: 1700/ 6610 Loss:0.0684 BCE:0.0684 KL:0.0000 imps:239.1 lr: 0.0004 etc:Fri 
+Mar 18 14:18:43 2022                                                            
+validating ... Loss: 0.8254                                                     
+step: 1800/ 6610 Loss:0.0679 BCE:0.0679 KL:0.0000 imps:330.0 lr: 0.0004 etc:Fri 
+Mar 18 14:17:36 2022                                                            
+validating ... Loss: 0.8067                                                     
+step: 1900/ 6610 Loss:0.0686 BCE:0.0686 KL:0.0000 imps:435.4 lr: 0.0004 etc:Fri 
+Mar 18 14:16:45 2022   
+Epoch 4/10                                                                      
+validating ... Loss: 0.7932                                                     
+step: 2000/ 6610 Loss:0.0672 BCE:0.0672 KL:0.0000 imps:13.0 lr: 0.0004 etc:Fri M
+ar 18 14:16:28 2022                                                             
+validating ... Loss: 0.8111                                                     
+step: 2100/ 6610 Loss:0.0630 BCE:0.0630 KL:0.0000 imps:82.6 lr: 0.0004 etc:Fri M
+ar 18 14:15:28 2022                                                             
+validating ... Loss: 0.7907                                                     
+step: 2200/ 6610 Loss:0.0680 BCE:0.0680 KL:0.0000 imps:157.6 lr: 0.0003 etc:Fri 
+Mar 18 14:14:55 2022                                                            
+validating ... Loss: 0.7718                                                     
+step: 2300/ 6610 Loss:0.0659 BCE:0.0659 KL:0.0000 imps:174.2 lr: 0.0003 etc:Fri 
+Mar 18 14:14:37 2022                                                            
+validating ... Loss: 0.7676                                                     
+step: 2400/ 6610 Loss:0.0642 BCE:0.0642 KL:0.0000 imps:272.8 lr: 0.0003 etc:Fri 
+Mar 18 14:14:10 2022                                                            
+validating ... Loss: 0.7939                                                     
+step: 2500/ 6610 Loss:0.0644 BCE:0.0644 KL:0.0000 imps:383.3 lr: 0.0003 etc:Fri 
+Mar 18 14:13:45 2022                                                            
+validating ... Loss: 0.7725                                                     
+step: 2600/ 6610 Loss:0.0653 BCE:0.0653 KL:0.0000 imps:397.6 lr: 0.0003 etc:Fri 
+Mar 18 14:13:09 2022                                                            
+Epoch 5/10                                                                      
+validating ... Loss: 0.7702                                                     
+step: 2700/ 6610 Loss:0.0667 BCE:0.0667 KL:0.0000 imps:38.8 lr: 0.0003 etc:Fri M
+ar 18 14:13:05 2022                                                             
+validating ... Loss: 0.7685                                                     
+step: 2800/ 6610 Loss:0.0633 BCE:0.0633 KL:0.0000 imps:114.4 lr: 0.0003 etc:Fri 
+Mar 18 14:12:33 2022                                                            
+validating ... Loss: 0.7714                                                     
+step: 2900/ 6610 Loss:0.0608 BCE:0.0608 KL:0.0000 imps:172.6 lr: 0.0003 etc:Fri 
+Mar 18 14:12:16 2022                                                            
+validating ... Loss: 0.7829                                                     
+step: 3000/ 6610 Loss:0.0658 BCE:0.0658 KL:0.0000 imps:242.2 lr: 0.0003 etc:Fri 
+Mar 18 14:11:45 2022                                                            
+validating ... Loss: 0.7477                                                     
+step: 3100/ 6610 Loss:0.0636 BCE:0.0636 KL:0.0000 imps:333.2 lr: 0.0003 etc:Fri 
+Mar 18 14:11:19 2022                                                            
+validating ... Loss: 0.7377                                                     
+step: 3200/ 6610 Loss:0.0627 BCE:0.0627 KL:0.0000 imps:395.0 lr: 0.0003 etc:Fri 
+Mar 18 14:10:55 2022                                                            
+validating ... Loss: 0.7527                                                     
+step: 3300/ 6610 Loss:0.0595 BCE:0.0595 KL:0.0000 imps:439.6 lr: 0.0003 etc:Fri 
+Mar 18 14:10:25 2022 
+Epoch 6/10                                                                      
+validating ... Loss: 0.7621                                                     
+step: 3400/ 6610 Loss:0.0641 BCE:0.0641 KL:0.0000 imps:68.2 lr: 0.0003 etc:Fri M
+ar 18 14:10:38 2022                                                             
+validating ... Loss: 0.7626                                                     
+step: 3500/ 6610 Loss:0.0609 BCE:0.0609 KL:0.0000 imps:139.2 lr: 0.0003 etc:Fri 
+Mar 18 14:10:16 2022                                                            
+validating ... Loss: 0.7523                                                     
+step: 3600/ 6610 Loss:0.0613 BCE:0.0613 KL:0.0000 imps:175.4 lr: 0.0002 etc:Fri 
+Mar 18 14:09:53 2022                                                            
+validating ... Loss: 0.7599                                                     
+step: 3700/ 6610 Loss:0.0581 BCE:0.0581 KL:0.0000 imps:291.2 lr: 0.0002 etc:Fri 
+Mar 18 14:09:41 2022                                                            
+validating ... Loss: 0.7627                                                     
+step: 3800/ 6610 Loss:0.0598 BCE:0.0598 KL:0.0000 imps:324.5 lr: 0.0002 etc:Fri 
+Mar 18 14:09:20 2022                                                            
+validating ... Loss: 0.7563                                                     
+step: 3900/ 6610 Loss:0.0612 BCE:0.0612 KL:0.0000 imps:432.7 lr: 0.0002 etc:Fri 
+Mar 18 14:09:04 2022                                                            
+Epoch 7/10                                                                      
+validating ... Loss: 0.7312                                                     
+step: 4000/ 6610 Loss:0.0617 BCE:0.0617 KL:0.0000 imps:26.4 lr: 0.0002 etc:Fri M
+ar 18 14:09:03 2022                                                             
+validating ... Loss: 0.7791                                                     
+step: 4100/ 6610 Loss:0.0556 BCE:0.0556 KL:0.0000 imps:96.9 lr: 0.0002 etc:Fri M
+ar 18 14:08:48 2022                                                             
+validating ... Loss: 0.7486                                                     
+step: 4200/ 6610 Loss:0.0593 BCE:0.0593 KL:0.0000 imps:162.0 lr: 0.0002 etc:Fri 
+Mar 18 14:08:34 2022                                                            
+validating ... Loss: 0.7571                                                     
+step: 4300/ 6610 Loss:0.0594 BCE:0.0594 KL:0.0000 imps:190.8 lr: 0.0002 etc:Fri 
+Mar 18 14:08:20 2022                                                            
+validating ... Loss: 0.7426                                                     
+step: 4400/ 6610 Loss:0.0609 BCE:0.0609 KL:0.0000 imps:318.8 lr: 0.0002 etc:Fri 
+Mar 18 14:08:12 2022                                                            
+validating ... Loss: 0.7563                                                     
+step: 4500/ 6610 Loss:0.0610 BCE:0.0610 KL:0.0000 imps:380.2 lr: 0.0002 etc:Fri 
+Mar 18 14:07:59 2022                                                            
+validating ... Loss: 0.7543                                                     
+step: 4600/ 6610 Loss:0.0605 BCE:0.0605 KL:0.0000 imps:445.4 lr: 0.0002 etc:Fri 
+Mar 18 14:07:44 2022  
+Epoch 8/10                                                                      
+validating ... Loss: 0.7495                                                     
+step: 4700/ 6610 Loss:0.0603 BCE:0.0603 KL:0.0000 imps:48.7 lr: 0.0002 etc:Fri M
+ar 18 14:07:46 2022                                                             
+validating ... Loss: 0.7608                                                     
+step: 4800/ 6610 Loss:0.0573 BCE:0.0573 KL:0.0000 imps:124.4 lr: 0.0002 etc:Fri 
+Mar 18 14:07:44 2022                                                            
+validating ... Loss: 0.7436                                                     
+step: 4900/ 6610 Loss:0.0641 BCE:0.0641 KL:0.0000 imps:190.8 lr: 0.0001 etc:Fri 
+Mar 18 14:07:31 2022                                                            
+validating ... Loss: 0.7552                                                     
+step: 5000/ 6610 Loss:0.0584 BCE:0.0584 KL:0.0000 imps:249.9 lr: 0.0001 etc:Fri 
+Mar 18 14:07:18 2022                                                            
+validating ... Loss: 0.7379                                                     
+step: 5100/ 6610 Loss:0.0595 BCE:0.0595 KL:0.0000 imps:352.2 lr: 0.0001 etc:Fri 
+Mar 18 14:07:10 2022                                                            
+validating ... Loss: 0.7564                                                     
+step: 5200/ 6610 Loss:0.0590 BCE:0.0590 KL:0.0000 imps:363.8 lr: 0.0001 etc:Fri 
+Mar 18 14:06:56 2022                                                            
+Epoch 9/10                                                                      
+validating ... Loss: 0.7569                                                     
+step: 5300/ 6610 Loss:0.0566 BCE:0.0566 KL:0.0000 imps:9.5 lr: 0.0001 etc:Fri Ma
+r 18 14:07:01 2022                                                              
+validating ... Loss: 0.7598                                                     
+step: 5400/ 6610 Loss:0.0577 BCE:0.0577 KL:0.0000 imps:80.9 lr: 0.0001 etc:Fri M
+ar 18 14:06:51 2022                                                             
+validating ... Loss: 0.7206                                                     
+step: 5500/ 6610 Loss:0.0585 BCE:0.0585 KL:0.0000 imps:146.7 lr: 0.0001 etc:Fri 
+Mar 18 14:06:45 2022                                                            
+validating ... Loss: 0.7603                                                     
+step: 5600/ 6610 Loss:0.0580 BCE:0.0580 KL:0.0000 imps:227.4 lr: 0.0001 etc:Fri 
+Mar 18 14:06:35 2022                                                            
+validating ... Loss: 0.7535                                                     
+step: 5700/ 6610 Loss:0.0599 BCE:0.0599 KL:0.0000 imps:283.9 lr: 0.0001 etc:Fri 
+Mar 18 14:06:27 2022                                                            
+validating ... Loss: 0.7472                                                     
+step: 5800/ 6610 Loss:0.0575 BCE:0.0575 KL:0.0000 imps:344.7 lr: 0.0001 etc:Fri 
+Mar 18 14:06:17 2022                                                            
+validating ... Loss: 0.7548                                                     
+step: 5900/ 6610 Loss:0.0601 BCE:0.0601 KL:0.0000 imps:442.4 lr: 0.0001 etc:Fri 
+Mar 18 14:06:09 2022 
 Epoch 10/10                                                                     
 validating ... Loss: 0.7538                                                     
 step: 6000/ 6610 Loss:0.0558 BCE:0.0558 KL:0.0000 imps:37.8 lr: 0.0001 etc:Fri M
