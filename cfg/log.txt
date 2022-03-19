@@ -4,7 +4,28 @@ ata/home/yipingwang/data/Models/Classification/resnet50_fdsi_exp_datasetwise_05.
 pth                                                                             
 ./cfg/fdsi_datasetwise_05.yml                                                   
 resize long: (320, 640)                        
-...                                 
+...       
+Epoch 10/10                                                                     
+validating ... Loss: 0.7308                                                     
+step: 6000/ 6610 Loss:0.0502 BCE:0.0502 KL:0.0000 imps:29.6 lr: 0.0001 etc:Fri M
+ar 18 11:15:26 2022                                                             
+validating ... Loss: 0.7336                                                     
+step: 6100/ 6610 Loss:0.0517 BCE:0.0517 KL:0.0000 imps:107.3 lr: 0.0001 etc:Fri 
+Mar 18 11:15:21 2022                                                            
+validating ... Loss: 0.7351                                                     
+step: 6200/ 6610 Loss:0.0507 BCE:0.0507 KL:0.0000 imps:176.8 lr: 0.0001 etc:Fri 
+Mar 18 11:15:12 2022                                                            
+validating ... Loss: 0.7310                                                     
+step: 6300/ 6610 Loss:0.0510 BCE:0.0510 KL:0.0000 imps:238.4 lr: 0.0001 etc:Fri 
+Mar 18 11:15:01 2022                                                            
+validating ... Loss: 0.7297                                                     
+step: 6400/ 6610 Loss:0.0525 BCE:0.0525 KL:0.0000 imps:334.8 lr: 0.0000 etc:Fri 
+Mar 18 11:14:53 2022                                                            
+validating ... Loss: 0.7270                                                     
+step: 6500/ 6610 Loss:0.0551 BCE:0.0551 KL:0.0000 imps:342.8 lr: 0.0000 etc:Fri 
+Mar 18 11:14:46 2022                                                            
+validating ... Loss: 0.7272 
+...                          
 0.05890125514678801 0.059578663266212195
 0.1877746969206367 0.15079579897050777
 {'iou': array([0.88152008, 0.60895122, 0.36789641, 0.78053314, 0.52483989,
@@ -21,6 +42,29 @@ pth
 ./cfg/fdsi_datasetwise_06.yml
 resize long: (320, 640)
 ...
+Epoch 10/10                                                                     
+validating ... Loss: 0.7538                                                     
+step: 6000/ 6610 Loss:0.0558 BCE:0.0558 KL:0.0000 imps:37.8 lr: 0.0001 etc:Fri M
+ar 18 14:06:14 2022                                                             
+validating ... Loss: 0.7583                                                     
+step: 6100/ 6610 Loss:0.0576 BCE:0.0576 KL:0.0000 imps:107.9 lr: 0.0000 etc:Fri 
+Mar 18 14:06:04 2022                                                            
+validating ... Loss: 0.7588                                                     
+step: 6200/ 6610 Loss:0.0569 BCE:0.0569 KL:0.0000 imps:179.6 lr: 0.0000 etc:Fri 
+Mar 18 14:05:58 2022                                                            
+validating ... Loss: 0.7563                                                     
+step: 6300/ 6610 Loss:0.0567 BCE:0.0567 KL:0.0000 imps:244.0 lr: 0.0000 etc:Fri 
+Mar 18 14:06:00 2022                                                            
+validating ... Loss: 0.7521                                                     
+step: 6400/ 6610 Loss:0.0583 BCE:0.0583 KL:0.0000 imps:248.4 lr: 0.0000 etc:Fri 
+Mar 18 14:05:52 2022                                                            
+validating ... Loss: 0.7474                                                     
+step: 6500/ 6610 Loss:0.0613 BCE:0.0613 KL:0.0000 imps:405.8 lr: 0.0000 etc:Fri 
+Mar 18 14:05:55 2022                                                            
+validating ... Loss: 0.7483                                                     
+step: 6600/ 6610 Loss:0.0573 BCE:0.0573 KL:0.0000 imps:458.7 lr: 0.0000 etc:Fri 
+Mar 18 14:05:46 2022    
+...
 0.05738937452245607 0.05873808125159741
 0.18360119510865955 0.14909731319103156
 {'iou': array([0.88387254, 0.63602258, 0.37473615, 0.78984217, 0.54071516,
@@ -29,3 +73,39 @@ resize long: (320, 640)
        0.7057743 , 0.52589488, 0.84235024, 0.61343094, 0.62729745,
        0.52682239]), 'miou': 0.6776143989634346}
 =======================================
+======= Exp FDSI Dataset-wise 7 =========
+cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_512.pth 
+/data/home/yipingwang/data/Models/Classification/resnet50_fdsi_exp_datasetwise_07.pth
+./cfg/fdsi_datasetwise_07.yml
+resize long: (320, 640)
+...
+Epoch 10/10
+validating ... Loss: 0.8563
+step: 6000/ 6610 Loss:0.0841 BCE:0.0841 KL:0.0000 imps:35.5 lr: 0.0000 etc:Fri M
+ar 18 17:06:55 2022
+validating ... Loss: 0.8561
+step: 6100/ 6610 Loss:0.0869 BCE:0.0869 KL:0.0000 imps:102.6 lr: 0.0000 etc:Fri
+Mar 18 17:06:47 2022
+validating ... Loss: 0.8572
+step: 6200/ 6610 Loss:0.0871 BCE:0.0871 KL:0.0000 imps:176.5 lr: 0.0000 etc:Fri
+Mar 18 17:06:39 2022
+validating ... Loss: 0.8583
+step: 6300/ 6610 Loss:0.0839 BCE:0.0839 KL:0.0000 imps:244.8 lr: 0.0000 etc:Fri
+Mar 18 17:06:46 2022
+validating ... Loss: 0.8578
+step: 6400/ 6610 Loss:0.0882 BCE:0.0882 KL:0.0000 imps:264.0 lr: 0.0000 etc:Fri
+Mar 18 17:06:53 2022
+validating ... Loss: 0.8567
+step: 6500/ 6610 Loss:0.0907 BCE:0.0907 KL:0.0000 imps:345.6 lr: 0.0000 etc:Fri
+Mar 18 17:06:49 2022
+validating ... Loss: 0.8567
+step: 6600/ 6610 Loss:0.0860 BCE:0.0860 KL:0.0000 imps:467.1 lr: 0.0000 etc:Fri
+Mar 18 17:06:44 2022
+...
+0.061147490939682525 0.05639609779042898
+0.1645900734462836 0.17747811628151344
+{'iou': array([0.88245641, 0.67642106, 0.36304271, 0.75640597, 0.57410213,
+       0.61340058, 0.81869518, 0.69143738, 0.8527401 , 0.38883686,
+       0.77598496, 0.46057244, 0.76958695, 0.78506493, 0.79999698,
+       0.70563753, 0.51683725, 0.79407383, 0.5973698 , 0.63852175,
+       0.57990781]), 'miou': 0.6686234579387594}
