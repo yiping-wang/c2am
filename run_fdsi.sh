@@ -1,32 +1,33 @@
-echo "======= Exp FDSI Dataset-wise 12 ========="
-mkdir -p /data/home/yipingwang/data/CAMFdsi/
-mkdir -p /data/home/yipingwang/data/IRLabelFdsi/
-mkdir -p /data/home/yipingwang/data/SemSegFdsi/
-rm /data/home/yipingwang/data/CAMFdsi/*
-rm /data/home/yipingwang/data/IRLabelFdsi/*
-rm /data/home/yipingwang/data/SemSegFdsi/*
-python3 train_fdsi_datasetwise.py --config    ./cfg/fdsi_datasetwise_12.yml
-python3 make_cam_regular.py       --config    ./cfg/fdsi_datasetwise_12.yml
-python3 cam_to_ir_label.py        --config    ./cfg/ir_net_datasetwise_12.yml
-python3 train_irn.py              --config    ./cfg/ir_net_datasetwise_12.yml
-python3 make_sem_seg_labels.py    --config    ./cfg/ir_net_datasetwise_12.yml
-python3 eval_sem_seg.py           --config    ./cfg/ir_net_datasetwise_12.yml
-echo "======================================="
-
 echo "======= Exp FDSI Dataset-wise 13 ========="
-mkdir -p /data/home/yipingwang/data/CAMFdsi/
-mkdir -p /data/home/yipingwang/data/IRLabelFdsi/
-mkdir -p /data/home/yipingwang/data/SemSegFdsi/
-rm /data/home/yipingwang/data/CAMFdsi/*
-rm /data/home/yipingwang/data/IRLabelFdsi/*
-rm /data/home/yipingwang/data/SemSegFdsi/*
-python3 train_fdsi_datasetwise.py --config    ./cfg/fdsi_datasetwise_13.yml
-python3 make_cam_regular.py       --config    ./cfg/fdsi_datasetwise_13.yml
+# mkdir -p /data/home/yipingwang/data/CAMFdsi/
+# mkdir -p /data/home/yipingwang/data/IRLabelFdsi/
+# mkdir -p /data/home/yipingwang/data/SemSegFdsi/
+# rm /data/home/yipingwang/data/CAMFdsi/*
+# rm /data/home/yipingwang/data/IRLabelFdsi/*
+# rm /data/home/yipingwang/data/SemSegFdsi/*
+# python3 train_fdsi_datasetwise.py --config    ./cfg/fdsi_datasetwise_13.yml
+# python3 make_cam_regular.py       --config    ./cfg/fdsi_datasetwise_13.yml
 python3 cam_to_ir_label.py        --config    ./cfg/ir_net_datasetwise_13.yml
 python3 train_irn.py              --config    ./cfg/ir_net_datasetwise_13.yml
 python3 make_sem_seg_labels.py    --config    ./cfg/ir_net_datasetwise_13.yml
 python3 eval_sem_seg.py           --config    ./cfg/ir_net_datasetwise_13.yml
 echo "======================================="
+
+# echo "======= Exp FDSI Dataset-wise 12 ========="
+# mkdir -p /data/home/yipingwang/data/CAMFdsi/
+# mkdir -p /data/home/yipingwang/data/IRLabelFdsi/
+# mkdir -p /data/home/yipingwang/data/SemSegFdsi/
+# rm /data/home/yipingwang/data/CAMFdsi/*
+# rm /data/home/yipingwang/data/IRLabelFdsi/*
+# rm /data/home/yipingwang/data/SemSegFdsi/*
+# python3 train_fdsi_datasetwise.py --config    ./cfg/fdsi_datasetwise_12.yml
+# python3 make_cam_regular.py       --config    ./cfg/fdsi_datasetwise_12.yml
+# python3 cam_to_ir_label.py        --config    ./cfg/ir_net_datasetwise_12.yml
+# python3 train_irn.py              --config    ./cfg/ir_net_datasetwise_12.yml
+# python3 make_sem_seg_labels.py    --config    ./cfg/ir_net_datasetwise_12.yml
+# python3 eval_sem_seg.py           --config    ./cfg/ir_net_datasetwise_12.yml
+# echo "======================================="
+
 
 # echo "======= Exp FDSI Dataset-wise 11 ========="
 # mkdir -p /data/home/yipingwang/data/CAMFdsi/

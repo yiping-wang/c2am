@@ -317,3 +317,37 @@ Epoch 1/8
        0.70816748, 0.5217538 , 0.84447524, 0.61408721, 0.62797222,
        0.53011238]), 'miou': 0.6787990486934666}
 =======================================
+
+======= Exp FDSI Dataset-wise 11 =========                                      
+cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_512.pth /d
+ata/home/yipingwang/data/Models/Classification/resnet50_fdsi_exp_datasetwise_11.
+pth                                                                             
+./cfg/fdsi_datasetwise_11.yml 
+Epoch 6/6                                                                       
+validating ... Loss: 0.7693                                                     
+step: 3400/ 3966 Loss:0.0672 BCE:0.0672 KL:0.0000 imps:64.0 lr: 0.0001 etc:Sat M
+ar 19 11:47:19 2022                                                             
+validating ... Loss: 0.7750                                                     
+step: 3500/ 3966 Loss:0.0638 BCE:0.0638 KL:0.0000 imps:147.6 lr: 0.0001 etc:Sat 
+Mar 19 11:47:17 2022                                                            
+validating ... Loss: 0.7709                                                     
+step: 3600/ 3966 Loss:0.0640 BCE:0.0640 KL:0.0000 imps:210.9 lr: 0.0001 etc:Sat 
+Mar 19 11:47:07 2022                                                            
+validating ... Loss: 0.7758                                                     
+step: 3700/ 3966 Loss:0.0612 BCE:0.0612 KL:0.0000 imps:292.0 lr: 0.0000 etc:Sat 
+Mar 19 11:46:57 2022                                                            
+validating ... Loss: 0.7776
+step: 3800/ 3966 Loss:0.0628 BCE:0.0628 KL:0.0000 imps:372.4 lr: 0.0000 etc:Sat
+Mar 19 11:46:47 2022
+validating ... Loss: 0.7741
+step: 3900/ 3966 Loss:0.0645 BCE:0.0645 KL:0.0000 imps:440.1 lr: 0.0000 etc:Sat
+Mar 19 11:46:38 2022
+
+0.057372098356521795 0.057462272729584374
+0.17769378045890893 0.15276788170911257
+{'iou': array([0.88516563, 0.65692055, 0.3652877 , 0.79825461, 0.55506866,
+       0.63358618, 0.837054  , 0.72655536, 0.83351753, 0.38279822,
+       0.81951772, 0.50384289, 0.79434751, 0.8311635 , 0.80140458,
+       0.71127179, 0.52439792, 0.83849165, 0.6141972 , 0.62455697,
+       0.5385322 ]), 'miou': 0.6798063040739745}
+=======================================
