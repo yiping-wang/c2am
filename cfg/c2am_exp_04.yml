@@ -14,12 +14,12 @@ infer_list: "voc12/train_aug.txt"
 chainer_eval_set: "train"
 
 # Class Activation Map
-cam_weights_name: "resnet50_c2am_exp_02.pth"
-laste_cam_weights_name: "resnet50_c2am_exp_02_last_epoch.pth"
-scam_name: "c2am_exp_01_global_cam_02.npy"
+cam_weights_name: "resnet50_c2am_exp_04.pth"
+laste_cam_weights_name: "resnet50_c2am_exp_04_last_epoch.pth"
+scam_name: "c2am_exp_01_global_cam_04.npy"
 start_weight_name: "resnet50_baseline_512.pth"
 num_workers: 24
-agg_smooth_r: 11
+agg_smooth_r: 13
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_square_shape: 128
 cam_crop_size: 512
@@ -31,7 +31,7 @@ alpha: 0
 update_gcam: False
 
 # IRNet
-irn_weights_name: "irn_c2am_exp_02.pth"
+irn_weights_name: "irn_c2am_exp_04.pth"
 num_workers: 24
 conf_fg_thres: 0.30
 conf_bg_thres: 0.05

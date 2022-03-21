@@ -5,11 +5,10 @@ from misc import pyutils
 from chainercv.datasets import VOCSemanticSegmentationDataset
 from chainercv.evaluations import calc_semantic_segmentation_confusion
 
-def run(config):
+def run(config, cam_eval_thres):
     chainer_eval_set = config['chainer_eval_set']
     voc12_root = config['voc12_root']
     cam_out_dir = config['cam_out_dir']
-    cam_eval_thres = config['cam_eval_thres']
 
     dataset = VOCSemanticSegmentationDataset(split=chainer_eval_set, data_dir=voc12_root)
     labels = [dataset.get_example_by_keys(i, (1,))[0] for i in range(len(dataset))]
@@ -39,6 +38,7 @@ if __name__ == '__main__':
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
                         help='YAML config file path', required=True)
+    parser.add_argument('--cam_eval_thres', type=float, required=True)
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    run(config)
+    run(config, args.cam_eval_thres)
