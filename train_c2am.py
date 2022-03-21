@@ -144,7 +144,9 @@ def train(config, config_path):
                 projs = mlp(feats)
                 print(projs.shape)
                 norms = F.normalize(projs, dim=1)
-                proj_l, proj_k, proj_q, proj_t = norms
+                proj_l, proj_k, proj_q, proj_t = torch.split(
+                    norms, split_size_or_sections=4, dim=0)
+                print(proj_l.shape)
                 # cosine similarity of each feature in l to all features in k
                 # each row of score_lk is an image in k and its similarity to all features in l
                 # each col of score_lk is an image in l and its similarity to all features in k
