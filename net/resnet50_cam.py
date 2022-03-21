@@ -7,19 +7,15 @@ import os
 
 
 class MLP(nn.Module):
-    def __init__(self, input_dim=2048, output_dim=128):
-        super().__init__()
-        self.projection_head = nn.Sequential()
-        self.projection_head.add_module('W1', nn.Linear(
-            input_dim, input_dim))
-        self.projection_head.add_module('BN1', nn.BatchNorm1d(input_dim))
-        self.projection_head.add_module('ReLU', nn.ReLU())
-        self.projection_head.add_module('W2', nn.Linear(
-            input_dim, output_dim))
-        self.projection_head.add_module('BN2', nn.BatchNorm1d(output_dim))
+    def __init__(self, input_dim, output_dim):
+        super(MLP, self).__init__()
+        self.fc1 = nn.Linear(input_dim, input_dim)
+        self.bn1 = nn.BatchNorm1d(input_dim)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(input_dim, output_dim)
 
     def forward(self, x):
-        return self.projection_head(x)
+        return self.fc2(self.relu(self.bn1(self.fc1(x))))
 
 
 class Net(nn.Module):
