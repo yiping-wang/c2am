@@ -7,7 +7,7 @@ import os
 
 
 class MLP(nn.Module):
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_dim=2048, output_dim=128):
         super(MLP, self).__init__()
         self.fc1 = nn.Linear(input_dim, input_dim)
         self.bn1 = nn.BatchNorm1d(input_dim)
