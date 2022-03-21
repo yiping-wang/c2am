@@ -138,12 +138,12 @@ def train(config, config_path):
             ) if alpha > 0 else torch.tensor(0.)
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
-                augs = [torchutils.get_style_variants(
-                    names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)]
-                print(augs[0].shape)
-                feats = [cls_model(aug)[1] for aug in augs]
-                projs = [mlp(feat) for feat in feats]
-                norms = [F.normalize(proj, dim=1) for proj in projs]
+                augs = torch.cat([torchutils.get_style_variants(
+                    names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)], dim=0)
+                _, feats = cls_model(augs)
+                projs = mlp(feats)
+                print(projs.shape)
+                norms = F.normalize(projs, dim=1)
                 proj_l, proj_k, proj_q, proj_t = norms
                 # cosine similarity of each feature in l to all features in k
                 # each row of score_lk is an image in k and its similarity to all features in l
