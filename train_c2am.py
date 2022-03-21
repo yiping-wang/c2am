@@ -95,7 +95,7 @@ def train(config, config_path):
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': param_groups[1], 'lr': 100 * cam_learning_rate,
+        {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
         {'params': mlp.parameters(), 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
