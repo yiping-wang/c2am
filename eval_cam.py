@@ -38,7 +38,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', requires=True)
+                        help='YAML config file path', required=True)
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
     run(config)
