@@ -11,10 +11,6 @@ from net.resnet50_cam import Net, MLP
 from voc12.dataloader import get_img_path
 
 
-def concat(names, aug_fn, voc12_root):
-    return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(non_blocking=True)
-
-
 def validate(cls_model, data_loader):
     print('validating ... ', flush=True, end='')
     val_loss_meter = pyutils.AverageMeter('loss')
@@ -65,7 +61,6 @@ def train(config, config_path):
     print('resize long: {}'.format(resize_long))
 
     pyutils.seed_all(seed)
-
     data_aug_fn = torchutils.get_simclr_pipeline_transform(size=cam_crop_size)
 
     # CAM generation dataset
@@ -91,7 +86,7 @@ def train(config, config_path):
                                  drop_last=True)
 
     cls_model = Net()
-    mlp = MLP().cuda() if alpha > 0 else MLP()
+    mlp = MLP()
 
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(os.path.join(
@@ -112,14 +107,15 @@ def train(config, config_path):
 
     # Parallel
     cls_model = torch.nn.DataParallel(cls_model).cuda()
+    mlp = torch.nn.DataParallel(mlp).cuda() if alpha > 0 else MLP()
 
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
     # P(y|x, z)
     # generate Global CAMs
     os.system('python3 make_square_cam.py --config {}'.format(config_path))
-    gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    np.save(scam_path, gcams.cpu().numpy())
+    global_cams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    np.save(scam_path, global_cams.cpu().numpy())
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -131,7 +127,7 @@ def train(config, config_path):
             # P(z|x)
             x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * gcams
+            x = x.unsqueeze(2).unsqueeze(2) * global_cams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
@@ -141,8 +137,8 @@ def train(config, config_path):
             ) if alpha > 0 else torch.tensor(0.)
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
-                augs = [concat(names, data_aug_fn, voc12_root)
-                        for _ in range(4)]
+                augs = [torchutils.concat(
+                    names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)]
                 feats = [cls_model(aug)[1] for aug in augs]
                 projs = [mlp(feat) for feat in feats]
                 norms = [F.normalize(proj, dim=1) for proj in projs]
@@ -183,11 +179,12 @@ def train(config, config_path):
                 if update_gcam:
                     # P(y|x, z)
                     # generate Global CAMs
+                    torch.save(cls_model.module.state_dict(), cam_weight_path)
                     os.system(
                         'python3 make_square_cam.py --config {}'.format(config_path))
-                    gcams = pyutils.sum_cams(
+                    global_cams = pyutils.sum_cams(
                         cam_out_dir).cuda(non_blocking=True)
-                    np.save(scam_path, gcams.cpu().numpy())
+                    np.save(scam_path, global_cams.cpu().numpy())
                     # ===
             else:
                 timer.reset_stage()
@@ -199,12 +196,14 @@ def train(config, config_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
-    parser.add_argument('--config', type=str, help='YAML config file path', required=True)
+    parser.add_argument('--config', type=str,
+                        help='YAML config file path', required=True)
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
     start_weight_name = config['start_weight_name']
     cam_weights_name = config['cam_weights_name']
     model_root = config['model_root']
+
     start_weight_path = os.path.join(model_root, start_weight_name)
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     copy_weights = 'cp {} {}'.format(start_weight_path, cam_weight_path)
@@ -212,4 +211,5 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
+
     train(config, args.config)

@@ -3,7 +3,12 @@ from torch.utils.data import Subset
 import numpy as np
 import math
 from torch import nn
+from PIL import Image
 from torchvision.transforms import transforms
+
+
+def get_style_variants(names, aug_fn, voc12_root, get_img_path):
+    return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(non_blocking=True)
 
 
 class PolyOptimizer(torch.optim.SGD):
