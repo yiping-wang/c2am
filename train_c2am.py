@@ -138,7 +138,7 @@ def train(config, config_path):
             ) if alpha > 0 else torch.tensor(0.)
             # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
-                augs = [torchutils.concat(
+                augs = [torchutils.get_style_variants(
                     names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)]
                 feats = [cls_model(aug)[1] for aug in augs]
                 projs = [mlp(feat) for feat in feats]
