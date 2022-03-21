@@ -9,8 +9,8 @@ val_list: "voc12/val.txt"
 chainer_eval_set: "train"
 
 irn_weights_name: "irnet_c2am_02.pth"
-cam_out_dir: "/data/home/yipingwang/data/CAMReCAM/"
-ir_label_out_dir: "/data/home/yipingwang/data/IRLabelReCAM/"
+cam_out_dir: "/data/home/yipingwang/data/CAMFdsi"
+ir_label_out_dir: "/data/home/yipingwang/data/IRLabelFdsi"
 infer_list: "voc12/train_aug.txt"
 
 # IRNet
@@ -25,4 +25,4 @@ irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
 sem_seg_bg_thres: 0.27
-sem_seg_out_dir: "/data/home/yipingwang/data/SemSegReCAM/"
+sem_seg_out_dir: "/data/home/yipingwang/data/SemSegFdsi"
