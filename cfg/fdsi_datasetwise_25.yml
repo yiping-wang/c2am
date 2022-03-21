@@ -1,0 +1,27 @@
+# Environment
+seed: 0
+voc12_root: "/data/home/yipingwang/data/VOCdevkit/VOC2012/"
+model_root: "/data/home/yipingwang/data/Models/Classification/"
+cam_out_dir: "/data/home/yipingwang/data/CAMFdsi"
+scam_out_dir: "/data/home/yipingwang/data/SCAMFdsi"
+
+# Dataset
+train_list: "voc12/train_aug.txt"
+val_list: "voc12/val.txt"
+
+# Class Activation Map
+num_workers: 24
+agg_smooth_r: 13
+cam_scales: [1.0, 0.5, 1.5, 2.0]
+cam_square_shape: 128
+cam_crop_size: 512
+cam_batch_size: 16
+cam_num_epoches: 4
+cam_learning_rate: 0.0005
+cam_weight_decay: 0.0001
+cam_weights_name: "resnet50_fdsi_exp_datasetwise_25.pth"
+laste_cam_weights_name: "resnet50_fdsi_exp_datasetwise_25_laste.pth"
+scam_name: "scam_fdsi_datasetwise_25.npy"
+start_weight_name: "resnet50_baseline_512.pth"
+alpha: 0
+update_gcam: False
