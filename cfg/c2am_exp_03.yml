@@ -23,5 +23,5 @@ cam_weights_name: "resnet50_c2am_exp_03.pth"
 laste_cam_weights_name: "resnet50_c2am_exp_03_last_epoch.pth"
 scam_name: "c2am_exp_01_global_cam_03.npy"
 start_weight_name: "resnet50_baseline_512.pth"
-alpha: 1
+alpha: 0
 update_gcam: False
