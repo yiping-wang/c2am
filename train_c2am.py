@@ -140,6 +140,7 @@ def train(config, config_path):
             if alpha > 0:
                 augs = [torchutils.get_style_variants(
                     names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)]
+                print(augs[0].shape)
                 feats = [cls_model(aug)[1] for aug in augs]
                 projs = [mlp(feat) for feat in feats]
                 norms = [F.normalize(proj, dim=1) for proj in projs]
