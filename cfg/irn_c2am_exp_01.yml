@@ -10,7 +10,7 @@ infer_list: "voc12/train_aug.txt"
 chainer_eval_set: "train"
 
 # Dir
-irn_weights_name: "irnet_c2am_exp_01.pth"
+irn_weights_name: "irn_c2am_exp_01.pth"
 cam_out_dir: "/data/home/yipingwang/data/C2AM/"
 ir_label_out_dir: "/data/home/yipingwang/data/IRLabelC2AM/"
 sem_seg_out_dir: "/data/home/yipingwang/data/SemSegC2AM/"
