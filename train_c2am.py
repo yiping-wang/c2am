@@ -3,6 +3,7 @@ import voc12.dataloader
 import argparse
 import torch
 import os
+import numpy as np
 from PIL import Image
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
@@ -14,50 +15,26 @@ def concat(names, aug_fn, voc12_root):
     return torch.cat([aug_fn(Image.open(get_img_path(n, voc12_root)).convert('RGB')).unsqueeze(0) for n in names], dim=0).cuda(non_blocking=True)
 
 
-def validate(cls_model, mlp, data_loader, data_aug_fn, voc12_root, alpha):
+def validate(cls_model, data_loader):
     print('validating ... ', flush=True, end='')
-    val_loss_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
+    val_loss_meter = pyutils.AverageMeter('loss')
 
     cls_model.eval()
-    mlp.eval()
     with torch.no_grad():
         for pack in data_loader:
-            names = pack['name']
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
             x, _ = cls_model(imgs)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.).cuda(
-            ) if alpha > 0 else torch.tensor(0.)
-            if alpha > 0:
-                augs = [concat(names, data_aug_fn, voc12_root)
-                        for _ in range(4)]
-                feats = [cls_model(aug)[1] for aug in augs]
-                projs = [mlp(feat) for feat in feats]
-                norms = [F.normalize(proj, dim=1) for proj in projs]
-                proj_l, proj_k, proj_q, proj_t = norms
-                score_lk = torch.matmul(proj_l, proj_k.T)
-                score_qt = torch.matmul(proj_q, proj_t.T)
-                logprob_lk = F.log_softmax(score_lk, dim=1)
-                prob_qt = F.softmax(score_qt, dim=1)
-                kl_loss = alpha * \
-                    torch.nn.KLDivLoss(reduction='batchmean')(
-                        logprob_lk, prob_qt)
-            loss = bce_loss + kl_loss
-            val_loss_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
+            loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            val_loss_meter.add({'loss': loss.item()})
 
     cls_model.train()
-    mlp.train()
-
     loss = val_loss_meter.pop('loss')
-    bce = val_loss_meter.pop('bce')
-    kl = val_loss_meter.pop('kl')
-    print('Loss: {:.4f} | BCE: {:.4f} | KL: {:.4f}'.format(loss, bce, kl))
-    return loss, bce, kl
+    print('Loss: {:.4f}'.format(loss))
+    return loss
 
 
-def train(config):
+def train(config, config_path):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -69,12 +46,17 @@ def train(config):
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
+    cam_out_dir = config['cam_out_dir']
     agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
+    scam_name = config['scam_name']
     alpha = config['alpha']
+    scam_out_dir = config['scam_out_dir']
+    update_gcam = config['update_gcam']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
+    scam_path = os.path.join(scam_out_dir, scam_name)
 
     if cam_crop_size == 512:
         resize_long = (320, 640)
@@ -119,7 +101,7 @@ def train(config):
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': param_groups[1], 'lr': cam_learning_rate,
+        {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
         {'params': mlp.parameters(), 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
@@ -133,9 +115,12 @@ def train(config):
 
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
-    min_loss = float('inf')
-    min_bce = float('inf')
-    min_kl = float('inf')
+    # P(y|x, z)
+    # generate Global CAMs
+    os.system('python3 make_square_cam.py --config {}'.format(config_path))
+    gcams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
+    np.save(scam_path, gcams.cpu().numpy())
+    # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -144,9 +129,9 @@ def train(config):
             labels = pack['label'].cuda(non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x, cams = cls_model(imgs)
+            x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * torch.mean(cams, dim=0)
+            x = x.unsqueeze(2).unsqueeze(2) * gcams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
@@ -186,43 +171,45 @@ def train(config):
 
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
+                validate(cls_model, val_data_loader)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'BCE:%.4f' % (avg_meter.pop('bce')),
                       'KL:%.4f' % (avg_meter.pop('kl')),
-                      'Min:%.4f' % (min_loss),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
-                # validation
-                vloss, vbce, vkl = validate(
-                    cls_model, mlp, val_data_loader, data_aug_fn, voc12_root, alpha)
-                if vloss < min_loss:
-                    torch.save(cls_model.module.state_dict(), cam_weight_path)
-                    min_loss, min_bce, min_kl = vloss, vbce, vkl
-
+                if update_gcam:
+                    # P(y|x, z)
+                    # generate Global CAMs
+                    os.system(
+                        'python3 make_square_cam.py --config {}'.format(config_path))
+                    gcams = pyutils.sum_cams(
+                        cam_out_dir).cuda(non_blocking=True)
+                    np.save(scam_path, gcams.cpu().numpy())
+                    # ===
+            else:
                 timer.reset_stage()
         # empty cache
-        torch.cuda.empty_cache()
         torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
-
-    with open(cam_weights_name + '.txt', 'w') as f:
-        f.write('Min Validation Loss: {:.4f}'.format(min_loss) + '\n')
-        f.write('Min BCE Loss: {:.4f}'.format(min_bce) + '\n')
-        f.write('Min KL Loss: {:.4f}'.format(min_kl) + '\n')
+        torch.cuda.empty_cache()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
-    parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/fdsi.yml')
+    parser.add_argument('--config', type=str, help='YAML config file path', required=True)
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
-    copy_weights = 'cp /data/home/yipingwang/data/Models/Classification/resnet50_baseline_{}.pth /data/home/yipingwang/data/Models/Classification/{}'.format(
-        config['cam_crop_size'], config['cam_weights_name'])
+    start_weight_name = config['start_weight_name']
+    cam_weights_name = config['cam_weights_name']
+    model_root = config['model_root']
+    start_weight_path = os.path.join(model_root, start_weight_name)
+    cam_weight_path = os.path.join(model_root, cam_weights_name)
+    copy_weights = 'cp {} {}'.format(start_weight_path, cam_weight_path)
+
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-    train(config)
+    train(config, args.config)
