@@ -54,7 +54,7 @@ def train(config):
             irn_learning_rate, 'weight_decay': irn_weight_decay}
     ], lr=irn_learning_rate, weight_decay=irn_weight_decay, max_step=max_step)
 
-    model = model.cuda()
+    model = torch.nn.DataParallel(model).cuda()
     model.train()
 
     avg_meter = pyutils.AverageMeter()
@@ -132,11 +132,12 @@ def train(config):
 
             dp_mean_list.append(torch.mean(dp, dim=(0, 2, 3)).cpu())
 
-        model.mean_shift.running_mean = torch.mean(
+        model.module.mean_shift.running_mean = torch.mean(
             torch.stack(dp_mean_list), dim=0)
     print('done.')
 
-    torch.save(model.state_dict(), os.path.join(model_root, irn_weights_name))
+    torch.save(model.module.state_dict(),
+               os.path.join(model_root, irn_weights_name))
     torch.cuda.empty_cache()
 
 
@@ -144,7 +145,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/ir_net.yml')
+                        help='YAML config file path', required=True)
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
     train(config)

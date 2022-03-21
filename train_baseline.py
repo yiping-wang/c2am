@@ -35,7 +35,7 @@ def train(config, device):
     cam_learning_rate = config['cam_learning_rate']
     cam_weight_decay = config['cam_weight_decay']
     model_root = config['model_root']
-    cam_weights_name = config['cam_weights_name']
+    cam_weights_name = config['laste_cam_weights_name']
     num_workers = config['num_workers']
     cam_crop_size = config['cam_crop_size']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
@@ -48,8 +48,6 @@ def train(config, device):
     print('resize long: {}'.format(resize_long))
 
     model = Net().cuda(device)
-    # model.load_state_dict(torch.load(os.path.join(
-    #     model_root, cam_weights_name)), strict=True)
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
@@ -88,7 +86,6 @@ def train(config, device):
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
 
-    min_loss = float('inf')
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -111,12 +108,11 @@ def train(config, device):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                vloss = validate(model, val_data_loader)
-                if vloss < min_loss:
-                    torch.save(model.state_dict(), cam_weight_path)
-                    min_loss = vloss
+                validate(model, val_data_loader)
+            else:
                 timer.reset_stage()
         # empty cache
+        torch.save(model.state_dict(), cam_weight_path)
         torch.cuda.empty_cache()
 
 
