@@ -142,7 +142,6 @@ def train(config, config_path):
                     names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)], dim=0)
                 _, feats = cls_model(augs)
                 projs = mlp(feats)
-                print(projs.shape)
                 norms = F.normalize(projs, dim=1)
                 proj_l, proj_k, proj_q, proj_t = torch.split(
                     norms, split_size_or_sections=cam_batch_size, dim=0)
