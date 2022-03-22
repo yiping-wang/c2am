@@ -27,7 +27,6 @@ cam_batch_size: 16
 cam_num_epoches: 4
 cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
-scam_name: "global_cam.npy"
 recam_loss_weight: 1.0
 
 # IRNet
