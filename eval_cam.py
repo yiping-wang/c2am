@@ -10,7 +10,7 @@ def run(config, cam_eval_thres):
     voc12_root = config['voc12_root']
     cam_out_dir = config['cam_out_dir']
 
-    dataset = VOCSemanticSegmentationDataset(split=chainer_eval_set, data_dir=voc12_root)
+    dataset = VOCSemanticSegmentationDataset(split='train', data_dir=voc12_root)
     labels = [dataset.get_example_by_keys(i, (1,))[0] for i in range(len(dataset))]
 
     preds = []
