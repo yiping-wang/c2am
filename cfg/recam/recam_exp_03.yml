@@ -10,25 +10,23 @@ sem_seg_out_dir: "/data/home/yipingwang/data/SemSegReCAM/"
 # Dataset
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
-chainer_eval_set: "train"
-infer_list: "voc12/train.txt"
+infer_list: "voc12/train.txt" # "voc12/train.txt"
+chainer_eval_set: "train"    # "train"
 
 # Class Activation Map
+start_weight_name: "resnet50_c2am_exp_01_last_epoch.pth"
+cam_weights_name: "resnet50_recam_exp_03.pth"
+recam_weights_name: "recam_recam_predictor_exp_03.pth"
+laste_cam_weights_name: "resnet50_recam_exp_03_laste.pth"
+laste_recam_weights_name: "recam_recam_predictor_exp_03_laste.pth"
 num_workers: 12
-agg_smooth_r: 8
 cam_scales: [1.0, 0.5, 1.5, 2.0]
-cam_square_shape: 8
 cam_crop_size: 512
 cam_batch_size: 16
 cam_num_epoches: 4
 cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
-cam_weights_name: "resnet50_recam_exp_03.pth"
-recam_weights_name: "recam_recam_predictor_exp_03.pth"
-laste_cam_weights_name: "resnet50_recam_exp_03_laste.pth"
-laste_recam_weights_name: "recam_recam_predictor_exp_03_laste.pth"
 scam_name: "global_cam.npy"
-start_weight_name: "resnet50_c2am_exp_01_last_epoch.pth"
 recam_loss_weight: 1.0
 
 # IRNet
