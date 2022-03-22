@@ -41,13 +41,11 @@ def train(config, config_path):
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
-    cam_out_dir = config['cam_out_dir']
     agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
     scam_name = config['scam_name']
     alpha = config['alpha']
     scam_out_dir = config['scam_out_dir']
-    update_gcam = config['update_gcam']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
@@ -169,7 +167,6 @@ def train(config, config_path):
 
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
-                validate(cls_model, val_data_loader)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'BCE:%.4f' % (avg_meter.pop('bce')),
@@ -178,16 +175,7 @@ def train(config, config_path):
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
-                if update_gcam:
-                    # P(y|x, z)
-                    # generate Global CAMs
-                    torch.save(cls_model.module.state_dict(), cam_weight_path)
-                    os.system(
-                        'python3 make_square_cam.py --config {}'.format(config_path))
-                    global_cams = pyutils.sum_cams(
-                        cam_out_dir).cuda(non_blocking=True)
-                    np.save(scam_path, global_cams.cpu().numpy())
-                    # ===
+                validate(cls_model, val_data_loader)
             else:
                 timer.reset_stage()
         # empty cache
