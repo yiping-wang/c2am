@@ -10,13 +10,13 @@ sem_seg_out_dir: "/data/home/yipingwang/data/SemSegC2AM/"
 # Dataset
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
-infer_list: "voc12/train_aug.txt"
-chainer_eval_set: "train"
+infer_list: "voc12/val.txt"
+chainer_eval_set: "val"
 
 # Class Activation Map
 cam_weights_name: "resnet50_c2am_exp_02.pth"
 laste_cam_weights_name: "resnet50_c2am_exp_02_last_epoch.pth"
-scam_name: "c2am_exp_01_global_cam_02.npy"
+scam_name: "c2am_exp_02_global_cam.npy"
 start_weight_name: "resnet50_baseline_512.pth"
 num_workers: 24
 agg_smooth_r: 13
