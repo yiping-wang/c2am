@@ -87,8 +87,7 @@ def train(config, config_path):
     mlp = MLP()
 
     # load the pre-trained weights
-    cls_model.load_state_dict(torch.load(os.path.join(
-        model_root, cam_weights_name)), strict=True)
+    cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
 
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
@@ -115,7 +114,7 @@ def train(config, config_path):
     # global_cams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
     # np.save(scam_path, global_cams.cpu().numpy())
     global_cams = torch.from_numpy(np.load(os.path.join(
-        scam_out_dir, 'global_cam_01.npy'))).cuda(non_blocking=True)
+        scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
