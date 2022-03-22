@@ -74,7 +74,7 @@ def run(config):
 
     n_gpus = torch.cuda.device_count()
 
-    dataset = voc12.dataloader.VOC12ClassificationDatasetMSF(train_list,
+    dataset = voc12.dataloader.VOC12ClassificationDatasetMSF('voc12/train_aug_val.txt',
                                                              voc12_root=voc12_root,
                                                              scales=cam_scales)
 
