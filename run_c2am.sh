@@ -1,4 +1,4 @@
-echo "======= Exp C2AM Exp 01 Val ========="
+echo "======= Exp C2AM Exp 01 Train ========="
 mkdir -p /data/home/yipingwang/data/C2AM/
 mkdir -p /data/home/yipingwang/data/IRLabelC2AM/
 mkdir -p /data/home/yipingwang/data/SemSegC2AM/
@@ -14,7 +14,7 @@ python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_01.yml
 python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_01.yml
 echo "======================================="
 
-echo "======= Exp C2AM Exp 02 Val ========="
+echo "======= Exp C2AM Exp 02 Train ========="
 mkdir -p /data/home/yipingwang/data/C2AM/
 mkdir -p /data/home/yipingwang/data/IRLabelC2AM/
 mkdir -p /data/home/yipingwang/data/SemSegC2AM/
