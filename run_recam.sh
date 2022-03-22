@@ -1,13 +1,3 @@
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.15
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.16
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.17
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.18
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.19
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.20
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.22
-python3 eval_cam.py              --config ./cfg/recam/recam_exp_03.yml --cam_eval_thres 0.23
-
-
 echo "======= ReCAM Exp 01 ========="
 mkdir -p /data/home/yipingwang/data/CAMReCAM/
 mkdir -p /data/home/yipingwang/data/IRLabelReCAM/
