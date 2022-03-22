@@ -10,8 +10,8 @@ sem_seg_out_dir: "/data/home/yipingwang/data/SemSegC2AM/"
 # Dataset
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
-infer_list: "voc12/train_aug.txt"
-chainer_eval_set: "train"
+infer_list: "voc12/train.txt" # "voc12/train.txt"
+chainer_eval_set: "train"    # "train"
 
 # Class Activation Map
 cam_weights_name: "resnet50_c2am_exp_03.pth"
@@ -19,20 +19,20 @@ laste_cam_weights_name: "resnet50_c2am_exp_03_last_epoch.pth"
 scam_name: "c2am_exp_03_global_cam.npy"
 start_weight_name: "resnet50_baseline_512.pth"
 num_workers: 24
-agg_smooth_r: 16
+agg_smooth_r: 13
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_square_shape: 128
 cam_crop_size: 512
 cam_batch_size: 16
 cam_num_epoches: 4
-cam_learning_rate: 0.0005
+cam_learning_rate: 0.005
 cam_weight_decay: 0.0001
 alpha: 0
 
 # IRNet
 irn_weights_name: "irn_c2am_exp_03.pth"
 num_workers: 24
-conf_fg_thres: 0.31
+conf_fg_thres: 0.30
 conf_bg_thres: 0.05
 irn_crop_size: 512
 irn_batch_size: 16
