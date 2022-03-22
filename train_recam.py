@@ -4,7 +4,6 @@ import argparse
 import torch
 import os
 import numpy as np
-from PIL import Image
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
 from net.resnet50_cam import Net_CAM_Feature, Class_Predictor
@@ -44,20 +43,14 @@ def train(config):
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
-    agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
-    recam_weights_name = config['recam_weights_name']
-    scam_name = config['scam_name']
     recam_loss_weight = config['recam_loss_weight']
-    scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
     laste_recam_weights_name = config['laste_recam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
-    recam_weight_path = os.path.join(model_root, recam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
     laste_recam_weight_path = os.path.join(
         model_root, laste_recam_weights_name)
-    scam_path = os.path.join(scam_out_dir, scam_name)
 
     if cam_crop_size == 512:
         resize_long = (320, 640)
@@ -94,7 +87,6 @@ def train(config):
 
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
-    recam_predictor.load_state_dict(torch.load(recam_weight_path), strict=True)
 
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
@@ -114,31 +106,17 @@ def train(config):
 
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'sce')
     timer = pyutils.Timer()
-    # P(y|x, z)
-    # generate CAMs
-    # Using the pre-trained weights
-    # os.system('python3 make_small_recam.py --config {}'.format(config_path))
-    # scams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    # np.save(scam_path, scams.cpu().numpy())
-    gcams = torch.from_numpy(np.load(scam_path)).cuda()
-    # ===
+
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
-            # Front Door Adjustment
-            # P(z|x)
+
             x, cam_feats, _ = cls_model(imgs)
-            # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * gcams
-            # Aggregate for classification
-            # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
-            # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             sce_loss, _ = recam_predictor(cam_feats, labels)
-            # Loss
+
             sce_loss = sce_loss.mean()
             loss = bce_loss + recam_loss_weight * sce_loss
 
@@ -174,29 +152,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/fdsi.yml')
+                        help='YAML config file path', required=True)
     args = parser.parse_args()
     config = pyutils.parse_config(args.config)
 
     model_root = config['model_root']
     start_weight_name = config['start_weight_name']
-    start_weight_name_recam = config['start_weight_name_recam']
     cam_weights_name = config['cam_weights_name']
-    recam_weights_name = config['recam_weights_name']
-
     start_weight_path = os.path.join(model_root, start_weight_name)
-    start_weight_name_recam_path = os.path.join(
-        model_root, start_weight_name_recam)
-
     cam_weight_path = os.path.join(model_root, cam_weights_name)
-    recam_weight_path = os.path.join(model_root, recam_weights_name)
 
     copy_weights = 'cp {} {}'.format(start_weight_path, cam_weight_path)
     print(copy_weights)
     os.system(copy_weights)
-    copy_weights = 'cp {} {}'.format(
-        start_weight_name_recam_path, recam_weight_path)
-    print(copy_weights)
-    os.system(copy_weights)
-
     train(config)
