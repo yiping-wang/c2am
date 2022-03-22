@@ -17,7 +17,7 @@ chainer_eval_set: "train"
 cam_weights_name: "resnet50_c2am_exp_03.pth"
 laste_cam_weights_name: "resnet50_c2am_exp_03_last_epoch.pth"
 scam_name: "global_cam_03.npy"
-start_weight_name: "resnet50_baseline_512.pth"
+start_weight_name: "resnet50_c2am_exp_01_last_epoch.pth"
 num_workers: 24
 agg_smooth_r: 16
 cam_scales: [1.0, 0.5, 1.5, 2.0]
