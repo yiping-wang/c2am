@@ -16,7 +16,7 @@ chainer_eval_set: "val"
 # Class Activation Map
 cam_weights_name: "resnet50_c2am_exp_01.pth"
 laste_cam_weights_name: "resnet50_c2am_exp_01_last_epoch.pth"
-scam_name: "c2am_exp_01_global_cam_01.npy"
+scam_name: "c2am_exp_01_global_cam.npy"
 start_weight_name: "resnet50_baseline_512.pth"
 num_workers: 24
 agg_smooth_r: 13

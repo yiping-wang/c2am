@@ -1,9 +1,9 @@
 import torch.nn.functional as F
+import numpy as np
 import voc12.dataloader
 import argparse
 import torch
 import os
-import numpy as np
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
 from net.resnet50_cam import Net, MLP
@@ -160,11 +160,11 @@ def train(config, config_path):
             loss = bce_loss + kl_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
-
+            # Optimization
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
+            # Progress
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
@@ -178,7 +178,7 @@ def train(config, config_path):
                 validate(cls_model, val_data_loader)
             else:
                 timer.reset_stage()
-        # empty cache
+        # Empty cache
         torch.save(cls_model.module.state_dict(), laste_cam_weight_path)
         torch.cuda.empty_cache()
 
