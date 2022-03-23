@@ -1,3 +1,4 @@
+import re
 import torch.nn.functional as F
 import voc12.dataloader
 import argparse
@@ -14,8 +15,8 @@ def validate(model, data_loader):
     model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            img = pack['img'].cuda(device, non_blocking=True)
-            label = pack['label'].cuda(device, non_blocking=True)
+            img = pack['img'].cuda(non_blocking=True)
+            label = pack['label'].cuda(non_blocking=True)
             x, _ = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
@@ -25,7 +26,7 @@ def validate(model, data_loader):
     return vloss
 
 
-def train(config, device):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -47,7 +48,7 @@ def train(config, device):
         resize_long = (160, 320)
     print('resize long: {}'.format(resize_long))
 
-    model = Net().cuda(device)
+    model = Net().cuda()
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
@@ -89,8 +90,8 @@ def train(config, device):
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
-            img = pack['img'].cuda(device, non_blocking=True)
-            label = pack['label'].cuda(device, non_blocking=True)
+            img = pack['img'].cuda(non_blocking=True)
+            label = pack['label'].cuda(non_blocking=True)
             x, _ = model(img)
             loss = F.multilabel_soft_margin_loss(x, label)
             avg_meter.add({'loss1': loss.item()})
@@ -120,11 +121,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/baseline.yml')
+                        help='YAML config file path', required=True)
     args = parser.parse_args()
-    if torch.cuda.is_available():
-        device = pyutils.set_gpus(n_gpus=1)
-    else:
-        device = 'cpu'
     config = pyutils.parse_config(args.config)
-    train(config, device)
+    train(config)
