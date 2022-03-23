@@ -116,7 +116,7 @@ def train(config, config_path):
     # global_cams = torch.from_numpy(np.load(os.path.join(
     #     scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
     global_cams = torch.from_numpy(
-        np.load(os.path.join(scam_out_dir, 'global_cam.npy')))
+        np.load(os.path.join(scam_out_dir, 'global_cam_01.npy')))
     global_cams = (global_cams - global_cams.min()) / \
         (global_cams.max() - global_cams.min())
     global_cams = global_cams.cuda(non_blocking=True)
