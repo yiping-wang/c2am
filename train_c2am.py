@@ -129,7 +129,8 @@ def train(config, config_path):
             x = x.unsqueeze(2).unsqueeze(2) * global_cams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
+            x = torchutils.lse_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             kl_loss = torch.tensor(0.).cuda(

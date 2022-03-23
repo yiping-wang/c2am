@@ -70,7 +70,7 @@ def mean_agg(cam, r):
     return torch.mean(cam * r, dim=(2, 3))
 
 
-def max_agg(cam, r):
+def max_agg(cam, r=None):
     return torch.max(torch.max(cam, dim=2)[0], dim=2)[0]
 
 
