@@ -113,13 +113,13 @@ def train(config, config_path):
     # os.system('python3 make_square_cam.py --config {}'.format(config_path))
     # global_cams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
     # np.save(scam_path, global_cams.cpu().numpy())
-    # global_cams = torch.from_numpy(np.load(os.path.join(
-    #     scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
-    global_cams = torch.from_numpy(
-        np.load(os.path.join(scam_out_dir, 'global_cam_01.npy')))
-    global_cams = (global_cams - global_cams.min()) / \
-        (global_cams.max() - global_cams.min())
-    global_cams = global_cams.cuda(non_blocking=True)
+    global_cams = torch.from_numpy(np.load(os.path.join(
+        scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
+    # global_cams = torch.from_numpy(
+    #     np.load(os.path.join(scam_out_dir, 'global_cam_01.npy')))
+    # global_cams = (global_cams - global_cams.min()) / \
+    #     (global_cams.max() - global_cams.min())
+    # global_cams = global_cams.cuda(non_blocking=True)
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
