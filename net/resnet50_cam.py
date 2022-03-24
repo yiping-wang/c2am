@@ -10,9 +10,9 @@ class MLP(nn.Module):
     def __init__(self, input_dim=2048, output_dim=128):
         super(MLP, self).__init__()
         self.fc1 = nn.Linear(input_dim, 128)
-        self.bn1 = nn.BatchNorm1d(input_dim)
+        self.bn1 = nn.BatchNorm1d(128)
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(input_dim, output_dim)
+        self.fc2 = nn.Linear(128, output_dim)
 
     def forward(self, x):
         return self.fc2(self.relu(self.bn1(self.fc1(x))))
