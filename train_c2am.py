@@ -131,8 +131,6 @@ def train(config, config_path):
             # P(z|x)
             x, _ = cls_model(imgs)
             # P(y|do(x))
-            print(global_cams.unsqueeze(0))
-            print(labels.unsqueeze(2).unsqueeze(2).shape)
             global_cams_ = global_cams.unsqueeze(
                 0) * labels.unsqueeze(2).unsqueeze(2)
             x = x.unsqueeze(2).unsqueeze(2) * global_cams_
