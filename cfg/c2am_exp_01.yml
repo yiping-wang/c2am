@@ -33,7 +33,7 @@ alpha: 0
 irn_weights_name: "irn_c2am_exp_01_tuning.pth"
 num_workers: 24
 conf_fg_thres: 0.36
-conf_bg_thres: 0.11
+conf_bg_thres: 0.10
 irn_crop_size: 512
 irn_batch_size: 32
 irn_num_epoches: 3
