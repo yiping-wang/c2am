@@ -41,4 +41,4 @@ irn_learning_rate: 0.1
 irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
-sem_seg_bg_thres: 0.19
+sem_seg_bg_thres: 0.24
