@@ -131,7 +131,11 @@ def train(config, config_path):
             # P(z|x)
             x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * global_cams
+            print(global_cams.unsqueeze(0))
+            print(labels.unsqueeze(2).unsqueeze(2).shape)
+            global_cams_ = global_cams.unsqueeze(
+                0) * labels.unsqueeze(2).unsqueeze(2)
+            x = x.unsqueeze(2).unsqueeze(2) * global_cams_
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             # x = torchutils.mean_agg(x, r=agg_smooth_r)
