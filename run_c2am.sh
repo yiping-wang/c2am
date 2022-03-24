@@ -1,4 +1,4 @@
-echo "======= Exp C2AM Exp 04 Train ========="
+echo "======= Exp C2AM Exp 05 Train ========="
 mkdir -p /data/home/yipingwang/data/C2AM/
 mkdir -p /data/home/yipingwang/data/IRLabelC2AM/
 mkdir -p /data/home/yipingwang/data/SemSegC2AM/
