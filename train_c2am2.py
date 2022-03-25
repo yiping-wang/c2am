@@ -176,7 +176,8 @@ def train(config, config_path):
                 timer.update_progress(optimizer.global_step / max_step)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
-                      'BCE:%.4f' % (avg_meter.pop('bce')),
+                      'CLS BCE:%.4f' % (avg_meter.pop('cls_bce')),
+                      'COT BCE:%.4f' % (avg_meter.pop('cot_bce')),
                       'KL:%.4f' % (avg_meter.pop('kl')),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
