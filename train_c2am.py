@@ -37,6 +37,7 @@ def train(config, config_path):
     cam_batch_size = config['cam_batch_size']
     cam_num_epoches = config['cam_num_epoches']
     cam_learning_rate = config['cam_learning_rate']
+    sty_learning_rate = config['sty_learning_rate']
     cam_weight_decay = config['cam_weight_decay']
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
@@ -95,7 +96,7 @@ def train(config, config_path):
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': mlp.parameters(), 'lr': 0.01,
+        {'params': mlp.parameters(), 'lr': sty_learning_rate,
             'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
