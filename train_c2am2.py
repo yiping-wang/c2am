@@ -107,7 +107,7 @@ def train(config, config_path):
     cls_model = torch.nn.DataParallel(cls_model).cuda()
     mlp = torch.nn.DataParallel(mlp).cuda() if alpha > 0 else MLP()
 
-    avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
+    avg_meter = pyutils.AverageMeter('loss', 'cls_bce', 'cot_bce', 'kl')
     timer = pyutils.Timer()
     # P(y|x, z)
     # generate Global CAMs
@@ -166,7 +166,7 @@ def train(config, config_path):
             # Loss
             loss = cls_bce_loss + cot_bce_loss + kl_loss
             avg_meter.add(
-                {'loss': loss.item(), 'cls_bce': cls_bce_loss.item(), 'cot_bce_loss': cot_bce_loss.item(), 'kl': kl_loss.item()})
+                {'loss': loss.item(), 'cls_bce': cls_bce_loss.item(), 'cot_bce': cot_bce_loss.item(), 'kl': kl_loss.item()})
             # Optimization
             optimizer.zero_grad()
             loss.backward()
