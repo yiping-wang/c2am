@@ -138,7 +138,7 @@ def train(config, config_path):
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             cot_bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            cls_bce_loss = torch.nn.BCEWithLogitsLoss()(logits, labels)
+            cls_bce_loss = 0.5 * torch.nn.BCEWithLogitsLoss()(logits, labels)
             kl_loss = torch.tensor(0.).cuda(
             ) if alpha > 0 else torch.tensor(0.)
             # Style Intervention from Eq. 3 at 2010.07922
