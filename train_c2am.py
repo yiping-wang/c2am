@@ -116,6 +116,10 @@ def train(config, config_path):
     # np.save(scam_path, global_cams.cpu().numpy())
     global_cams = torch.from_numpy(np.load(os.path.join(
         scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
+    for i in range(20):
+        g = global_cams[i]
+        g = (g - g.min()) / (g.max() - g.min())
+        global_cams[i] = g
     # global_cams = torch.from_numpy(
     #     np.load(os.path.join(scam_out_dir, 'global_cam_01.npy')))
     # global_cams = (global_cams - global_cams.min()) / \
