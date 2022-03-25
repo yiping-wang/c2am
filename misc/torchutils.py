@@ -3,7 +3,7 @@ from torch.utils.data import Subset
 import numpy as np
 import math
 from torch import nn
-from PIL import Image
+from PIL import Image, ImageOps
 from torchvision.transforms import transforms
 
 
@@ -78,6 +78,18 @@ def lse_agg(cam, r):
     return (1/r) * torch.logsumexp(cam * r, dim=(2, 3))
 
 
+class RandomSolarize(object):
+    def __init__(self, threshold=128, p=0.2):
+        self.threshold = threshold
+        self.p = p
+
+    def __call__(self, img):
+        if np.random.uniform() < self.p:
+            return ImageOps.solarize(img, threshold=self.threshold)
+        else:
+            return img
+
+
 class GaussianBlur(object):
     """blur a single image on CPU"""
 
@@ -131,7 +143,7 @@ def get_simclr_pipeline_transform(size, s=1):
                                           transforms.RandomGrayscale(p=0.2),
                                           GaussianBlur(
                                               kernel_size=int(0.1 * size)),
-                                          # transforms.RandomSolarize(threshold=0.5, p=0.2),
+                                          RandomSolarize(threshold=128, p=0.2),
                                           transforms.ToTensor(),
                                           transforms.Normalize(
         mean=torch.tensor(
