@@ -130,11 +130,9 @@ def train(config, config_path):
             labels = pack['label'].cuda(non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x, _ = cls_model(imgs) # B * 20 * 1 * 1
+            x, _ = cls_model(imgs)
             # P(y|do(x))
-            print(x.unsqueeze(2).unsqueeze(2).shape)
-            print(global_cams.shape)
-            x = x.unsqueeze(2).unsqueeze(2) * global_cams # 20 * H * W
+            x = x.unsqueeze(2).unsqueeze(2) * global_cams
             print(x.shape)
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
