@@ -100,6 +100,7 @@ def train(config):
 
     avg_meter = pyutils.AverageMeter('loss', 'bce', 'kl')
     timer = pyutils.Timer()
+    kl_loss = torch.tensor(0.)
     # P(y|x, z)
     # generate Global CAMs
     # os.system('python3 make_square_cam.py --config {}'.format(config_path))
@@ -155,11 +156,8 @@ def train(config):
                         logprob_lk, prob_qt)
             # Loss
             loss = bce_loss + kl_loss if alpha > 0 else bce_loss
-            if alpha > 0:
-                avg_meter.add(
-                    {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
-            else:
-                avg_meter.add({'loss': loss.item(), 'bce': bce_loss.item()})
+            avg_meter.add(
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
             # Optimization
             optimizer.zero_grad()
             loss.backward()
