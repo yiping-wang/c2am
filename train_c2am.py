@@ -108,8 +108,6 @@ def train(config):
     # np.save(scam_path, global_cams.cpu().numpy())
     global_cams = torch.from_numpy(np.load(os.path.join(
         scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
-    global_cams = torch.mean(global_cams, dim=(1, 2))
-    global_cams = global_cams / torch.sum(global_cams)
     # global_cams = torch.from_numpy(
     #     np.load(os.path.join(scam_out_dir, 'global_cam_01.npy')))
     # global_cams = (global_cams - global_cams.min()) / \
@@ -126,10 +124,10 @@ def train(config):
             # P(z|x)
             x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x * global_cams
+            x = x.unsqueeze(2).unsqueeze(2) * global_cams
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
-            # x = torchutils.mean_agg(x, r=agg_smooth_r)
+            x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             if alpha > 0:
