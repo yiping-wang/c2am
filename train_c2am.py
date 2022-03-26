@@ -153,8 +153,11 @@ def train(config):
                         logprob_lk, prob_qt)
             # Loss
             loss = bce_loss + kl_loss if alpha > 0 else bce_loss
-            avg_meter.add(
-                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
+            if alpha > 0:
+                avg_meter.add(
+                    {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
+            else:
+                avg_meter.add({'loss': loss.item(), 'bce': bce_loss.item()})
             # Optimization
             optimizer.zero_grad()
             loss.backward()
