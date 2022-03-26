@@ -148,7 +148,9 @@ def train(config):
                 logprob_lk = F.log_softmax(score_lk, dim=1)
                 prob_qt = F.softmax(score_qt, dim=1)
                 # KL-divergence loss for Style Intervention
-                kl_loss = alpha * torch.nn.KLDivLoss()(logprob_lk, prob_qt)
+                kl_loss = alpha * \
+                    torch.nn.KLDivLoss(reduction='batchmean')(
+                        logprob_lk, prob_qt)
             # Loss
             loss = bce_loss + kl_loss if alpha > 0 else bce_loss
             avg_meter.add(
