@@ -29,7 +29,7 @@ def validate(cls_model, data_loader):
     return loss
 
 
-def train(config, config_path):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -44,27 +44,18 @@ def train(config, config_path):
     cam_weights_name = config['cam_weights_name']
     agg_smooth_r = config['agg_smooth_r']
     num_workers = config['num_workers']
-    scam_name = config['scam_name']
     alpha = config['alpha']
-    cam_out_dir = config['cam_out_dir']
     scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
-    scam_path = os.path.join(scam_out_dir, scam_name)
-
-    if cam_crop_size == 512:
-        resize_long = (320, 640)
-    else:
-        resize_long = (160, 320)
-    print('resize long: {}'.format(resize_long))
 
     pyutils.seed_all(seed)
     data_aug_fn = torchutils.get_simclr_pipeline_transform(size=cam_crop_size)
 
     # CAM generation dataset
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list, voc12_root=voc12_root,
-                                                                resize_long=resize_long, hor_flip=True,
+                                                                resize_long=(320, 640), hor_flip=True,
                                                                 crop_size=cam_crop_size, crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
@@ -133,16 +124,13 @@ def train(config, config_path):
             x, _ = cls_model(imgs)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * global_cams
-            print(x.shape)
             # Aggregate for classification
             # agg(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Content Adjustment
             bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            kl_loss = torch.tensor(0.).cuda(
-            ) if alpha > 0 else torch.tensor(0.)
-            # Style Intervention from Eq. 3 at 2010.07922
             if alpha > 0:
+                # Style Intervention from Eq. 3 at 2010.07922
                 augs = torch.cat([torchutils.get_style_variants(
                     names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)], dim=0)
                 _, feats = cls_model(augs)
@@ -164,7 +152,7 @@ def train(config, config_path):
                     torch.nn.KLDivLoss(reduction='batchmean')(
                         logprob_lk, prob_qt)
             # Loss
-            loss = bce_loss + kl_loss
+            loss = bce_loss + kl_loss if alpha > 0 else bce_loss
             avg_meter.add(
                 {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
             # Optimization
@@ -192,7 +180,7 @@ def train(config, config_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Front Door Semantic Segmentation')
+        description='Causal Class Activation Maps')
     parser.add_argument('--config', type=str,
                         help='YAML config file path', required=True)
     args = parser.parse_args()
@@ -208,5 +196,4 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-
-    train(config, args.config)
+    train(config)

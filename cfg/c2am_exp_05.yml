@@ -31,7 +31,7 @@ cam_weight_decay: 0.0001
 alpha: 1
 
 # IRNet
-irn_weights_name: "irn_c2am_exp_05_tuning.pth"
+irn_weights_name: "irn_c2am_exp_05.pth"
 num_workers: 24
 conf_fg_thres: 0.36
 conf_bg_thres: 0.10
