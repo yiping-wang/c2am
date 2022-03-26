@@ -26,12 +26,12 @@ cam_crop_size: 512
 cam_batch_size: 16
 cam_num_epoches: 4
 cam_learning_rate: 0.0005
-sty_learning_rate: 0.005
+sty_learning_rate: 0.0001
 cam_weight_decay: 0.0001
 alpha: 1
 
 # IRNet
-irn_weights_name: "irn_c2am_exp_03_tuning.pth"
+irn_weights_name: "irn_c2am_exp_03.pth"
 num_workers: 24
 conf_fg_thres: 0.36
 conf_bg_thres: 0.10
