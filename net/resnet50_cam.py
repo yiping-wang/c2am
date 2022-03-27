@@ -39,7 +39,7 @@ class Net(nn.Module):
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
-        x = self.stage4(x).detach()
+        x = self.stage4(x)
         feat = torchutils.gap2d(x, keepdims=True)
         x = self.classifier(feat)
         x = x.view(-1, 20)
