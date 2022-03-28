@@ -5,7 +5,7 @@ mkdir -p /data/home/yipingwang/data/SemSegBaseline/
 rm /data/home/yipingwang/data/CAMBaseline/*
 rm /data/home/yipingwang/data/IRLabelBaseline/*
 rm /data/home/yipingwang/data/SemSegBaseline/*
-#python3 train_baseline.py         --config    ./cfg/baseline/baseline_512.yml
+python3 train_baseline.py         --config    ./cfg/baseline/baseline_512.yml
 python3 make_cam.py                --config    ./cfg/baseline/baseline_512.yml
 python3 eval_cam.py               --config     ./cfg/baseline/baseline_512.yml --cam_eval_thres 0.03
 python3 eval_cam.py               --config     ./cfg/baseline/baseline_512.yml --cam_eval_thres 0.05
