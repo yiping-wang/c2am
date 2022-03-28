@@ -46,7 +46,7 @@ def train(config):
     pyutils.seed_all(seed)
     data_aug_fn = torchutils.get_simclr_pipeline_transform(size=cam_crop_size)
 
-    model = Net()
+    cls_model = Net()
     mlp = MLP()
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
@@ -75,7 +75,7 @@ def train(config):
                                  pin_memory=True,
                                  drop_last=True)
 
-    param_groups = model.trainable_parameters()
+    param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
@@ -100,7 +100,7 @@ def train(config):
         for step, pack in enumerate(train_data_loader):
             img = pack['img'].cuda(non_blocking=True)
             label = pack['label'].cuda(non_blocking=True)
-            x, _ = model(img)
+            x, _ = cls_model(img)
             if alpha > 0:
                 # Style Intervention from Eq. 3 at 2010.07922
                 names = pack['name']
@@ -138,11 +138,11 @@ def train(config):
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                validate(model, val_data_loader)
+                validate(cls_model, val_data_loader)
             else:
                 timer.reset_stage()
         # empty cache
-        torch.save(model.state_dict(), cam_weight_path)
+        torch.save(cls_model.module.state_dict(), cam_weight_path)
         torch.cuda.empty_cache()
 
 
