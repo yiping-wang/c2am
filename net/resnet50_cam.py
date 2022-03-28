@@ -38,7 +38,7 @@ class Net(nn.Module):
     def forward(self, x):
         x = self.stage1(x)
         x = self.stage2(x)
-        x = self.stage3(x).detach()
+        x = self.stage3(x)
         x = self.stage4(x)
         feat = torchutils.gap2d(x, keepdims=True)
         x = self.classifier(feat)
