@@ -1,5 +1,5 @@
 # Environment
-seed: 1
+seed: 0
 voc12_root: "/data/home/yipingwang/data/VOCdevkit/VOC2012/"
 model_root: "/data/home/yipingwang/data/Models/Classification/"
 cam_out_dir: "/data/home/yipingwang/data/C2AM/"
@@ -33,7 +33,7 @@ alpha: 0
 # IRNet
 irn_weights_name: "irn_c2am_exp_02.pth"
 num_workers: 24
-conf_fg_thres: 0.36
+conf_fg_thres: 0.365
 conf_bg_thres: 0.10
 irn_crop_size: 512
 irn_batch_size: 32
