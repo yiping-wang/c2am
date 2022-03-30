@@ -25,7 +25,7 @@ cam_square_shape: 128
 cam_crop_size: 512
 cam_batch_size: 16
 cam_num_epoches: 4
-cam_learning_rate: 0.0003
+cam_learning_rate: 0.0007
 cam_weight_decay: 0.0001
 alpha: 0
 
