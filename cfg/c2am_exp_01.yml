@@ -18,7 +18,7 @@ cam_weights_name: "resnet50_c2am_exp_01.pth"
 laste_cam_weights_name: "resnet50_c2am_exp_01_last_epoch.pth"
 scam_name: "c2am_exp_01_global_cam.npy"
 start_weight_name: "resnet50_baseline_512.pth"
-num_workers: 24
+num_workers: 12
 agg_smooth_r: 22
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_square_shape: 128
@@ -31,7 +31,7 @@ alpha: 0
 
 # IRNet
 irn_weights_name: "irn_c2am_exp_01.pth"
-num_workers: 24
+num_workers: 12
 conf_fg_thres: 0.36 # 37
 conf_bg_thres: 0.10
 irn_crop_size: 512
