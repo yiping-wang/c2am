@@ -78,7 +78,7 @@ def _work(process_id, model, dataset, config):
 def run(config):
     model_root = config['model_root']
     irn_weights_name = config['irn_weights_name']
-    infer_list = 'voc12/train.txt'
+    infer_list = config['infer_list']
     voc12_root = config['voc12_root']
 
     model = EdgeDisplacement()
