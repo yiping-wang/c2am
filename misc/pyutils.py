@@ -36,7 +36,6 @@ class IterateCAM:
                     raise StopIteration
                 c = np.load(self.cam_list[self.index],
                             allow_pickle=True).item()
-                print(c.keys())
 
         # Always increase
         self.index += 1
