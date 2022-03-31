@@ -29,9 +29,9 @@ class IterateCAM:
         c = np.load(self.cam_list[self.index], allow_pickle=True).item()
         if self.label > -1:
             while np.sum(c['raw_outputs'][self.label]) == 0:
+                self.index += 1
                 c = np.load(self.cam_list[self.index],
                             allow_pickle=True).item()
-                self.index += 1
                 if self.index == len(self.cam_list):
                     raise StopIteration
         else:
@@ -53,6 +53,7 @@ def sum_cams(cam_dir):
 def sum_cams_by_class(cam_dir):
     global_cam = torch.zeros((20, 128, 128))
     for idx in range(20):
+        print(idx)
         itcam = IterateCAM(cam_dir, label=idx)
         running_sum = itertools.accumulate(itcam)
         running_mean = map(operator.truediv, running_sum, itertools.count(1))
