@@ -92,7 +92,7 @@ def train(config, config_path):
     # timer = pyutils.Timer()
     # P(y|x, z)
     # generate Global CAMs
-    os.system('python3 make_square_cam.py --config {}'.format(config_path))
+    # os.system('python3 make_square_cam.py --config {}'.format(config_path))
     # global_cams = pyutils.sum_cams(config['cam_out_dir']).cuda(non_blocking=True)
     global_cams = pyutils.sum_cams_by_class(config['cam_out_dir']).cuda(non_blocking=True)
     np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
