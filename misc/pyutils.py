@@ -1,3 +1,4 @@
+from cProfile import label
 import numpy as np
 import time
 import sys
@@ -12,10 +13,12 @@ import operator
 import collections
 import glob
 
+
 class IterateCAM:
-    def __init__(self, cam_dir):
+    def __init__(self, cam_dir, label=-1):
         self.cam_list = glob.glob(os.path.join(cam_dir, '*.npy'))
         self.index = 0
+        self.label = label
 
     def __iter__(self):
         return self
@@ -24,8 +27,20 @@ class IterateCAM:
         if self.index == len(self.cam_list):
             raise StopIteration
         c = np.load(self.cam_list[self.index], allow_pickle=True).item()
-        self.index += 1
-        return c['raw_outputs']
+        if label > -1:
+            while np.sum(c['raw_outputs'][self.label]) == 0:
+                c = np.load(self.cam_list[self.index],
+                            allow_pickle=True).item()
+                self.index += 1
+                if self.index == len(self.cam_list):
+                    raise StopIteration
+        else:
+            self.index += 1
+
+        if label > -1:
+            return c['raw_outputs'][self.label]
+        else:
+            return c['raw_outputs']
 
 
 def sum_cams(cam_dir):
@@ -33,6 +48,18 @@ def sum_cams(cam_dir):
     running_sum = itertools.accumulate(itcam)
     running_mean = map(operator.truediv, running_sum, itertools.count(1))
     return torch.from_numpy(collections.deque(running_mean, maxlen=1)[0])
+
+
+def sum_cams_by_class(cam_dir):
+    global_cam = torch.zeros((20, 128, 128))
+    for idx in range(20):
+        itcam = IterateCAM(cam_dir, label=idx)
+        running_sum = itertools.accumulate(itcam)
+        running_mean = map(operator.truediv, running_sum, itertools.count(1))
+        global_cam[idx] = torch.from_numpy(
+            collections.deque(running_mean, maxlen=1)[0])
+    return global_cam
+
 
 def set_gpus(n_gpus, verbose=False):
     selected_gpu = []
