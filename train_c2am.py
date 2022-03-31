@@ -97,7 +97,7 @@ def train(config, config_path):
     # global_cams = pyutils.sum_cams_by_class(config['cam_out_dir']).cuda(non_blocking=True)
     # np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
     global_cams = torch.from_numpy(np.load(os.path.join(
-        scam_out_dir, 'c2am_exp_02_global_cam.npy'))).cuda(non_blocking=True)
+        scam_out_dir, 'global_cam_by_class.npy'))).cuda(non_blocking=True)
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
