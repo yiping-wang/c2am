@@ -37,7 +37,7 @@ class IterateCAM:
         else:
             self.index += 1
 
-        if label > -1:
+        if self.label > -1:
             return c['raw_outputs'][self.label]
         else:
             return c['raw_outputs']
