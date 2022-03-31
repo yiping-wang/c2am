@@ -27,7 +27,7 @@ class IterateCAM:
         if self.index == len(self.cam_list):
             raise StopIteration
         c = np.load(self.cam_list[self.index], allow_pickle=True).item()
-        if label > -1:
+        if self.label > -1:
             while np.sum(c['raw_outputs'][self.label]) == 0:
                 c = np.load(self.cam_list[self.index],
                             allow_pickle=True).item()
