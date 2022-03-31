@@ -27,19 +27,19 @@ class IterateCAM:
         if self.index == len(self.cam_list):
             raise StopIteration
         c = np.load(self.cam_list[self.index], allow_pickle=True).item()
-        if self.label > -1:
-            if np.sum(c['raw_outputs'][self.label]) == 0:
-                while np.sum(c['raw_outputs'][self.label]) == 0:
-                    self.index += 1
-                    if self.index == len(self.cam_list):
-                        raise StopIteration
-                    c = np.load(self.cam_list[self.index],
-                                allow_pickle=True).item()
-            else:
-                self.index += 1
-        else:
-            self.index += 1
 
+        if self.label > -1:
+            # Find
+            while np.sum(c['raw_outputs'][self.label]) == 0:
+                self.index += 1
+                if self.index == len(self.cam_list):
+                    raise StopIteration
+                c = np.load(self.cam_list[self.index],
+                            allow_pickle=True).item()
+
+        # Always increase
+        self.index += 1
+        # Return
         if self.label > -1:
             return c['raw_outputs'][self.label]
         else:
