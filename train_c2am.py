@@ -28,7 +28,7 @@ def validate(cls_model, data_loader):
     return loss
 
 
-def train(config):
+def train(config, config_path):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -92,16 +92,11 @@ def train(config):
     timer = pyutils.Timer()
     # P(y|x, z)
     # generate Global CAMs
-    # os.system('python3 make_square_cam.py --config {}'.format(config_path))
-    # global_cams = pyutils.sum_cams(cam_out_dir).cuda(non_blocking=True)
-    # np.save(scam_path, global_cams.cpu().numpy())
-    global_cams = torch.from_numpy(np.load(os.path.join(
-        scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
-    # global_cams = torch.from_numpy(
-    #     np.load(os.path.join(scam_out_dir, 'global_cam_01.npy')))
-    # global_cams = (global_cams - global_cams.min()) / \
-    #     (global_cams.max() - global_cams.min())
-    # global_cams = global_cams.cuda(non_blocking=True)
+    os.system('python3 make_square_cam.py --config {}'.format(config_path))
+    global_cams = pyutils.sum_cams(config['cam_out_dir']).cuda(non_blocking=True)
+    np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
+    # global_cams = torch.from_numpy(np.load(os.path.join(
+    #     scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
     # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
@@ -158,4 +153,4 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-    train(config)
+    train(config, args.config)
