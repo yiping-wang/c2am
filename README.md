@@ -1,5 +1,8 @@
 # Causal Class Activation Maps for Weakly-Supervised Semantic Segmentation
 
-- We propose a Structural Causal Model for causal intervention to analyze the causalities among the *Style* and *Content* of images, image-level labels, and weak localization cues, by *front-door adjustment*. 
-- Our algorithm, named Causal CAM (C^2AM), can mitigate the confounding bias in image-level classification, without any additional parameters or manipulation of the images, to produce high-quality weak localization cues. 
-- We evaluated C^2AM on PASCAL VOC 2012 and achieved mIOU 68.25% of the pseudo mask generation on the training set, and mIOU xx.xx% and xx.xx% on validation and test set when training DeepLabV2 on the seed masks.
+![](doc/c2am.png)
+
+- Causal CAM (C^2AM), is a simple yet effective algorithm for enhancing CAM quality. It requires no extra parameters, modification of the classification network architecture, or manipulating of the images. Further, the implementation of C^2AM is also straightforward, it only requires one additional line of code. 
+- We evaluated C^2AM on PASCAL VOC 2012 and achieved mIOU 69.5% of the pseudo mask generation on the training set, and mIOU xx.xx% and xx.xx% on validation and test set when training DeepLabV2 on the seed masks.
+
+

@@ -1,20 +1,28 @@
-# echo "======= Exp C2AM Exp 05 Train ========="
+# echo "======= Exp C2AM Exp 03 Train ========="
 # rm /data/home/yipingwang/data/IRLabelC2AM/*
 # rm /data/home/yipingwang/data/SemSegC2AM/*
 # python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_05.yml
-# python3 train_irn.py              --config    ./cfg/c2am_exp_05.yml
 # python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_05.yml
 # python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_05.yml
 # echo "======================================="
 
-# echo "======= Exp C2AM Exp 06 Train ========="
-# rm /data/home/yipingwang/data/IRLabelC2AM/*
-# rm /data/home/yipingwang/data/SemSegC2AM/*
-# python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_06.yml
-# python3 train_irn.py              --config    ./cfg/c2am_exp_06.yml
-# python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_06.yml
-# python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_06.yml
-# echo "======================================="
+echo "======= Exp C2AM Exp 05 Train ========="
+rm /data/home/yipingwang/data/IRLabelC2AM/*
+rm /data/home/yipingwang/data/SemSegC2AM/*
+python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_05.yml
+python3 train_irn.py              --config    ./cfg/c2am_exp_05.yml
+python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_05.yml
+python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_05.yml
+echo "======================================="
+
+echo "======= Exp C2AM Exp 06 Train ========="
+rm /data/home/yipingwang/data/IRLabelC2AM/*
+rm /data/home/yipingwang/data/SemSegC2AM/*
+python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_06.yml
+python3 train_irn.py              --config    ./cfg/c2am_exp_06.yml
+python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_06.yml
+python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_06.yml
+echo "======================================="
 
 # echo "======= Exp C2AM Exp 07 Train ========="
 # rm /data/home/yipingwang/data/IRLabelC2AM/*
@@ -34,14 +42,14 @@
 # python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_08.yml
 # echo "======================================="
 
-echo "======= Exp C2AM Exp 09 Train ========="
-rm /data/home/yipingwang/data/IRLabelC2AM/*
-rm /data/home/yipingwang/data/SemSegC2AM/*
-python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_09.yml
-python3 train_irn.py              --config    ./cfg/c2am_exp_09.yml
-python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_09.yml
-python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_09.yml
-echo "======================================="
+# echo "======= Exp C2AM Exp 09 Train ========="
+# rm /data/home/yipingwang/data/IRLabelC2AM/*
+# rm /data/home/yipingwang/data/SemSegC2AM/*
+# python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_09.yml
+# python3 train_irn.py              --config    ./cfg/c2am_exp_09.yml
+# python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_09.yml
+# python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_09.yml
+# echo "======================================="
 
 # echo "======= Exp C2AM Exp 04 Train ========="
 # mkdir -p /data/home/yipingwang/data/C2AM/
