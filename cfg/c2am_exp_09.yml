@@ -32,7 +32,7 @@ alpha: 0
 # IRNet
 irn_weights_name: "irn_c2am_exp_09.pth"
 num_workers: 12
-conf_fg_thres: 0.34
+conf_fg_thres: 0.41
 conf_bg_thres: 0.10
 irn_crop_size: 512
 irn_batch_size: 32
