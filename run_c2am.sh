@@ -20,6 +20,7 @@
 # python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_05.yml
 # echo "======================================="
 
+## Current Highest
 # echo "======= Exp C2AM Exp 06 Train ========="
 # rm /data/home/yipingwang/data/IRLabelC2AM/*
 # rm /data/home/yipingwang/data/SemSegC2AM/*
