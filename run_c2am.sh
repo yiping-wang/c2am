@@ -31,14 +31,14 @@ python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_07.yml
 python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_07.yml
 echo "======================================="
 
-echo "======= Exp C2AM Exp 08 Train ========="
-rm /data/home/yipingwang/data/IRLabelC2AM/*
-rm /data/home/yipingwang/data/SemSegC2AM/*
-python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_08.yml
-python3 train_irn.py              --config    ./cfg/c2am_exp_08.yml
-python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_08.yml
-python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_08.yml
-echo "======================================="
+# echo "======= Exp C2AM Exp 08 Train ========="
+# rm /data/home/yipingwang/data/IRLabelC2AM/*
+# rm /data/home/yipingwang/data/SemSegC2AM/*
+# python3 cam_to_ir_label.py        --config    ./cfg/c2am_exp_08.yml
+# python3 train_irn.py              --config    ./cfg/c2am_exp_08.yml
+# python3 make_sem_seg_labels.py    --config    ./cfg/c2am_exp_08.yml
+# python3 eval_sem_seg.py           --config    ./cfg/c2am_exp_08.yml
+# echo "======================================="
 
 # echo "======= Exp C2AM Exp 09 Train ========="
 # rm /data/home/yipingwang/data/IRLabelC2AM/*
