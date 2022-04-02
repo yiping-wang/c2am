@@ -72,7 +72,6 @@ def train(config, config_path):
                                  drop_last=True)
 
     cls_model = Net()
-
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
 
@@ -85,7 +84,6 @@ def train(config, config_path):
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model.train()
-    # Parallel
     cls_model = torch.nn.DataParallel(cls_model).cuda()
 
     avg_meter = pyutils.AverageMeter('loss')
@@ -98,7 +96,7 @@ def train(config, config_path):
     # np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
     global_cams = torch.from_numpy(np.load(os.path.join(
         scam_out_dir, 'global_cam_by_class.npy'))).cuda(non_blocking=True)
-    # # ===
+    # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -110,7 +108,7 @@ def train(config, config_path):
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * global_cams
             # Aggregate for classification
-            # agg(P(z|x) * sum(P(y|x, z) * P(x)))
+            # pool(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Multiple-Instance Learning
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
