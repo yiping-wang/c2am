@@ -4,7 +4,7 @@ EXP:
 
 DATASET:
     NAME: vocaug
-    ROOT: /data/home/yipingwang/data/VOCdevkit/
+    ROOT: /data/home/yipingwang/VOCdevkit/
     LABELS: ./data/datasets/voc12/labels.txt
     N_CLASSES: 21
     IGNORE_LABEL: 255
