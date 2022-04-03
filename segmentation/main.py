@@ -23,6 +23,22 @@ from libs.models.init import DeepLabV2_ResNet101_MSC
 from libs.utils.init import DenseCRF, PolynomialLR, scores
 
 
+def criterion_balance(logit, label):
+    loss_structure = torch.nn.functional.cross_entropy(
+        logit, label, reduction='none', ignore_index=255)
+
+    ignore_mask_bg = torch.zeros_like(label)
+    ignore_mask_fg = torch.zeros_like(label)
+
+    ignore_mask_bg[label == 0] = 1
+    ignore_mask_fg[(label != 0) & (label != 255)] = 1
+
+    loss_bg = (loss_structure * ignore_mask_bg).sum() / ignore_mask_bg.sum()
+    loss_fg = (loss_structure * ignore_mask_fg).sum() / ignore_mask_fg.sum()
+
+    return (loss_bg+loss_fg)/2
+
+
 def makedirs(dirs):
     if not os.path.exists(dirs):
         os.makedirs(dirs)
@@ -100,7 +116,8 @@ def train(config_path, cuda):
         root=CONFIG.DATASET.ROOT,
         split=CONFIG.DATASET.SPLIT.TRAIN,
         ignore_label=CONFIG.DATASET.IGNORE_LABEL,
-        mean_bgr=(CONFIG.IMAGE.MEAN.B, CONFIG.IMAGE.MEAN.G, CONFIG.IMAGE.MEAN.R),
+        mean_bgr=(CONFIG.IMAGE.MEAN.B, CONFIG.IMAGE.MEAN.G,
+                  CONFIG.IMAGE.MEAN.R),
         augment=True,
         base_size=CONFIG.IMAGE.SIZE.BASE,
         crop_size=CONFIG.IMAGE.SIZE.TRAIN,
@@ -171,7 +188,8 @@ def train(config_path, cuda):
     )
 
     # Setup loss logger
-    writer = SummaryWriter(os.path.join(CONFIG.EXP.OUTPUT_DIR, "logs", CONFIG.EXP.ID))
+    writer = SummaryWriter(os.path.join(
+        CONFIG.EXP.OUTPUT_DIR, "logs", CONFIG.EXP.ID))
     average_loss = MovingAverageValueMeter(CONFIG.SOLVER.AVERAGE_LOSS)
 
     # Path to save models
@@ -256,7 +274,8 @@ def train(config_path, cuda):
         if iteration % CONFIG.SOLVER.ITER_SAVE == 0:
             torch.save(
                 model.module.state_dict(),
-                os.path.join(checkpoint_dir, "checkpoint_{}.pth".format(iteration)),
+                os.path.join(checkpoint_dir,
+                             "checkpoint_{}.pth".format(iteration)),
             )
 
     torch.save(
@@ -294,7 +313,8 @@ def test(config_path, model_path, cuda):
         root=CONFIG.DATASET.ROOT,
         split=CONFIG.DATASET.SPLIT.VAL,
         ignore_label=CONFIG.DATASET.IGNORE_LABEL,
-        mean_bgr=(CONFIG.IMAGE.MEAN.B, CONFIG.IMAGE.MEAN.G, CONFIG.IMAGE.MEAN.R),
+        mean_bgr=(CONFIG.IMAGE.MEAN.B, CONFIG.IMAGE.MEAN.G,
+                  CONFIG.IMAGE.MEAN.R),
         augment=False,
     )
     print(dataset)
@@ -309,7 +329,8 @@ def test(config_path, model_path, cuda):
 
     # Model
     model = eval(CONFIG.MODEL.NAME)(n_classes=CONFIG.DATASET.N_CLASSES)
-    state_dict = torch.load(model_path, map_location=lambda storage, loc: storage)
+    state_dict = torch.load(
+        model_path, map_location=lambda storage, loc: storage)
     model.load_state_dict(state_dict)
     model = nn.DataParallel(model)
     model.eval()
@@ -400,7 +421,8 @@ def crf(config_path, n_jobs):
         root=CONFIG.DATASET.ROOT,
         split=CONFIG.DATASET.SPLIT.VAL,
         ignore_label=CONFIG.DATASET.IGNORE_LABEL,
-        mean_bgr=(CONFIG.IMAGE.MEAN.B, CONFIG.IMAGE.MEAN.G, CONFIG.IMAGE.MEAN.R),
+        mean_bgr=(CONFIG.IMAGE.MEAN.B, CONFIG.IMAGE.MEAN.G,
+                  CONFIG.IMAGE.MEAN.R),
         augment=False,
     )
     print(dataset)
@@ -450,7 +472,8 @@ def crf(config_path, n_jobs):
 
         _, H, W = image.shape
         logit = torch.FloatTensor(logit)[None, ...]
-        logit = F.interpolate(logit, size=(H, W), mode="bilinear", align_corners=False)
+        logit = F.interpolate(logit, size=(
+            H, W), mode="bilinear", align_corners=False)
         prob = F.softmax(logit, dim=1)[0].numpy()
 
         image = image.astype(np.uint8).transpose(1, 2, 0)
