@@ -1,0 +1,43 @@
+# Environment
+seed: 0
+voc12_root: "/data/home/yipingwang/data/VOCdevkit/VOC2012/"
+model_root: "/data/home/yipingwang/data/Models/Classification/"
+cam_out_dir: "/data/home/yipingwang/data/CAMReCAM/"
+scam_out_dir: "/data/home/yipingwang/data/GlobalCAM/"
+ir_label_out_dir: "/data/home/yipingwang/data/IRLabelReCAM/"
+sem_seg_out_dir: "/data/home/yipingwang/data/SemSegReCAM/"
+
+# Dataset
+train_list: "voc12/train_aug.txt"
+val_list: "voc12/val.txt"
+infer_list: "voc12/train.txt" # "voc12/train.txt"
+chainer_eval_set: "train"    # "train"
+
+# Class Activation Map
+start_weight_name: "resnet50_baseline_512.pth"
+cam_weights_name: "resnet50_recam_exp_02.pth"
+recam_weights_name: "recam_recam_predictor_exp_02.pth"
+laste_cam_weights_name: "resnet50_recam_exp_02_laste.pth"
+laste_recam_weights_name: "recam_recam_predictor_exp_02_laste.pth"
+scam_name: "global_cam.npy"
+num_workers: 12
+cam_scales: [1.0, 0.5, 1.5, 2.0]
+cam_crop_size: 512
+cam_batch_size: 16
+cam_num_epoches: 4
+cam_learning_rate: 0.0005
+cam_weight_decay: 0.0001
+recam_loss_weight: 1.0
+
+# IRNet
+irn_weights_name: "irnet_recam_exp_02.pth"
+conf_fg_thres: 0.35
+conf_bg_thres: 0.1
+irn_crop_size: 512
+irn_batch_size: 32
+irn_num_epoches: 3
+irn_learning_rate: 0.1
+irn_weight_decay: 0.0001
+beta: 10
+exp_times: 8
+sem_seg_bg_thres: 0.28

@@ -1,3 +1,4 @@
+import re
 import torch.nn.functional as F
 import voc12.dataloader
 import argparse
@@ -5,7 +6,8 @@ import torch
 import os
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
-from net.resnet50_cam import Net
+from net.resnet50_cam import Net, MLP
+from voc12.dataloader import get_img_path
 
 
 def validate(model, data_loader):
@@ -14,8 +16,8 @@ def validate(model, data_loader):
     model.eval()
     with torch.no_grad():
         for pack in data_loader:
-            img = pack['img'].cuda(device, non_blocking=True)
-            label = pack['label'].cuda(device, non_blocking=True)
+            img = pack['img'].cuda(non_blocking=True)
+            label = pack['label'].cuda(non_blocking=True)
             x, _ = model(img)
             loss1 = F.multilabel_soft_margin_loss(x, label)
             val_loss_meter.add({'loss1': loss1.item()})
@@ -25,7 +27,7 @@ def validate(model, data_loader):
     return vloss
 
 
-def train(config, device):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -33,27 +35,27 @@ def train(config, device):
     cam_batch_size = config['cam_batch_size']
     cam_num_epoches = config['cam_num_epoches']
     cam_learning_rate = config['cam_learning_rate']
+    sty_learning_rate = cam_learning_rate
     cam_weight_decay = config['cam_weight_decay']
     model_root = config['model_root']
     cam_weights_name = config['laste_cam_weights_name']
     num_workers = config['num_workers']
     cam_crop_size = config['cam_crop_size']
+    alpha = config['alpha']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     pyutils.seed_all(seed)
+    data_aug_fn = torchutils.get_simclr_pipeline_transform(size=cam_crop_size)
 
-    if cam_crop_size == 512:
-        resize_long = (320, 640)
-    else:
-        resize_long = (160, 320)
-    print('resize long: {}'.format(resize_long))
-
-    model = Net().cuda(device)
+    cls_model = Net()
+    mlp = MLP()
 
     train_dataset = voc12.dataloader.VOC12ClassificationDataset(train_list,
                                                                 voc12_root=voc12_root,
-                                                                resize_long=resize_long,
+                                                                resize_long=(
+                                                                    320, 640),
                                                                 hor_flip=True,
-                                                                crop_size=cam_crop_size, crop_method="random")
+                                                                crop_size=cam_crop_size,
+                                                                crop_method="random")
     train_data_loader = DataLoader(train_dataset,
                                    batch_size=cam_batch_size,
                                    shuffle=True,
@@ -73,27 +75,54 @@ def train(config, device):
                                  pin_memory=True,
                                  drop_last=True)
 
-    param_groups = model.trainable_parameters()
+    param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
+        {'params': mlp.parameters(), 'lr': sty_learning_rate,
+            'weight_decay': cam_weight_decay},
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
-    model.train()
+    cls_model.train()
+    mlp.train()
+
+    cls_model = torch.nn.DataParallel(cls_model).cuda()
+    mlp = torch.nn.DataParallel(mlp).cuda() if alpha > 0 else MLP()
 
     avg_meter = pyutils.AverageMeter()
     timer = pyutils.Timer()
+    kl_loss = torch.tensor(0.)
 
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
-            img = pack['img'].cuda(device, non_blocking=True)
-            label = pack['label'].cuda(device, non_blocking=True)
-            x, _ = model(img)
-            loss = F.multilabel_soft_margin_loss(x, label)
-            avg_meter.add({'loss1': loss.item()})
+            img = pack['img'].cuda(non_blocking=True)
+            label = pack['label'].cuda(non_blocking=True)
+            x, _ = cls_model(img)
+            if alpha > 0:
+                # Style Intervention from Eq. 3 at 2010.07922
+                names = pack['name']
+                augs = torch.cat([torchutils.get_style_variants(
+                    names, data_aug_fn, voc12_root, get_img_path) for _ in range(4)], dim=0)
+                _, feats = cls_model(augs)
+                projs = mlp(feats)
+                norms = F.normalize(projs, dim=1)
+                proj_l, proj_k, proj_q, proj_t = torch.split(
+                    norms, split_size_or_sections=cam_batch_size, dim=0)
+                score_lk = torch.matmul(proj_l, proj_k.T)
+                score_qt = torch.matmul(proj_q, proj_t.T)
+                logprob_lk = F.log_softmax(score_lk, dim=1)
+                prob_qt = F.softmax(score_qt, dim=1)
+                kl_loss = alpha * \
+                    torch.nn.KLDivLoss(reduction='batchmean')(
+                        logprob_lk, prob_qt)
+
+            bce_loss = F.multilabel_soft_margin_loss(x, label)
+            loss = bce_loss + kl_loss if alpha > 0 else bce_loss
+            avg_meter.add(
+                {'loss': loss.item(), 'bce': bce_loss.item(), 'kl': kl_loss.item()})
 
             optimizer.zero_grad()
             loss.backward()
@@ -102,17 +131,18 @@ def train(config, device):
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
-                      'loss:%.4f' % (avg_meter.pop('loss1')),
+                      'bce:%.4f' % (avg_meter.pop('bce')),
+                      'kl:%.4f' % (avg_meter.pop('kl')),
                       'imps:%.1f' % (
                           (step + 1) * cam_batch_size / timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
                       'etc:%s' % (timer.str_estimated_complete()), flush=True)
                 # validation
-                validate(model, val_data_loader)
+                validate(cls_model, val_data_loader)
             else:
                 timer.reset_stage()
         # empty cache
-        torch.save(model.state_dict(), cam_weight_path)
+        torch.save(cls_model.module.state_dict(), cam_weight_path)
         torch.cuda.empty_cache()
 
 
@@ -120,11 +150,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Front Door Semantic Segmentation')
     parser.add_argument('--config', type=str,
-                        help='YAML config file path', default='./cfg/baseline.yml')
+                        help='YAML config file path', required=True)
     args = parser.parse_args()
-    if torch.cuda.is_available():
-        device = pyutils.set_gpus(n_gpus=1)
-    else:
-        device = 'cpu'
     config = pyutils.parse_config(args.config)
-    train(config, device)
+    train(config)

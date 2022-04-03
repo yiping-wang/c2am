@@ -1,0 +1,56 @@
+# Environment
+seed: 0
+voc12_root: "/data/home/yipingwang/data/VOCdevkit/VOC2012/"
+model_root: "/data/home/yipingwang/data/Models/Classification/"
+cam_out_dir: "/data/home/yipingwang/data/C2AM/"
+scam_out_dir: "/data/home/yipingwang/data/GlobalCAM/"
+ir_label_out_dir: "/data/home/yipingwang/data/IRLabelC2AM/"
+sem_seg_out_dir: "/data/home/yipingwang/data/SemSegC2AM/"
+
+# Dataset
+train_list: "voc12/train_aug.txt"
+val_list: "voc12/val.txt"
+infer_list: "voc12/train.txt" # "voc12/train.txt"
+chainer_eval_set: "train"    # "train"
+
+# Class Activation Map
+cam_weights_name: "resnet50_c2am.pth"
+laste_cam_weights_name: "resnet50_c2am.pth"
+scam_name: "global_cam_by_class.npy"
+start_weight_name: "resnet50_baseline_512.pth"
+num_workers: 12
+agg_smooth_r: 2
+cam_scales: [1.0, 0.5, 1.5, 2.0]
+cam_square_shape: 128
+cam_crop_size: 512
+cam_batch_size: 16
+cam_num_epoches: 4
+cam_learning_rate: 0.0005
+cam_weight_decay: 0.0001
+alpha: 0
+
+# IRNet
+irn_weights_name: "irn_c2am.pth"
+num_workers: 12
+conf_fg_thres: 0.38
+conf_bg_thres: 0.10
+irn_crop_size: 512
+irn_batch_size: 32
+irn_num_epoches: 3
+irn_learning_rate: 0.1
+irn_weight_decay: 0.0001
+beta: 10
+exp_times: 8
+sem_seg_bg_thres: 0.21
+
+# {'iou': array([0.78448926, 0.41358319, 0.28043513, 0.46877522, 0.33712622,
+#        0.50180088, 0.69193883, 0.55626966, 0.5704548 , 0.2890439 ,
+#        0.60086942, 0.46820647, 0.55350767, 0.56239368, 0.63377044,
+#        0.54210628, 0.44573793, 0.6306555 , 0.48680738, 0.51125554,
+#        0.46287948]), 'miou': 0.513909851763858}
+
+# {'iou': array([0.88645335, 0.71828139, 0.38840204, 0.8086436 , 0.57918442,                                                      
+#        0.6551967 , 0.86050753, 0.74092778, 0.82306564, 0.39254879,                                                              
+#        0.84449808, 0.52640004, 0.77890978, 0.82817787, 0.79656939,                                                              
+#        0.69763096, 0.57607829, 0.85132841, 0.64413396, 0.64705693,                                                              
+#        0.56419044]), 'miou': 0.695627876375965}   
