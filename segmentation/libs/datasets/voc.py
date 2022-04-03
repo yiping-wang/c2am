@@ -67,7 +67,6 @@ class VOCAug(_BaseDataset):
             )
             file_list = tuple(open(file_list, "r"))
             file_list = [id_.rstrip().split(" ") for id_ in file_list]
-            print(file_list[0])
             self.files, self.labels = list(zip(*file_list))
         else:
             raise ValueError("Invalid split name: {}".format(self.split))
