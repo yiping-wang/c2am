@@ -14,9 +14,9 @@ chainer_eval_set: "train"
 
 
 # Class Activation Map
-cam_weights_name: "resnet50_baseline_style.pth"
-laste_cam_weights_name: "resnet50_baseline_style_laste.pth"
-num_workers: 24
+cam_weights_name: "resnet50_baseline.pth"
+laste_cam_weights_name: "resnet50_baseline.pth"
+num_workers: 12
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_crop_size: 512
 cam_batch_size: 16
@@ -26,8 +26,8 @@ cam_weight_decay: 0.0001
 alpha: 1
 
 # IRNet
-irn_weights_name: "irn_baseline_style.pth"
-num_workers: 24
+irn_weights_name: "irn_baseline.pth"
+num_workers: 12
 conf_fg_thres: 0.30
 conf_bg_thres: 0.05
 irn_crop_size: 512
