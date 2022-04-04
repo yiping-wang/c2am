@@ -232,7 +232,8 @@ def train(config_path, cuda):
                 # Resize labels for {100%, 75%, 50%, Max} logits
                 _, _, H, W = logit.shape
                 labels_ = resize_labels(labels, size=(H, W))
-                iter_loss += criterion(logit, labels_.to(device))
+                iter_loss += criterion_balance(logit, labels_.to(device))
+                # iter_loss += criterion(logit, labels_.to(device))
 
             # Propagate backward (just compute gradients)
             iter_loss /= CONFIG.SOLVER.ITER_SIZE
