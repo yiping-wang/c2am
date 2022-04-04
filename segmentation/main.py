@@ -33,11 +33,8 @@ def criterion_balance(logit, label):
     ignore_mask_bg[label == 0] = 1
     ignore_mask_fg[(label != 0) & (label != 255)] = 1
 
-    print(ignore_mask_bg.dtype)
-    print(ignore_mask_fg.dtype)
-    print(loss_structure.dtype)
-    loss_bg = (loss_structure.float() * ignore_mask_bg).sum() / ignore_mask_bg.sum()
-    loss_fg = (loss_structure.float() * ignore_mask_fg).sum() / ignore_mask_fg.sum()
+    loss_bg = (loss_structure * ignore_mask_bg.float()).sum() / ignore_mask_bg.float().sum()
+    loss_fg = (loss_structure * ignore_mask_fg.float()).sum() / ignore_mask_fg.float().sum()
 
     return (loss_bg+loss_fg)/2
 
