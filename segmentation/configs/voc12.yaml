@@ -42,7 +42,7 @@ SOLVER:
     ITER_SAVE: 5000
     ITER_TB: 100
     LR_DECAY: 10
-    LR: 3.5e-4
+    LR: 2.5e-4
     MOMENTUM: 0.9
     OPTIMIZER: sgd
     POLY_POWER: 0.9
