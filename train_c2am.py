@@ -108,7 +108,7 @@ def train(config, config_path):
             x = x * 0.1
             # Aggregate for classification
             # pool(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            # x = torchutils.mean_agg(x, r=agg_smooth_r)
             # Entropy loss for Multiple-Instance Learning
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item()})
