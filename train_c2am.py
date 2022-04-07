@@ -93,10 +93,9 @@ def train(config, config_path):
     # global_cams = pyutils.sum_cams(config['cam_out_dir']).cuda(non_blocking=True)
     # global_cams = pyutils.sum_cams_by_class(config['cam_out_dir']).cuda(non_blocking=True)
     # np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
-    global_cams = torch.from_numpy(np.load(os.path.join(
-        scam_out_dir, 'global_cam_by_class.npy'))).cuda(non_blocking=True)
+    # global_cams = torch.from_numpy(np.load(os.path.join(
+    #     scam_out_dir, 'global_cam_by_class.npy'))).cuda(non_blocking=True)
     # ===
-    global_cams = global_cams[torch.randperm(20)]
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -106,7 +105,7 @@ def train(config, config_path):
             # P(z|x)
             x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * global_cams
+            x = x * 0.1
             # Aggregate for classification
             # pool(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
