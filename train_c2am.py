@@ -1,4 +1,3 @@
-
 import numpy as np
 import voc12.dataloader
 import argparse
@@ -106,7 +105,7 @@ def train(config, config_path):
             # P(z|x)
             x, _ = cls_model(imgs)
             # P(y|do(x))
-            x = x.unsqueeze(2).unsqueeze(2) * global_cams
+            x = x.unsqueeze(2).unsqueeze(2) * global_cams[torch.randperm(20)]
             # Aggregate for classification
             # pool(P(z|x) * sum(P(y|x, z) * P(x)))
             x = torchutils.mean_agg(x, r=agg_smooth_r)
