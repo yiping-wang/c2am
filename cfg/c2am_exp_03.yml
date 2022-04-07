@@ -11,14 +11,14 @@ sem_seg_out_dir: "/data/home/yipingwang/data/SemSegC2AMAblation/"
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
 infer_list: "voc12/train.txt" # "voc12/train.txt"
-chainer_eval_set: "train"    # "train"
+chainer_eval_set: "train"     # "train"
 
 # Class Activation Map
-cam_weights_name: "resnet50_c2am_exp_00.pth"
-laste_cam_weights_name: "resnet50_c2am_exp_00.pth"
+cam_weights_name: "resnet50_c2am_exp_03.pth"
+laste_cam_weights_name: "resnet50_c2am_exp_03.pth"
 start_weight_name: "resnet50_baseline_512.pth"
 num_workers: 12
-gamma: 0.1
+gamma: 0.4
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_crop_size: 512
 cam_batch_size: 16
@@ -27,7 +27,7 @@ cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
 
 # IRNet
-irn_weights_name: "irn_c2am_exp_00.pth"
+irn_weights_name: "irn_c2am_exp_03.pth"
 num_workers: 12
 conf_fg_thres: 0.38
 conf_bg_thres: 0.10
@@ -39,9 +39,3 @@ irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
 sem_seg_bg_thres: 0.21 
-
-# {'iou': array([0.88403725, 0.73002156, 0.39450632, 0.80118518, 0.57556069,
-#        0.66244208, 0.84708449, 0.74002277, 0.83819375, 0.39239093,
-#        0.84169622, 0.51434588, 0.7866825 , 0.83132045, 0.80287684,
-#        0.69680694, 0.54804115, 0.85128066, 0.63846023, 0.64063447,
-#        0.54551416]), 'miou': 0.6934811675927839}

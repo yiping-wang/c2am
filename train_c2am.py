@@ -27,7 +27,7 @@ def validate(cls_model, data_loader):
     return loss
 
 
-def train(config, config_path):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -39,9 +39,8 @@ def train(config, config_path):
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
-    agg_smooth_r = config['agg_smooth_r']
+    gamma = config['gamma']
     num_workers = config['num_workers']
-    scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
@@ -87,29 +86,13 @@ def train(config, config_path):
 
     avg_meter = pyutils.AverageMeter('loss')
     timer = pyutils.Timer()
-    # P(y|x, z)
-    # generate Global CAMs
-    # os.system('python3 make_square_cam.py --config {}'.format(config_path))
-    # global_cams = pyutils.sum_cams(config['cam_out_dir']).cuda(non_blocking=True)
-    # global_cams = pyutils.sum_cams_by_class(config['cam_out_dir']).cuda(non_blocking=True)
-    # np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
-    # global_cams = torch.from_numpy(np.load(os.path.join(
-    #     scam_out_dir, 'global_cam_by_class.npy'))).cuda(non_blocking=True)
-    # ===
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
-            # Front Door Adjustment
-            # P(z|x)
             x, _ = cls_model(imgs)
-            # P(y|do(x))
-            x = x * 0.1
-            # Aggregate for classification
-            # pool(P(z|x) * sum(P(y|x, z) * P(x)))
-            # x = torchutils.mean_agg(x, r=agg_smooth_r)
-            # Entropy loss for Multiple-Instance Learning
+            x = x * gamma
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item()})
             # Optimization
@@ -151,4 +134,4 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-    train(config, args.config)
+    train(config)
