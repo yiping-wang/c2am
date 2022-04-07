@@ -18,7 +18,7 @@ cam_weights_name: "resnet50_c2am_exp_04.pth"
 laste_cam_weights_name: "resnet50_c2am_exp_04.pth"
 start_weight_name: "resnet50_baseline_512.pth"
 num_workers: 12
-gamma: 0.5
+gamma: 0.25
 cam_scales: [1.0, 0.5, 1.5, 2.0]
 cam_crop_size: 512
 cam_batch_size: 16
