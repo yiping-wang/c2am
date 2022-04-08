@@ -73,7 +73,7 @@ def train(config):
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
 
-    gamma = torch.nn.Parameter(torch.tensor(0.2))
+    gamma = torch.nn.Parameter(torch.tensor(0.2)).cuda()
     gamma.requires_grad = True
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
