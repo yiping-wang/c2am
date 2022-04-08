@@ -73,7 +73,7 @@ def train(config):
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
 
-    gamma = torch.nn.Parameter(torch.tensor(0.2)).cuda()
+    gamma = torch.nn.Parameter(torch.tensor(0.2))
     gamma.requires_grad = True
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
@@ -87,6 +87,7 @@ def train(config):
 
     cls_model.train()
     cls_model = torch.nn.DataParallel(cls_model).cuda()
+    gamma = gamma.cuda()
 
     avg_meter = pyutils.AverageMeter('loss')
     timer = pyutils.Timer()
