@@ -6,7 +6,7 @@ mkdir -p /data/home/yipingwang/data/GlobalCAM/
 rm /data/home/yipingwang/data/C2AMAblation/*
 rm /data/home/yipingwang/data/IRLabelC2AMAblation/*
 rm /data/home/yipingwang/data/SemSegC2AMAblation/*
-python3 train_c2am.py             --config    ./cfg/c2am_exp_07.yml
+# python3 train_c2am.py             --config    ./cfg/c2am_exp_07.yml
 python3 make_cam.py               --config    ./cfg/c2am_exp_07.yml
 python3 eval_cam.py               --config    ./cfg/c2am_exp_07.yml --cam_eval_thres 0.13
 python3 eval_cam.py               --config    ./cfg/c2am_exp_07.yml --cam_eval_thres 0.14
