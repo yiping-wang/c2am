@@ -104,7 +104,7 @@ def train(config):
             # Progress
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
-                print('Gamma: {}'.format(cls_model.gamma.item()))
+                print('Gamma: {}'.format(cls_model.module.gamma.item()))
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'imps:%.1f' % ((step + 1) * cam_batch_size /
