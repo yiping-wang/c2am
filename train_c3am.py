@@ -3,6 +3,7 @@ import voc12.dataloader
 import argparse
 import torch
 import os
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
 from net.resnet50_cam import Net, C3AM
@@ -76,10 +77,6 @@ def train(config):
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
-            'weight_decay': cam_weight_decay},
-        {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
-            'weight_decay': cam_weight_decay},
-        {'params': param_groups[2], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
@@ -93,10 +90,10 @@ def train(config):
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
-            x = cls_model(imgs)
-            logit = torch.mean(x, dim=(1,2))
-            l1_loss = -torch.norm(x, 1)
-            loss = torch.nn.BCEWithLogitsLoss()(logit, labels)
+            x, cam = cls_model(imgs)
+            cam = cam / (F.adaptive_max_pool2d(cam, (1, 1)) + 1e-5)
+            l1_loss = -torch.norm(cam, 1) * 1e-5
+            loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item(), 'l1': l1_loss.item()})
             loss = loss + l1_loss
             # Optimization

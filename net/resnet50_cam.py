@@ -69,12 +69,16 @@ class C3AM(nn.Module):
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x).detach()
-        x = self.stage4(x)
+        f = self.stage4(x)
 
-        x = F.conv2d(x, self.classifier.weight)
-        x = F.relu(x)
-        x = x[0] + x[1].flip(-1)
-        return x
+        cam = F.conv2d(f, self.classifier.weight)
+        cam = F.relu(cam)
+
+        feat = torchutils.gap2d(f, keepdims=True)
+        x = self.classifier(feat)
+        x = x.view(-1, 20)
+
+        return x, cam
 
     def train(self, mode=True):
         for p in self.resnet50.conv1.parameters():
