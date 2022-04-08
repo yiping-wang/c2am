@@ -94,7 +94,6 @@ def train(config):
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
             x, _ = cls_model(imgs)
-            x = x * gamma
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item()})
             # Optimization
