@@ -71,7 +71,7 @@ def train(config):
 
     cls_model = Net()
     # load the pre-trained weights
-    cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
+    cls_model.load_state_dict(torch.load(cam_weight_path), strict=False)
 
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
