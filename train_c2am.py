@@ -79,7 +79,7 @@ def train(config):
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': param_groups[2], 'lr': 100 * cam_learning_rate,
+        {'params': param_groups[2], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
