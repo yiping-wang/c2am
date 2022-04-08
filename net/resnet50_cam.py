@@ -23,7 +23,7 @@ class Net(nn.Module):
         self.backbone = nn.ModuleList(
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
-        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.1)
+        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
         # self.gamma = torch.nn.Parameter(torch.tensor(0.2))
         self.gamma.requires_grad = True
 
@@ -65,7 +65,7 @@ class CAM(nn.Module):
         self.backbone = nn.ModuleList(
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
-        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.1)
+        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
         # self.gamma = torch.nn.Parameter(torch.tensor(0.2))
         self.gamma.requires_grad = True
 
