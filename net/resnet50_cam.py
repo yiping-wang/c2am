@@ -64,6 +64,8 @@ class CAM(nn.Module):
         self.backbone = nn.ModuleList(
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
+        self.gamma = torch.nn.Parameter(torch.tensor(0.2))
+        self.gamma.requires_grad = True
 
     def forward(self, x):
         x = self.stage1(x)
