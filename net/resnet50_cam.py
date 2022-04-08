@@ -25,7 +25,7 @@ class Net(nn.Module):
         self.newly_added = nn.ModuleList([self.classifier])
         self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
         # self.gamma = torch.nn.Parameter(torch.tensor(0.2))
-        self.gamma.requires_grad = True
+        #self.gamma.requires_grad = True
 
     def forward(self, x):
         x = self.stage1(x)
@@ -34,7 +34,7 @@ class Net(nn.Module):
         x = self.stage4(x)
         feat = torchutils.gap2d(x, keepdims=True)
         x = self.classifier(feat)
-        x = x.view(-1, 20) * self.gamma
+        x = x.view(-1, 20)# * self.gamma
         return x, feat.squeeze()
 
     def train(self, mode=True):
@@ -65,9 +65,9 @@ class CAM(nn.Module):
         self.backbone = nn.ModuleList(
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
-        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
+        #self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
         # self.gamma = torch.nn.Parameter(torch.tensor(0.2))
-        self.gamma.requires_grad = True
+        #self.gamma.requires_grad = True
 
     def forward(self, x):
         x = self.stage1(x)
