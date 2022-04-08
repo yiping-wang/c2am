@@ -73,21 +73,18 @@ def train(config):
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
 
-    gamma = torch.nn.Parameter(torch.tensor(0.2))
-    gamma.requires_grad = True
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': gamma, 'lr': 100 * cam_learning_rate,
+        {'params': param_groups[2], 'lr': 100 * cam_learning_rate,
             'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model.train()
     cls_model = torch.nn.DataParallel(cls_model).cuda()
-    gamma = gamma.cuda()
 
     avg_meter = pyutils.AverageMeter('loss')
     timer = pyutils.Timer()
