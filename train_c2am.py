@@ -41,6 +41,7 @@ def train(config):
     cam_weights_name = config['cam_weights_name']
     gamma = config['gamma']
     num_workers = config['num_workers']
+    scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
     cam_weight_path = os.path.join(model_root, cam_weights_name)
     laste_cam_weight_path = os.path.join(model_root, laste_cam_weights_name)
@@ -79,8 +80,8 @@ def train(config):
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay},
-        {'params': param_groups[2], 'lr': cam_learning_rate,
-            'weight_decay': cam_weight_decay}
+        # {'params': param_groups[2], 'lr': cam_learning_rate,
+        #     'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model.train()
@@ -88,12 +89,30 @@ def train(config):
 
     avg_meter = pyutils.AverageMeter('loss')
     timer = pyutils.Timer()
+    # P(y|x, z)
+    # generate Global CAMs
+    # os.system('python3 make_square_cam.py --config {}'.format(config_path))
+    # global_cams = pyutils.sum_cams(config['cam_out_dir']).cuda(non_blocking=True)
+    # global_cams = pyutils.sum_cams_by_class(config['cam_out_dir']).cuda(non_blocking=True)
+    # np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
+    global_cams = torch.from_numpy(np.load(os.path.join(
+        scam_out_dir, 'global_cam_by_class.npy'))).cuda(non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
+            # Front Door Adjustment
+            # P(z|x)
             x, _ = cls_model(imgs)
+            loss_nuc_baseline = torch.norm(torch.softmax(x, dim=1), 'nuc')
+            # P(y|do(x))
+            x = x.unsqueeze(2).unsqueeze(2) * global_cams
+            # Aggregate for classification
+            # pool(P(z|x) * sum(P(y|x, z) * P(x)))
+            x = torchutils.mean_agg(x, r=2)
+            loss_nuc_ours = torch.norm(torch.softmax(x, dim=1), 'nuc')
+            # Entropy loss for Multiple-Instance Learning
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item()})
             # Optimization
@@ -103,9 +122,11 @@ def train(config):
             # Progress
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
-                print('Gamma: {}'.format(cls_model.module.gamma))
+                # print('Gamma: {}'.format(cls_model.module.gamma))
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
+                      'Baseline Nuc Loss:%.4f' % (loss_nuc_baseline),
+                      'Ours Nuc Loss:%.4f' % (loss_nuc_ours),
                       'imps:%.1f' % ((step + 1) * cam_batch_size /
                                      timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),

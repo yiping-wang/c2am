@@ -23,17 +23,17 @@ class Net(nn.Module):
         self.backbone = nn.ModuleList(
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
-        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
+        # self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.3)
 
     def forward(self, x):
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x).detach()
-        x = self.stage4(x)
-        feat = torchutils.gap2d(x, keepdims=True)
+        f = self.stage4(x)
+        feat = torchutils.gap2d(f, keepdims=True)
         x = self.classifier(feat)
-        x = x.view(-1, 20) * self.gamma
-        return x, feat.squeeze()
+        x = x.view(-1, 20) # * self.gamma
+        return x, feat.squeeze(), f
 
     def train(self, mode=True):
         super(Net, self).train(mode)
@@ -43,7 +43,8 @@ class Net(nn.Module):
             p.requires_grad = False
 
     def trainable_parameters(self):
-        return (list(self.backbone.parameters()), list(self.newly_added.parameters()), [self.gamma])
+        # return (list(self.backbone.parameters()), list(self.newly_added.parameters()), [self.gamma])
+        return (list(self.backbone.parameters()), list(self.newly_added.parameters()))
 
 
 class C3AM(nn.Module):
@@ -63,7 +64,7 @@ class C3AM(nn.Module):
         self.backbone = nn.ModuleList(
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
-        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
+        # self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
 
     def forward(self, x):
         x = self.stage1(x)
@@ -109,7 +110,7 @@ class CAM(nn.Module):
         self.backbone = nn.ModuleList(
             [self.stage1, self.stage2, self.stage3, self.stage4])
         self.newly_added = nn.ModuleList([self.classifier])
-        self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
+        # self.gamma = torch.nn.Parameter(torch.ones(1, 20) * 0.15)
 
     def forward(self, x):
         x = self.stage1(x)

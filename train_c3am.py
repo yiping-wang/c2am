@@ -90,9 +90,9 @@ def train(config):
         for step, pack in enumerate(train_data_loader):
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
-            x, cam = cls_model(imgs)
-            cam = cam / (F.adaptive_max_pool2d(cam, (1, 1)) + 1e-5)
-            l1_loss = -torch.norm(cam, 1) * 1e-5
+            x, _ = cls_model(imgs)
+            # cam = cam / (F.adaptive_max_pool2d(cam, (1, 1)) + 1e-5)
+            l1_loss = torch.norm(x, 1) * 1e-5
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item(), 'l1': l1_loss.item()})
             loss = loss + l1_loss
