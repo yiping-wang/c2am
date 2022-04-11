@@ -11,8 +11,38 @@ import torch
 from PIL import Image
 from torch.utils import data
 
-from .base import _BaseDataset
+from .base import _BaseDataset, _Base
 
+class VOCTest(_Base):
+    """
+    PASCAL VOC Segmentation dataset
+    """
+
+    def __init__(self, year=2012, **kwargs):
+        self.year = year
+        super(VOCTest, self).__init__(**kwargs)
+
+    def _set_files(self):
+        self.root = osp.join(self.root, "VOC{}".format(self.year))
+        self.image_dir = osp.join(self.root, "JPEGImages")
+
+        if self.split in ["test"]:
+            file_list = osp.join(
+                self.root, "ImageSets/Segmentation", self.split + ".txt"
+            )
+            file_list = tuple(open(file_list, "r"))
+            file_list = [id_.rstrip() for id_ in file_list]
+            self.files = file_list
+        else:
+            raise ValueError("Invalid split name: {}".format(self.split))
+
+    def _load_data(self, index):
+        # Set paths
+        image_id = self.files[index]
+        image_path = osp.join(self.image_dir, image_id + ".jpg")
+        # Load an image
+        image = cv2.imread(image_path, cv2.IMREAD_COLOR).astype(np.float32)
+        return image_id, image
 
 class VOC(_BaseDataset):
     """

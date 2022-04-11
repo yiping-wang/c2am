@@ -3,7 +3,7 @@ EXP:
     OUTPUT_DIR: data
 
 DATASET:
-    NAME: vocaug
+    NAME: VOCTest
     ROOT: /data/home/yipingwang/VOCdevkit/
     LABELS: ./data/datasets/voc12/labels.txt
     N_CLASSES: 21

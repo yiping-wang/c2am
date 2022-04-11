@@ -77,6 +77,8 @@ def train(config):
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
+            'weight_decay': cam_weight_decay},
+        {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
             'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
@@ -91,11 +93,9 @@ def train(config):
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
             x, _ = cls_model(imgs)
-            # cam = cam / (F.adaptive_max_pool2d(cam, (1, 1)) + 1e-5)
-            l1_loss = torch.norm(x, 1) * 1e-5
+            x = x * gamma
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
-            avg_meter.add({'loss': loss.item(), 'l1': l1_loss.item()})
-            loss = loss + l1_loss
+            avg_meter.add({'loss': loss.item()})
             # Optimization
             optimizer.zero_grad()
             loss.backward()
@@ -106,7 +106,6 @@ def train(config):
                 # print('Gamma: {}'.format(cls_model.module.gamma))
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
-                      'L1:%.4f' % (avg_meter.pop('l1')),
                       'imps:%.1f' % ((step + 1) * cam_batch_size /
                                      timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),

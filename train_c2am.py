@@ -79,9 +79,7 @@ def train(config):
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
-            'weight_decay': cam_weight_decay},
-        # {'params': param_groups[2], 'lr': cam_learning_rate,
-        #     'weight_decay': cam_weight_decay}
+            'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model.train()
@@ -105,13 +103,11 @@ def train(config):
             # Front Door Adjustment
             # P(z|x)
             x, _ = cls_model(imgs)
-            loss_nuc_baseline = torch.norm(torch.softmax(x, dim=1), 'nuc')
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * global_cams
             # Aggregate for classification
             # pool(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=2)
-            loss_nuc_ours = torch.norm(torch.softmax(x, dim=1), 'nuc')
+            x = torchutils.mean_agg(x, r=gamma)
             # Entropy loss for Multiple-Instance Learning
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item()})
@@ -125,8 +121,6 @@ def train(config):
                 # print('Gamma: {}'.format(cls_model.module.gamma))
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
-                      'Baseline Nuc Loss:%.4f' % (loss_nuc_baseline),
-                      'Ours Nuc Loss:%.4f' % (loss_nuc_ours),
                       'imps:%.1f' % ((step + 1) * cam_batch_size /
                                      timer.get_stage_elapsed()),
                       'lr: %.4f' % (optimizer.param_groups[0]['lr']),
