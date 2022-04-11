@@ -1,12 +1,10 @@
-import numpy as np
 import voc12.dataloader
 import argparse
 import torch
 import os
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from misc import pyutils, torchutils
-from net.resnet50_cam import Net, C3AM
+from net.resnet50_cam import Net
 
 
 def validate(cls_model, data_loader):
@@ -70,7 +68,7 @@ def train(config):
                                  pin_memory=True,
                                  drop_last=True)
 
-    cls_model = C3AM()
+    cls_model = Net()
     # load the pre-trained weights
     cls_model.load_state_dict(torch.load(cam_weight_path), strict=False)
 
