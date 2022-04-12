@@ -31,13 +31,13 @@ recam_loss_weight: 1.0
 
 # IRNet
 irn_weights_name: "irnet_recam_exp_01.pth"
-conf_fg_thres: 0.30
-conf_bg_thres: 0.05
+conf_fg_thres: 0.35
+conf_bg_thres: 0.1
 irn_crop_size: 512
-irn_batch_size: 16
+irn_batch_size: 32
 irn_num_epoches: 3
 irn_learning_rate: 0.1
 irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
-sem_seg_bg_thres: 0.25
+sem_seg_bg_thres: 0.28
