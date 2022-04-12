@@ -114,7 +114,7 @@ def train(config):
             labels = pack['label'].cuda(non_blocking=True)
 
             x, cam_feats, _ = cls_model(imgs)
-            bce_loss = torch.nn.BCEWithLogitsLoss()(x, labels)
+            bce_loss = torch.nn.BCEWithLogitsLoss()(x * 0.2, labels)
             sce_loss, _ = recam_predictor(cam_feats, labels)
 
             sce_loss = sce_loss.mean()
