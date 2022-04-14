@@ -1,10 +1,10 @@
 echo "======= ReCAM Exp 01 ========="
-mkdir -p /data/home/yipingwang/data/CAMReCAM/
-mkdir -p /data/home/yipingwang/data/IRLabelReCAM/
-mkdir -p /data/home/yipingwang/data/SemSegReCAM/
-rm /data/home/yipingwang/data/CAMReCAM/*
-rm /data/home/yipingwang/data/IRLabelReCAM/*
-rm /data/home/yipingwang/data/SemSegReCAM/*
+mkdir -p /u8/y3967wang/output/CAM_ReCAM/
+mkdir -p /u8/y3967wang/output/IR_ReCAM/
+mkdir -p /u8/y3967wang/output/SemSeg_ReCAM/
+rm /u8/y3967wang/output/CAM_ReCAM/*
+rm /u8/y3967wang/output/CAM_ReCAM/*
+rm /u8/y3967wang/output/CAM_ReCAM/*
 python3 train_recam.py           --config ./cfg/recam/recam_exp_01.yml
 python3 make_recam.py            --config ./cfg/recam/recam_exp_01.yml
 python3 eval_cam.py              --config ./cfg/recam/recam_exp_01.yml --cam_eval_thres 0.13

@@ -3,7 +3,7 @@ from torch import multiprocessing, cuda, nn
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
 from torch.backends import cudnn
-from net.resnet50_cam import ReCAM, Class_Predictor
+from net.resnet50_cam import CAM, Class_Predictor
 
 import argparse
 import numpy as np
@@ -73,7 +73,7 @@ def run(config):
     recam_weight_path = os.path.join(model_root, recam_weights_name)
     cam_weight_path = os.path.join(model_root, cam_weights_name)
 
-    model = ReCAM()
+    model = CAM()
     model.load_state_dict(torch.load(
         cam_weight_path, map_location='cpu'), strict=True)
     model.eval()
