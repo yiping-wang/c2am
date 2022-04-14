@@ -2,37 +2,37 @@
 seed: 0
 voc12_root: "/u8/y3967wang/dataset/VOCdevkit/VOC2012/"
 model_root: "/u8/y3967wang/output/model"
-cam_out_dir: "/u8/y3967wang/output/CAM_ReCAM/"
+cam_out_dir: "/u8/y3967wang/output/CAM_C2AM/"
 scam_out_dir: "/u8/y3967wang/output/Global_CAM/"
-ir_label_out_dir: "/u8/y3967wang/output/IR_ReCAM/"
-sem_seg_out_dir: "/u8/y3967wang/output/SemSeg_ReCAM/"
+ir_label_out_dir: "/u8/y3967wang/output/IRLabel_C2AM/"
+sem_seg_out_dir: "/u8/y3967wang/output/SemSeg_C2AM/"
 
 # Dataset
 train_list: "voc12/train_aug.txt"
 val_list: "voc12/val.txt"
 infer_list: "voc12/train.txt" # "voc12/train.txt"
-chainer_eval_set: "train"    # "train"
+chainer_eval_set: "train"     # "train"
 
 # Class Activation Map
 start_weight_name: "resnet50_cam.pth"
-cam_weights_name: "resnet50_recam_exp_01.pth"
-recam_weights_name: "recam_recam_predictor_exp_01.pth"
-laste_cam_weights_name: "resnet50_recam_exp_01_laste.pth"
-laste_recam_weights_name: "recam_recam_predictor_exp_01_laste.pth"
+cam_weights_name: "resnet50_c2am_reproduce.pth"
+laste_cam_weights_name: "resnet50_c2am_reproduce.pth"
 scam_name: "global_cam.npy"
 num_workers: 12
+gamma: 2
 cam_scales: [1.0, 0.5, 1.5, 2.0]
+cam_square_shape: 128
 cam_crop_size: 512
 cam_batch_size: 16
 cam_num_epoches: 4
 cam_learning_rate: 0.0005
 cam_weight_decay: 0.0001
-recam_loss_weight: 1.0
 
 # IRNet
-irn_weights_name: "irnet_recam_exp_01.pth"
-conf_fg_thres: 0.35
-conf_bg_thres: 0.1
+irn_weights_name: "irn_c2am_reproduce.pth"
+num_workers: 12
+conf_fg_thres: 0.38
+conf_bg_thres: 0.10
 irn_crop_size: 512
 irn_batch_size: 32
 irn_num_epoches: 3
@@ -40,4 +40,4 @@ irn_learning_rate: 0.1
 irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
-sem_seg_bg_thres: 0.28
+sem_seg_bg_thres: 0.21
