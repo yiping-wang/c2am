@@ -3,8 +3,8 @@ mkdir -p /u8/y3967wang/output/CAM_ReCAM/
 mkdir -p /u8/y3967wang/output/IR_ReCAM/
 mkdir -p /u8/y3967wang/output/SemSeg_ReCAM/
 rm /u8/y3967wang/output/CAM_ReCAM/*
-rm /u8/y3967wang/output/CAM_ReCAM/*
-rm /u8/y3967wang/output/CAM_ReCAM/*
+rm /u8/y3967wang/output/IR_ReCAM/*
+rm /u8/y3967wang/output/SemSeg_ReCAM/*
 python3 train_recam.py           --config ./cfg/recam/recam_exp_01.yml
 python3 make_recam.py            --config ./cfg/recam/recam_exp_01.yml
 python3 eval_cam.py              --config ./cfg/recam/recam_exp_01.yml --cam_eval_thres 0.13
