@@ -165,7 +165,7 @@ class Class_Predictor(nn.Module):
         for logit,label in zip(prediction, labels):
             if label.shape[0] == 0:
                 continue
-            loss_ce= F.cross_entropy(logit, label)
+            loss_ce= F.cross_entropy(logit * 0.2, label)
             loss += loss_ce
             acc += (logit.argmax(dim=1)==label.view(-1)).sum().float()
             num += label.size(0)
