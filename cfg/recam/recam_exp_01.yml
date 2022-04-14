@@ -14,7 +14,7 @@ infer_list: "voc12/train.txt" # "voc12/train.txt"
 chainer_eval_set: "train"    # "train"
 
 # Class Activation Map
-start_weight_name: "resnet50_baseline_512.pth"
+start_weight_name: "resnet50_cam.pth"
 cam_weights_name: "resnet50_recam_exp_01.pth"
 recam_weights_name: "recam_recam_predictor_exp_01.pth"
 laste_cam_weights_name: "resnet50_recam_exp_01_laste.pth"
