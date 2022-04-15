@@ -20,7 +20,7 @@ laste_cam_weights_name: "resnet50_c2am_reproduce.pth"
 scam_name: "global_cam.npy"
 num_workers: 12
 gamma: 2
-cam_scales: [1.0, 0.5, 1.5, 2.0]
+cam_scales: [1.0, 0.5, 1.5, 2.0, 2.5]
 cam_square_shape: 128
 cam_crop_size: 512
 cam_batch_size: 16
