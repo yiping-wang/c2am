@@ -17,7 +17,7 @@ def validate(cls_model, data_loader):
         for pack in data_loader:
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
-            x, _ = cls_model(imgs)
+            x = cls_model(imgs)
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             val_loss_meter.add({'loss': loss.item()})
 
@@ -102,7 +102,7 @@ def train(config):
             labels = pack['label'].cuda(non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x, _ = cls_model(imgs)
+            x = cls_model(imgs)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * global_cams
             # Aggregate for classification

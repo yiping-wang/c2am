@@ -28,10 +28,10 @@ class Net(nn.Module):
         x = self.stage2(x)
         x = self.stage3(x)
         f = self.stage4(x)
-        feat = torchutils.gap2d(f, keepdims=True)
-        x = self.classifier(feat)
+        x = torchutils.gap2d(f, keepdims=True)
+        x = self.classifier(x)
         x = x.view(-1, 20)
-        return x, feat.squeeze()
+        return x
 
     def train(self, mode=True):
         super(Net, self).train(mode)
