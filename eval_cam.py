@@ -23,8 +23,6 @@ def run(config, cam_eval_thres):
         cls_labels = keys[cls_labels]
         preds.append(cls_labels.copy())
 
-    print(preds[0].shape)
-    print(labels[0].shape)
     confusion = calc_semantic_segmentation_confusion(preds, labels)
 
     gtj = confusion.sum(axis=1)
