@@ -40,7 +40,7 @@ irn_learning_rate: 0.1
 irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
-sem_seg_bg_thres: 0.21
+sem_seg_bg_thres: 0.20
 
 # python3 eval_cam.py --config    ./cfg/c2am_reproduce.yml --cam_eval_thres 0.13
 # {'iou': array([0.78964332, 0.42170236, 0.28958111, 0.47273375, 0.34278678,
