@@ -19,7 +19,7 @@ cam_weights_name: "resnet50_c2am_reproduce.pth"
 laste_cam_weights_name: "resnet50_c2am_reproduce.pth"
 scam_name: "global_cam.npy"
 num_workers: 12
-gamma: 2
+gamma: 1
 cam_scales: [1.0, 0.5, 1.5, 2.0, 2.5, 3.0]
 cam_square_shape: 128
 cam_crop_size: 512
@@ -31,7 +31,7 @@ cam_weight_decay: 0.0001
 # IRNet
 irn_weights_name: "irn_c2am_reproduce.pth"
 num_workers: 12
-conf_fg_thres: 0.36
+conf_fg_thres: 0.37
 conf_bg_thres: 0.10
 irn_crop_size: 512
 irn_batch_size: 32
@@ -52,6 +52,7 @@ sem_seg_bg_thres: 0.20
 # conf_fg_thres: 0.37
 # conf_bg_thres: 0.10
 # sem_seg_bg_thres: 0.20
+# gamma: 2
 # {'iou': array([0.89018854, 0.74672773, 0.3798428 , 0.79804079, 0.60162891,      
 #        0.66165536, 0.84358831, 0.7430201 , 0.81787913, 0.38986191,
 #        0.85237107, 0.51807262, 0.78068408, 0.84315246, 0.7802838 ,
@@ -61,3 +62,14 @@ sem_seg_bg_thres: 0.20
 # conf_fg_thres: 0.36
 # conf_bg_thres: 0.10
 # sem_seg_bg_thres: 0.20
+# gamma: 2
+# {'iou': array([0.89009976, 0.74653698, 0.37892282, 0.79772495, 0.60455825,
+#        0.66157638, 0.84443037, 0.74307968, 0.81433358, 0.38875185,
+#        0.85141186, 0.51571062, 0.77813929, 0.84075479, 0.78053827,
+#        0.73439307, 0.56640202, 0.8607122 , 0.63879003, 0.63531077,
+#        0.54450264]), 'miou': 0.6960323899841699}
+
+# conf_fg_thres: 0.37
+# conf_bg_thres: 0.10
+# sem_seg_bg_thres: 0.20
+# gamma: 1
