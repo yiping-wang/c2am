@@ -20,7 +20,7 @@ laste_cam_weights_name: "resnet50_c2am_reproduce.pth"
 scam_name: "global_cam.npy"
 num_workers: 12
 gamma: 2
-cam_scales: [1.0, 0.5, 1.5, 2.0, 2.5]
+cam_scales: [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
 cam_square_shape: 128
 cam_crop_size: 512
 cam_batch_size: 16
@@ -32,7 +32,7 @@ cam_weight_decay: 0.0001
 irn_weights_name: "irn_c2am_reproduce.pth"
 num_workers: 12
 conf_fg_thres: 0.37
-conf_bg_thres: 0.09
+conf_bg_thres: 0.1
 irn_crop_size: 512
 irn_batch_size: 32
 irn_num_epoches: 3
@@ -91,3 +91,8 @@ sem_seg_bg_thres: 0.20
 # conf_fg_thres: 0.37
 # conf_bg_thres: 0.09
 # sem_seg_bg_thres: 0.20
+# {'iou': array([0.88664955, 0.71750677, 0.38856635, 0.79657893, 0.59694097,
+#        0.66518178, 0.85494996, 0.74735804, 0.8304934 , 0.39053368,
+#        0.85260022, 0.53078188, 0.78949974, 0.83789775, 0.78724692,
+#        0.71296617, 0.56785714, 0.85612415, 0.63623988, 0.63369789,
+#        0.53484137]), 'miou': 0.695929167568139}
