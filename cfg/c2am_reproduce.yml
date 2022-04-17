@@ -32,7 +32,7 @@ cam_weight_decay: 0.0001
 irn_weights_name: "irn_c2am_reproduce.pth"
 num_workers: 12
 conf_fg_thres: 0.35
-conf_bg_thres: 0.05
+conf_bg_thres: 0.10
 irn_crop_size: 512
 irn_batch_size: 32
 irn_num_epoches: 3
@@ -40,7 +40,7 @@ irn_learning_rate: 0.1
 irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
-sem_seg_bg_thres: 0.25
+sem_seg_bg_thres: 0.28
 
 # gamma: 1
 # python3 eval_cam.py --config    ./cfg/c2am_reproduce.yml --cam_eval_thres 0.13
@@ -125,3 +125,12 @@ sem_seg_bg_thres: 0.25
 # conf_fg_thres: 0.35
 # conf_bg_thres: 0.05
 # sem_seg_bg_thres: 0.25
+# {'iou': array([0.88889531, 0.7084661 , 0.37931967, 0.80929941, 0.57456356,
+#        0.6520328 , 0.83256292, 0.71728634, 0.83166021, 0.39263413,
+#        0.8335448 , 0.4559569 , 0.77541875, 0.83887438, 0.7882266 ,
+#        0.73665308, 0.53706571, 0.82553566, 0.61908979, 0.6461027 ,
+#        0.54473093]), 'miou': 0.6851390359763927}
+
+# conf_fg_thres: 0.35
+# conf_bg_thres: 0.05
+# sem_seg_bg_thres: 0.28
