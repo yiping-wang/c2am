@@ -31,7 +31,7 @@ cam_weight_decay: 0.0001
 # IRNet
 irn_weights_name: "irn_c2am_reproduce.pth"
 num_workers: 12
-conf_fg_thres: 0.38
+conf_fg_thres: 0.35
 conf_bg_thres: 0.05
 irn_crop_size: 512
 irn_batch_size: 32
@@ -50,6 +50,10 @@ sem_seg_bg_thres: 0.20
 #        0.56595787, 0.43250425, 0.6533794 , 0.4806589 , 0.50096507,
 #        0.44343288]), 'miou': 0.5210154693754724}
 
+# conf_fg_thres: 0.35
+# conf_bg_thres: 0.05
+# sem_seg_bg_thres: 0.20
+
 # conf_fg_thres: 0.38
 # conf_bg_thres: 0.15
 # sem_seg_bg_thres: 0.20
@@ -62,6 +66,11 @@ sem_seg_bg_thres: 0.20
 # conf_fg_thres: 0.38
 # conf_bg_thres: 0.05
 # sem_seg_bg_thres: 0.20
+# {'iou': array([0.88022535, 0.66357557, 0.39487435, 0.7754758 , 0.55964888,
+#        0.65553814, 0.84043403, 0.73772684, 0.84603629, 0.38549724,
+#        0.85965508, 0.51364173, 0.80665311, 0.84880154, 0.79510946,
+#        0.71163202, 0.53840428, 0.84162868, 0.64642035, 0.61881251,
+#        0.49723574]), 'miou': 0.6865250943049903}
 
 # conf_fg_thres: 0.38
 # conf_bg_thres: 0.10
