@@ -2,14 +2,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from misc import torchutils
 from net import resnet50
+from torchvision import models
 
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.resnet50 = resnet50.resnet50(
-            pretrained=True, strides=(2, 2, 2, 1))
+        self.resnet50 = models.resnet101(pretrained=True)
 
         self.stage1 = nn.Sequential(self.resnet50.conv1, self.resnet50.bn1, self.resnet50.relu, self.resnet50.maxpool,
                                     self.resnet50.layer1)

@@ -6,6 +6,7 @@ model_urls = {
     'resnet50': 'https://download.pytorch.org/models/resnet50-19c8e357.pth'
 }
 
+
 class FixedBatchNorm(nn.BatchNorm2d):
     def forward(self, input):
         return F.batch_norm(input, self.running_mean, self.running_var, self.weight, self.bias,
@@ -62,15 +63,18 @@ class ResNet(nn.Module):
         self.bn1 = FixedBatchNorm(64)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0], stride=1, dilation=dilations[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=strides[1], dilation=dilations[1])
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=strides[2], dilation=dilations[2])
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=strides[3], dilation=dilations[3])
+        self.layer1 = self._make_layer(
+            block, 64, layers[0], stride=1, dilation=dilations[0])
+        self.layer2 = self._make_layer(
+            block, 128, layers[1], stride=strides[1], dilation=dilations[1])
+        self.layer3 = self._make_layer(
+            block, 256, layers[2], stride=strides[2], dilation=dilations[2])
+        self.layer4 = self._make_layer(
+            block, 512, layers[3], stride=strides[3], dilation=dilations[3])
         self.inplanes = 1024
 
         #self.avgpool = nn.AvgPool2d(7, stride=1)
         #self.fc = nn.Linear(512 * block.expansion, 1000)
-
 
     def _make_layer(self, block, planes, blocks, stride=1, dilation=1):
         downsample = None
@@ -109,6 +113,17 @@ class ResNet(nn.Module):
 def resnet50(pretrained=True, **kwargs):
 
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    if pretrained:
+        state_dict = model_zoo.load_url(model_urls['resnet50'])
+        state_dict.pop('fc.weight')
+        state_dict.pop('fc.bias')
+        model.load_state_dict(state_dict)
+    return model
+
+
+def resnet101(pretrained=True, **kwargs):
+
+    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
     if pretrained:
         state_dict = model_zoo.load_url(model_urls['resnet50'])
         state_dict.pop('fc.weight')
