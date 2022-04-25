@@ -19,7 +19,10 @@ loss = torch.nn.BCELoss()(x, labels)
 
 - We evaluated C^2AM on PASCAL VOC 2012 and achieved mIOU 69.6% of the pseudo mask generation on the training set, and mIOU 67.5% and 67.7% on validation and test set when training DeepLabV2 on the seed masks.
 
-- Weights are released at [here](https://drive.google.com/drive/folders/1L0ieqx4XWddIUzKP80djM7YOcKeJZDot?usp=sharing)
+- Weights are released at [here](https://drive.google.com/drive/folders/1L0ieqx4XWddIUzKP80djM7YOcKeJZDot?usp=sharing).
+
+## Class Activation Map to Segmentation Pipeline
+![](doc/pipe.png)
 
 ## Structural Causal Models
 ![](doc/scm.png)
