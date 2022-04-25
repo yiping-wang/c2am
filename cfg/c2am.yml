@@ -14,13 +14,13 @@ infer_list: "voc12/train.txt" # "voc12/train.txt"
 chainer_eval_set: "train"     # "train"
 
 # Class Activation Map
+start_weight_name: "resnet50_cam.pth"
 cam_weights_name: "resnet50_c2am.pth"
 laste_cam_weights_name: "resnet50_c2am.pth"
 scam_name: "global_cam_by_class.npy"
-start_weight_name: "resnet50_cam.pth"
 num_workers: 12
-gamma: 2
-cam_scales: [1.0, 0.5, 1.5, 2.0]
+gamma: 1
+cam_scales: [1.0, 0.5, 1.5, 2.0, 2.5, 3.0]
 cam_square_shape: 128
 cam_crop_size: 512
 cam_batch_size: 16
@@ -31,7 +31,7 @@ cam_weight_decay: 0.0001
 # IRNet
 irn_weights_name: "irn_c2am.pth"
 num_workers: 12
-conf_fg_thres: 0.38
+conf_fg_thres: 0.375
 conf_bg_thres: 0.10
 irn_crop_size: 512
 irn_batch_size: 32
@@ -40,7 +40,7 @@ irn_learning_rate: 0.1
 irn_weight_decay: 0.0001
 beta: 10
 exp_times: 8
-sem_seg_bg_thres: 0.21
+sem_seg_bg_thres: 0.20
 
 # {'iou': array([0.78448926, 0.41358319, 0.28043513, 0.46877522, 0.33712622,
 #        0.50180088, 0.69193883, 0.55626966, 0.5704548 , 0.2890439 ,
