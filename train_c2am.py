@@ -1,4 +1,3 @@
-
 import numpy as np
 import voc12.dataloader
 import argparse
@@ -18,7 +17,7 @@ def validate(cls_model, data_loader):
         for pack in data_loader:
             imgs = pack['img'].cuda(non_blocking=True)
             labels = pack['label'].cuda(non_blocking=True)
-            x, _ = cls_model(imgs)
+            x = cls_model(imgs)
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             val_loss_meter.add({'loss': loss.item()})
 
@@ -28,7 +27,7 @@ def validate(cls_model, data_loader):
     return loss
 
 
-def train(config, config_path):
+def train(config):
     seed = config['seed']
     train_list = config['train_list']
     val_list = config['val_list']
@@ -40,7 +39,7 @@ def train(config, config_path):
     cam_crop_size = config['cam_crop_size']
     model_root = config['model_root']
     cam_weights_name = config['cam_weights_name']
-    agg_smooth_r = config['agg_smooth_r']
+    gamma = config['gamma']
     num_workers = config['num_workers']
     scam_out_dir = config['scam_out_dir']
     laste_cam_weights_name = config['laste_cam_weights_name']
@@ -73,14 +72,14 @@ def train(config, config_path):
 
     cls_model = Net()
     # load the pre-trained weights
-    cls_model.load_state_dict(torch.load(cam_weight_path), strict=True)
+    cls_model.load_state_dict(torch.load(cam_weight_path), strict=False)
 
     param_groups = cls_model.trainable_parameters()
     optimizer = torchutils.PolyOptimizer([
         {'params': param_groups[0], 'lr': cam_learning_rate,
             'weight_decay': cam_weight_decay},
         {'params': param_groups[1], 'lr': 10 * cam_learning_rate,
-            'weight_decay': cam_weight_decay},
+            'weight_decay': cam_weight_decay}
     ], lr=cam_learning_rate, weight_decay=cam_weight_decay, max_step=max_step)
 
     cls_model.train()
@@ -95,8 +94,7 @@ def train(config, config_path):
     # global_cams = pyutils.sum_cams_by_class(config['cam_out_dir']).cuda(non_blocking=True)
     # np.save(os.path.join(scam_out_dir, config['scam_name']), global_cams.cpu().numpy())
     global_cams = torch.from_numpy(np.load(os.path.join(
-        scam_out_dir, 'global_cam_by_class.npy'))).cuda(non_blocking=True)
-    # ===
+        scam_out_dir, 'global_cam.npy'))).cuda(non_blocking=True)
     for ep in range(cam_num_epoches):
         print('Epoch %d/%d' % (ep+1, cam_num_epoches))
         for step, pack in enumerate(train_data_loader):
@@ -104,12 +102,12 @@ def train(config, config_path):
             labels = pack['label'].cuda(non_blocking=True)
             # Front Door Adjustment
             # P(z|x)
-            x, _ = cls_model(imgs)
+            x = cls_model(imgs)
             # P(y|do(x))
             x = x.unsqueeze(2).unsqueeze(2) * global_cams
             # Aggregate for classification
             # pool(P(z|x) * sum(P(y|x, z) * P(x)))
-            x = torchutils.mean_agg(x, r=agg_smooth_r)
+            x = torchutils.mean_agg(x, r=gamma)
             # Entropy loss for Multiple-Instance Learning
             loss = torch.nn.BCEWithLogitsLoss()(x, labels)
             avg_meter.add({'loss': loss.item()})
@@ -120,6 +118,7 @@ def train(config, config_path):
             # Progress
             if (optimizer.global_step - 1) % 100 == 0:
                 timer.update_progress(optimizer.global_step / max_step)
+                # print('Gamma: {}'.format(cls_model.module.gamma))
                 print('step:%5d/%5d' % (optimizer.global_step - 1, max_step),
                       'Loss:%.4f' % (avg_meter.pop('loss')),
                       'imps:%.1f' % ((step + 1) * cam_batch_size /
@@ -152,4 +151,4 @@ if __name__ == '__main__':
     print(copy_weights)
     print(args.config)
     os.system(copy_weights)
-    train(config, args.config)
+    train(config)

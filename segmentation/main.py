@@ -18,6 +18,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchnet.meter import MovingAverageValueMeter
 from tqdm import tqdm
 
+from libs.datasets.voc import VOCTest
 from libs.datasets.init import get_dataset
 from libs.models.init import DeepLabV2_ResNet101_MSC
 from libs.utils.init import DenseCRF, PolynomialLR, scores
@@ -33,8 +34,8 @@ def criterion_balance(logit, label):
     ignore_mask_bg[label == 0] = 1
     ignore_mask_fg[(label != 0) & (label != 255)] = 1
 
-    loss_bg = (loss_structure * ignore_mask_bg).sum() / ignore_mask_bg.sum()
-    loss_fg = (loss_structure * ignore_mask_fg).sum() / ignore_mask_fg.sum()
+    loss_bg = (loss_structure * ignore_mask_bg.float()).sum() / ignore_mask_bg.float().sum()
+    loss_fg = (loss_structure * ignore_mask_fg.float()).sum() / ignore_mask_fg.float().sum()
 
     return (loss_bg+loss_fg)/2
 
@@ -232,7 +233,8 @@ def train(config_path, cuda):
                 # Resize labels for {100%, 75%, 50%, Max} logits
                 _, _, H, W = logit.shape
                 labels_ = resize_labels(labels, size=(H, W))
-                iter_loss += criterion(logit, labels_.to(device))
+                iter_loss += criterion_balance(logit, labels_.to(device))
+                # iter_loss += criterion(logit, labels_.to(device))
 
             # Propagate backward (just compute gradients)
             iter_loss /= CONFIG.SOLVER.ITER_SIZE
@@ -392,6 +394,115 @@ def test(config_path, model_path, cuda):
     with open(save_path, "w") as f:
         json.dump(score, f, indent=4, sort_keys=True)
 
+@main.command()
+@click.option(
+    "-c",
+    "--config-path",
+    type=click.File(),
+    required=True,
+    help="Dataset configuration file in YAML",
+)
+@click.option(
+    "-m",
+    "--model-path",
+    type=click.Path(exists=True),
+    required=True,
+    help="PyTorch model to be loaded",
+)
+@click.option(
+    "--cuda/--cpu", default=True, help="Enable CUDA if available [default: --cuda]"
+)
+def testset(config_path, model_path, cuda):
+
+    # Configuration
+    CONFIG = OmegaConf.load(config_path)
+    device = get_device(cuda)
+    torch.set_grad_enabled(False)
+
+    # Dataset
+    dataset = VOCTest(
+        root=CONFIG.DATASET.ROOT,
+        split='test',
+        ignore_label=CONFIG.DATASET.IGNORE_LABEL,
+        mean_bgr=(CONFIG.IMAGE.MEAN.B, CONFIG.IMAGE.MEAN.G,
+                  CONFIG.IMAGE.MEAN.R),
+        augment=False,
+    )
+    print(dataset)
+
+    # DataLoader
+    loader = torch.utils.data.DataLoader(
+        dataset=dataset,
+        batch_size=CONFIG.SOLVER.BATCH_SIZE.TEST,
+        num_workers=CONFIG.DATALOADER.NUM_WORKERS,
+        shuffle=False,
+    )
+
+    # Model
+    model = eval(CONFIG.MODEL.NAME)(n_classes=CONFIG.DATASET.N_CLASSES)
+    state_dict = torch.load(
+        model_path, map_location=lambda storage, loc: storage)
+    model.load_state_dict(state_dict)
+    model = nn.DataParallel(model)
+    model.eval()
+    model.to(device)
+
+    # Path to save logits
+    logit_dir = os.path.join(
+        CONFIG.EXP.OUTPUT_DIR,
+        "features",
+        CONFIG.EXP.ID,
+        CONFIG.MODEL.NAME.lower(),
+        'test',
+        "logit",
+    )
+    makedirs(logit_dir)
+    print("Logit dst:", logit_dir)
+
+    # Path to save scores
+    save_dir = os.path.join(
+        CONFIG.EXP.OUTPUT_DIR,
+        "scores",
+        CONFIG.EXP.ID,
+        CONFIG.MODEL.NAME.lower(),
+        'test',
+    )
+    makedirs(save_dir)
+    save_path = os.path.join(save_dir, "scores.json")
+    print("Score dst:", save_path)
+
+    postprocessor = DenseCRF(
+        iter_max=CONFIG.CRF.ITER_MAX,
+        pos_xy_std=CONFIG.CRF.POS_XY_STD,
+        pos_w=CONFIG.CRF.POS_W,
+        bi_xy_std=CONFIG.CRF.BI_XY_STD,
+        bi_rgb_std=CONFIG.CRF.BI_RGB_STD,
+        bi_w=CONFIG.CRF.BI_W,
+    )
+
+    for image_ids, images in tqdm(
+        loader, total=len(loader), dynamic_ncols=True
+    ):
+        # Image
+        images = images.to(device)
+
+        # Forward propagation
+        logits = model(images)
+
+        # Pixel-wise labeling
+        _, _, H, W = images.shape
+        logits = F.interpolate(
+            logits, size=(H, W), mode="bilinear", align_corners=False
+        )
+        probs = F.softmax(logits, dim=1).squeeze().cpu().numpy()
+        images = images.squeeze().cpu().numpy().astype(np.uint8).transpose(1, 2, 0)
+        probs = postprocessor(images, probs)
+
+        labels = np.argmax(probs, axis=0)
+
+        # Save on disk for CRF post-processing
+        filename = os.path.join(logit_dir, image_ids[0] + ".npy")
+        np.save(filename, labels)
 
 @main.command()
 @click.option(
