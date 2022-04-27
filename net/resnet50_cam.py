@@ -9,7 +9,7 @@ class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.resnet50 = models.resnet101(pretrained=True)
+        self.resnet50 = models.resnet50(pretrained=True)
 
         self.stage1 = nn.Sequential(self.resnet50.conv1, self.resnet50.bn1, self.resnet50.relu, self.resnet50.maxpool,
                                     self.resnet50.layer1)
