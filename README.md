@@ -1,5 +1,7 @@
 # Causal Class Activation Maps for Weakly-Supervised Semantic Segmentation
 
+- Accepted at [UAI 2022 Causal Representation Learning Workshop](https://openreview.net/group?id=auai.org/UAI/2022/Workshop/CRL#accept--oral-)
+
 ![](doc/c2am.png)
 
 - Causal CAM (C^2AM), is a simple yet effective algorithm for enhancing CAM quality. It requires no extra parameters, modification of the classification network architecture, or manipulating of the images. Further, the implementation of C^2AM is also straightforward, it only requires one additional line of code. 
